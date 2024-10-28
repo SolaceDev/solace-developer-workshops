@@ -1,0 +1,5 @@
+{
+  "markdown.preview.openMarkdownLinks": "inPreview",
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000
+}

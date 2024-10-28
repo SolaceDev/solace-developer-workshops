@@ -1,0 +1,121 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'idea'
+    id 'eclipse'
+}
+
+// Don't need these tasks, so disabling them. Makes it possible to avoid
+// declaring a single application main class.
+startScripts.enabled = false
+run.enabled = false
+
+// Also don't need the regular application distribution packages since
+// this is just a set of samples. So disabling to make the build output
+// cleaner
+distTar.enabled = false
+distZip.enabled = false
+
+
+jar {
+    archiveBaseName = 'solace-samples-java'
+    archiveVersion = ''
+    manifest {
+        attributes 'Implementation-Title': 'Solace Java Getting Started Samples',
+                'Implementation-Version': ''
+    }
+}
+
+// Download context sensitive help and/or source code for eclipse and idea
+eclipse {
+    classpath {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+    jdt {
+        //if you want to alter the java versions (by default they are configured with gradle java plugin settings):
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Solace Messaging API for Java Dependencies
+    implementation group: 'com.solace', name: 'solace-messaging-client', version: '1.7.+'
+
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.+'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.+'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-jcl', version: '2.+'
+
+    // Distributed Tracing Dependency on OpenTelemetry and Solace PubSub+ OpenTelemetry Java Integration
+    implementation group: 'com.solace', name: 'pubsubplus-opentelemetry-java-integration', version: '1.+'
+    implementation group: 'io.opentelemetry', name: 'opentelemetry-exporter-otlp', version: '1.+'
+    implementation group: 'io.opentelemetry.semconv', name: 'opentelemetry-semconv', version: '1.+'
+}
+
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+            srcDir 'src/dist/config'
+        }
+    }
+}
+
+tasks.withType(JavaCompile).all {
+    options.compilerArgs.add("-Xlint:all")
+}
+
+def scripts = [
+        'HelloWorld'                    : 'com.solace.samples.java.HelloWorld',
+        'DirectPublisher'               : 'com.solace.samples.java.patterns.DirectPublisher',
+        'DirectReceiver'              : 'com.solace.samples.java.patterns.DirectReceiver',
+        'DirectProcessor'               : 'com.solace.samples.java.patterns.DirectProcessor',
+        'GuaranteedNonBlockingPublisher': 'com.solace.samples.java.patterns.GuaranteedNonBlockingPublisher',
+        'GuaranteedBlockingPublisher'   : 'com.solace.samples.java.patterns.GuaranteedBlockingPublisher',
+        'GuaranteedReceiver'          : 'com.solace.samples.java.patterns.GuaranteedReceiver',
+        'GuaranteedProcessor'           : 'com.solace.samples.java.patterns.GuaranteedProcessor',
+        'DirectReplierBlocking'         : 'com.solace.samples.java.patterns.DirectReplierBlocking',
+        'DirectRequestorBlocking'       : 'com.solace.samples.java.patterns.DirectRequestorBlocking',
+        'DirectReplierNonBlocking'      : 'com.solace.samples.java.patterns.DirectReplierNonBlocking',
+        'DirectRequestorNonBlocking'    : 'com.solace.samples.java.patterns.DirectRequestorNonBlocking'
+]
+scripts.each() { scriptName, className ->
+    def t = tasks.create(name: scriptName + 'StartScript', type: CreateStartScripts) {
+        mainClass = className
+        applicationName = scriptName
+        outputDir = new File(project.buildDir, 'scripts')
+        classpath = jar.outputs.files + project.configurations.runtimeClasspath
+        classpath += files('src/dist/config')  // this is where our log4j2.xml file will be
+        doLast {  // necessary since Gradle assumes all classpath are under 'lib', need to modify
+            def windowsScriptFile = file getWindowsScript()
+            def unixScriptFile = file getUnixScript()
+            windowsScriptFile.text = windowsScriptFile.text.replace('%APP_HOME%\\lib\\config', '%APP_HOME%\\config')
+            unixScriptFile.text = unixScriptFile.text.replace('$APP_HOME/lib/config', '$APP_HOME/config')
+        }
+        defaultJvmOpts = ['-ea']
+    }
+    applicationDistribution.into("bin") {
+        from(t)
+        fileMode = 0755
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+}
+
+installDist {
+    destinationDir = new File(project.buildDir, 'staged')
+}
+
+assemble.dependsOn installDist

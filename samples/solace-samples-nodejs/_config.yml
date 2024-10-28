@@ -1,0 +1,22 @@
+# Site settings
+title: Solace Samples Node.js
+summary: These tutorials get you up to speed sending and receiving messages with Solace technology.
+baseurl: "/solace-samples-nodejs" # the subpath of your site, e.g. /solace-samples-java
+repository: https://github.com/SolaceSamples/solace-samples-nodejs
+
+# Also see _includes/intro.html to customize the description which gets included in index.html.
+
+# Links
+advanced-samples: //github.com/SolaceSamples/solace-samples-nodejs/tree/master/src/advanced-samples
+links-community: //solace.community
+links-downloads: //solace.com/downloads/
+links-solaceCloud-setup: //solace.com/cloud/
+links-get-started-nodejs: //dev.solace.com/get-started/node-js-tutorials/
+links-tech-other: //solace.com/products/tech/
+docs-core-concepts: //docs.solace.com/PubSub-Basics/Core-Concepts.htm
+docs-session-events: //docs.solace.com/Solace-Messaging-APIs/Creating-Client-Sessions-1.htm#Handle-Sess-Events
+docs-api-reference: //docs.solace.com/API-Developer-Online-Ref-Documentation/nodejs/index.html
+docs-semp: //docs.solace.com/SEMP/Using-Legacy-SEMP.htm
+docs-topic-mapping: //docs.solace.com/PubSub-Basics/Core-Concepts.htm
+docs-msg-consumer-ack-modes: //docs.solace.com/Solace-Messaging-APIs/Developer-Guide/Acknowledging-Messages.htm
+docs-ack-pub-msgs: //docs.solace.com/Solace-Messaging-APIs/Developer-Guide/Acknowledging-Published-.htm

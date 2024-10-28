@@ -1,0 +1,31 @@
+{
+  "name": "Solace Developer Workshop",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "waitFor": "onCreateCommand",
+  "postCreateCommand": "/bin/bash .devcontainer/configureEnv.sh",
+  "postAttachCommand": {
+    "portSetup": "/bin/bash .devcontainer/portSetup.sh"
+  },
+  "customizations": {
+    "codespaces": {
+      "openFiles": [
+        "README.md"
+      ]
+    },
+    "vscode": {
+      "extensions": [
+        "solace-tools.solace-try-me-vsc-extension"
+      ]
+    }
+  },
+  "portsAttributes": {
+    "8080": {
+      "label": "Solace",
+      "onAutoForward": "openBrowserOnce"
+    },
+    "1443": {
+      "label": "TLS"
+    }
+  },
+  "forwardPorts": [8080, 1443]
+}

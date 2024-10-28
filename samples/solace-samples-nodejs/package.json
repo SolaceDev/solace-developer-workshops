@@ -1,0 +1,13 @@
+{
+    "name": "solace-samples-nodejs",
+    "version": "10.0.0",
+    "description": "Simple sample applications to quickly demonstrate basic capabilities of the Solace node.js API",
+    "license": "Apache-2.0",
+    "dependencies": {
+        "solclientjs": "^10.0.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/SolaceSamples/solace-samples-nodejs"
+    }
+}
