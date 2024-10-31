@@ -3,12 +3,6 @@
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "waitFor": "onCreateCommand",
   "postCreateCommand": "/bin/bash .devcontainer/configureEnv.sh",
-  "settings": {
-        "workbench.startupEditor": "none",
-        "files.autoSave": "afterDelay",
-        "workbench.editorAssociations": {
-            "*.md": "vscode.markdown.preview.editor"
-        },
   "postAttachCommand": {
     "portSetup": "/bin/bash .devcontainer/portSetup.sh"
   },
