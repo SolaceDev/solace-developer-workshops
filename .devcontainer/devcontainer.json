@@ -15,7 +15,14 @@
     "vscode": {
       "extensions": [
         "solace-tools.solace-try-me-vsc-extension"
-      ]
+      ],
+       "settings": {
+        "files.autoSave": "afterDelay",
+        "markdown.preview.openPreviewToSide": true,
+        "workbench.editorAssociations": {
+          "*.md": "vscode.markdown.preview.editor"
+        }
+      }
     }
   },
   "portsAttributes": {
