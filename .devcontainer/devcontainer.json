@@ -2,6 +2,10 @@
   "name": "Solace Developer Workshop",
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "waitFor": "onCreateCommand",
+  "settings": {
+        "files.autoSave": "afterDelay",
+        "markdown.preview.openPreviewToSide": true
+    },
   "postCreateCommand": "/bin/bash .devcontainer/configureEnv.sh",
   "postAttachCommand": {
     "portSetup": "/bin/bash .devcontainer/portSetup.sh"
