@@ -7,11 +7,6 @@
     "portSetup": "/bin/bash .devcontainer/portSetup.sh"
   },
   "customizations": {
-    "codespaces": {
-      "openFiles": [
-        "README.md"
-      ]
-    },
     "vscode": {
       "extensions": [
         "solace-tools.solace-try-me-vsc-extension"
