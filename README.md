@@ -1,5 +1,7 @@
 # Solace Workshop
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/SolaceDev/soalce-developer-workshops)
+
 ## To Start
 Navigate to the `<> Code` button at the top of the repo --> Open the Codespaces tab --> Click `Create codespaces on main`
 
@@ -20,4 +22,4 @@ Navigate to the `samples/solace-samples-<language>` directory and follow the ins
 ## Launching the Broker Manager
 Navigate to the `PORTS` tab and click on the `Solace` link that exposes the `8080` port
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/SolaceDev/soalce-developer-workshops)
+
