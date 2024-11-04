@@ -1,4 +1,4 @@
-# Solace Worshops
+# Solace Workshop
 
 ## To Start
 Navigate to the `<> Code` button at the top of the repo --> Open the Codespaces tab --> Click `Create codespaces on main`
