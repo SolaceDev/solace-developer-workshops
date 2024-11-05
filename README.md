@@ -1,6 +1,6 @@
 # Solace Workshop
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/SolaceDev/soalce-developer-workshops)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new/SolaceDev/soalce-developer-workshops?quickstart=1)
 
 ## To Start
 Navigate to the `<> Code` button at the top of the repo --> Open the Codespaces tab --> Click `Create codespaces on main`
