@@ -11,7 +11,7 @@
       "extensions": [
         "solace-tools.solace-try-me-vsc-extension"
       ],
-      "settings": {
+       "settings": {
         "files.autoSave": "afterDelay",
         "markdown.preview.openPreviewToSide": true,
         "workbench.editorAssociations": {
@@ -20,23 +20,16 @@
       }
     }
   },
-  "forwardPorts": [
-    {
-      "port": 8080,
+  "portsAttributes": {
+    "8080": {
       "label": "Solace",
       "onAutoForward": "openBrowser"
     },
-    {
-      "port": 1443,
+    "1443": {
       "label": "TLS",
       "onAutoForward": "notify"
-    },
-    55555,
-    8008,
-    1883,
-    8000,
-    5672,
-    9000,
-    2223
-  ]
+    }
+  },
+  "forwardPorts": [8080, 1443, 55555, 8008, 1883, 8000, 5672, 9000, 2223]
 }
+  
