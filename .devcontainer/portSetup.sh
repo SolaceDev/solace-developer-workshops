@@ -20,9 +20,6 @@ set_port_visibility() {
     
     echo "Exposing port $port with label: $label"
     gh codespace ports visibility "$port":public -c "$CODESPACE_NAME"
-    
-    # Optional: If GitHub CLI supports port labeling in future
-    gh codespace ports label add "$port" "$label" -c "$CODESPACE_NAME"
 }
 
 # Loop through ports and set visibility
