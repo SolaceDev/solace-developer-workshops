@@ -1,7 +1,0 @@
-venv
-.vscode
-.DS_Store
-__pycache__
-.python-version
-trusted-store
-pubsubplus-python-client/
