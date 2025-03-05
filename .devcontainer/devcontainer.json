@@ -23,10 +23,11 @@
   "portsAttributes": {
     "8080": {
       "label": "Solace",
-      "onAutoForward": "openBrowserOnce"
+      "onAutoForward": "openBrowser"
     },
     "1443": {
-      "label": "TLS"
+      "label": "TLS",
+      "onAutoForward": "notify"
     }
   },
   "forwardPorts": [8080, 1443, 55555, 8008, 1883, 8000, 5672, 9000, 2223]
