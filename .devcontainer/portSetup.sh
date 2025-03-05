@@ -1,15 +1,31 @@
 #!/bin/bash
 
-# Array of ports to make public
-PORTS=(8080 1443 8008 55555 1883 8000 5672 9000 2223)
+# Array of ports to expose with their labels
+declare -A PORTS=(
+    [8080]="Solace"
+    [1443]="TLS"
+    [55555]="Messaging"
+    [8008]="Web"
+    [1883]="MQTT"
+    [8000]="HTTP"
+    [5672]="AMQP"
+    [9000]="Management"
+    [2223]="SSH"
+)
 
-# Function to set port visibility
+# Function to set port visibility and label
 set_port_visibility() {
-    echo "Exposing port $1"
-    gh codespace ports visibility "$1":public -c "$CODESPACE_NAME"
+    local port=$1
+    local label=$2
+    
+    echo "Exposing port $port with label: $label"
+    gh codespace ports visibility "$port":public -c "$CODESPACE_NAME"
+    
+    # Optional: If GitHub CLI supports port labeling in future
+    gh codespace ports label add "$port" "$label" -c "$CODESPACE_NAME"
 }
 
 # Loop through ports and set visibility
-for port in "${PORTS[@]}"; do
-    set_port_visibility "$port"
+for port in "${!PORTS[@]}"; do
+    set_port_visibility "$port" "${PORTS[$port]}"
 done
