@@ -32,17 +32,13 @@ done
 echo "Docker is running!"
 
 # Install the Solace broker
-echo "Installing Solace PubSub+ broker..."
+echo "Installing Solace broker..."
 docker run -d -p 8080:8080 -p 55555:55555 -p 1443:1443 -p 8008:8008 -p 1883:1883 -p 8000:8000 -p 5672:5672 -p 9000:9000 -p 2223:2222 --shm-size=2g --env username_admin_globalaccesslevel=admin --env username_admin_password=admin --name=solace solace/solace-pubsub-standard
 
 # Check if Solace container is running
 echo "Checking if Solace broker is running..."
 if docker ps | grep -q solace; then
-  echo "Solace PubSub+ broker is running!"
-  echo "Management access:"
-  echo "  - Web UI: http://localhost:8080"
-  echo "  - Username: admin"
-  echo "  - Password: admin"
+  echo "Solace broker is running!"
 else
   echo "Error: Solace broker failed to start"
   exit 1
