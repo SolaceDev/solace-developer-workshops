@@ -1,12 +1,12 @@
 #!/bin/bash
 
+# Update github submodules recursively
+git submodule update --init --recursive
+
 # Install STM
 echo "deb [arch=amd64 trusted=yes] https://raw.githubusercontent.com/SolaceLabs/apt-stm/master stm main" | sudo tee  /etc/apt/sources.list.d/solace-stm-test.list
 sudo apt-get update
 sudo apt-get install stm
-
-# Update github submodules recursively
-git submodule update --init --recursive
 
 # Install Java 17
 sudo apt install -y openjdk-17-jdk
