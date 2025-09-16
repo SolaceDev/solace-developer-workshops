@@ -3,6 +3,13 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "waitFor": "onCreateCommand",
   "postCreateCommand": "/bin/bash .devcontainer/configureEnv.sh",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "enableNonRootDocker": "true",
+      "moby": "true"
+    }
+  },
   "customizations": {
     "vscode": {
       "extensions": [
@@ -18,4 +25,3 @@
     }
   }
 }
-  
