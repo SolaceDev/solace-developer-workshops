@@ -15,29 +15,30 @@ echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> ~/.bashrc
 echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> ~/.bashrc
 source ~/.bashrc
 
-# Install Python 3.13
-echo "Installing Python 3.13..."
-sudo apt-get update
-sudo apt-get install -y software-properties-common
-sudo add-apt-repository -y ppa:deadsnakes/ppa
-sudo apt-get update
-sudo apt-get install -y python3.13 python3.13-venv python3.13-dev
-sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.13 1
-sudo apt-get install -y python3-pip
-echo "Python 3.13 installation complete"
-python3 --version
+# Install Maven
+sudo apt install maven -y
 
-# Install Go 1.24
-echo "Installing Go 1.24..."
-wget https://go.dev/dl/go1.24.linux-amd64.tar.gz
+# Download and extract Python 3.12
+sudo apt update
+sudo apt install --reinstall -y software-properties-common python3-apt
+sudo add-apt-repository ppa:deadsnakes/ppa -y
+sudo apt update
+sudo apt install -y python3.12 python3.12-venv
+
+# Install latest Go version
+echo "Installing latest Go version..."
+# Get the latest version
+LATEST_GO_VERSION=$(curl -s https://go.dev/VERSION?m=text | head -n 1)
+echo "Latest Go version: $LATEST_GO_VERSION"
+wget "https://go.dev/dl/${LATEST_GO_VERSION}.linux-amd64.tar.gz"
 sudo rm -rf /usr/local/go
-sudo tar -C /usr/local -xzf go1.24.linux-amd64.tar.gz
-rm go1.24.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf "${LATEST_GO_VERSION}.linux-amd64.tar.gz"
+rm "${LATEST_GO_VERSION}.linux-amd64.tar.gz"
 echo "export PATH=\$PATH:/usr/local/go/bin" >> ~/.bashrc
 echo "export GOPATH=\$HOME/go" >> ~/.bashrc
 echo "export PATH=\$PATH:\$GOPATH/bin" >> ~/.bashrc
 source ~/.bashrc
-echo "Go 1.24 installation complete"
+echo "Go installation complete"
 go version
 
 # Install Node.js LTS
