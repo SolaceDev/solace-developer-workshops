@@ -3,9 +3,6 @@
   "image": "mcr.microsoft.com/devcontainers/universal:2",
   "waitFor": "onCreateCommand",
   "postCreateCommand": "/bin/bash .devcontainer/configureEnv.sh",
-  "postAttachCommand": {
-    "portSetup": "/bin/bash .devcontainer/portSetup.sh"
-  },
   "customizations": {
     "vscode": {
       "extensions": [
@@ -19,17 +16,6 @@
         }
       }
     }
-  },
-  "portsAttributes": {
-    "8080": {
-      "label": "Solace",
-      "onAutoForward": "openBrowser"
-    },
-    "1443": {
-      "label": "TLS",
-      "onAutoForward": "notify"
-    }
-  },
-  "forwardPorts": [8080, 1443, 55555, 8008, 1883, 8000, 5672, 9000, 2223]
+  }
 }
   
