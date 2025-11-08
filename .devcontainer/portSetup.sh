@@ -11,6 +11,7 @@ declare -A PORTS=(
     [5672]="AMQP"
     [9000]="Management"
     [2223]="SSH"
+    [5002]="SAMAgentBuilder"
 )
 
 # Function to set port visibility and label
