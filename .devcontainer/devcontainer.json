@@ -3,6 +3,11 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "waitFor": "onCreateCommand",
   "postCreateCommand": "/bin/bash .devcontainer/configureEnv.sh",
+  "hostRequirements": {
+   "cpus": 4,
+   "memory": "16gb",
+   "storage": "32gb"
+  },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
