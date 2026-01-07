@@ -20,6 +20,10 @@ Navigate to the `<> Code` button at the top of the repo --> Open the Codespaces 
 Navigate to the `samples/solace-samples-<language>` directory and follow the instructions in the README.md file
 
 ## Launching the Broker Manager
-Navigate to the `PORTS` tab and click on the `Solace` link that exposes the `8080` port
+1. Run the `setup_broker.sh` script as follows
+   ```
+   ./setup_broker.sh
+   ```
+1. Navigate to the `PORTS` tab and click on the `Solace` link that exposes the `8080` port
 
 
