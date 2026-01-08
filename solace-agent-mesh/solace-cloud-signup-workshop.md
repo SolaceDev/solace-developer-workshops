@@ -75,10 +75,12 @@ For this workshop, we’ll be using **Web Messaging (WebSockets)** for Solace Ag
 
 ![Broker Connection](./images/broker/broker-connection.png)
 
----
 
 ### You've Completed Your Broker Setup
 
 You now have:
 - A working **Solace Cloud Account**
 - A **Solace Broker Service** ready for use with Solace Agent Mesh
+
+---
+You can now navigate back to the [root directory](../README.md) to follow whatever guide you want
