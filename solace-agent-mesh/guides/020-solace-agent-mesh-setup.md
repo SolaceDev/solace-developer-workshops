@@ -1,13 +1,8 @@
-# 020 Solace Agent Mesh Setup
+# Solace Agent Mesh Setup
 
 ---
 
-##### 
-##### <center>Before you proceed, STAR the Solace Agent Mesh GitHub Repository! </center>
-##### <center>Take a moment to visit:</center>
-##### <center>https://github.com/SolaceLabs/solace-agent-mesh/</center>
-##### <center>And, hit that STAR button :)</center>
-##### 
+⭐️ Take a moment to check out the open source repo and give it a star! [https://github.com/SolaceLabs/solace-agent-mesh](https://github.com/SolaceLabs/solace-agent-mesh)
 
 ---
 > **Prerquisites:**  
@@ -17,11 +12,9 @@
 > - Click **Sign up** or **Continue with Google**  
 > - Follow the prompts to complete setup
 
-This guide walks you through setting up **GitHub Codespaces** and installing **Solace Agent Mesh** for the workshop.
-
 ---
 
-## 1. Setup GitHub Codespace
+## 1. Setup GitHub Codespace [Skip if already in Codespace]
 
 ### Step 1: **Open the Workshop Repository**
    Visit [Solace Developer Workshops](https://github.com/SolaceDev/solace-developer-workshops/)
@@ -132,8 +125,6 @@ Credentials you will need later for Solace Agent Mesh Setup
 
 > Note: Choose any Session Secret Key needed for the WebUI. Keep the remaining configurations as default.
 
->If you are running a local broker on a docker container with Solace Agent Mesh Enterprise in a docker container as well, we will configure this in the following steps
-
 7. After initialization completes, you'll see confirmation in your Codespaces terminal:
 <img src="../images/sam/020-sam-init-complete.png" alt="Init Complete" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
@@ -165,4 +156,4 @@ Your Solace Agent Mesh Chat interface will now appear:
 <img src="../images/sam/020-sam-chat.png" alt="Solace Agent Mesh Chat" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 ---
-### [Next Section: 100-adding-builtin-agents.md](./100-adding-builtin-agents.md)
+### [Next Section: Adding Built-in Agents](./100-adding-builtin-agents.md)
