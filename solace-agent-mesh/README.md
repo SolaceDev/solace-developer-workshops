@@ -32,7 +32,7 @@ By the end of this workshop, you will be proficient with the following:
 
 ### Get started
 
-Follow the guide: [`Solace Agent Mesh Setup`](./guides/020-solace-agent-mesh-setup.md) to get started
+Follow the guide: [Solace Agent Mesh Setup](./guides/020-solace-agent-mesh-setup.md) to get started
 
 ## What You'll Learn
 
