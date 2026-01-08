@@ -8,7 +8,6 @@ Welcome to the **Solace Agent Mesh** workshop! This repository contains comprehe
 ---
 ## Resources
 
-- [Solace Workshop Virtual Environment](https://github.com/SolaceDev/solace-developer-workshops/)
 - [Solace Agent Mesh Githiub Repository](https://github.com/solacelabs/solace-agent-mesh)
 - [Solace Agent Mesh Docs](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/getting-started/introduction/)
 - [Solace Agent Mesh Core Plugins](https://github.com/SolaceLabs/solace-agent-mesh-core-plugins)
@@ -16,7 +15,7 @@ Welcome to the **Solace Agent Mesh** workshop! This repository contains comprehe
 
 
 --- 
-## 🎯 Workshop Overview
+## Workshop Overview
 
 This workshop teaches you how to:
 - Set up a Solace Cloud broker service
@@ -25,7 +24,7 @@ This workshop teaches you how to:
 - Deploy and interact with AI-powered agents
 - Explore agent-to-agent (A2A) communication
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - GitHub account
@@ -42,7 +41,7 @@ Follow the guide: [`solace-agent-mesh-setup.md`](./guides/020-solace-agent-mesh-
 - Configure AI provider settings
 - Start your Solace Agent Mesh instance
 
-## 🛠️ What You'll Learn
+## What You'll Learn
 
 ### Core Concepts
 - **Event-driven architecture** with Solace PubSub+
@@ -56,7 +55,7 @@ Follow the guide: [`solace-agent-mesh-setup.md`](./guides/020-solace-agent-mesh-
 - Real-time agent communication
 - Troubleshooting distributed systems
 
-## 🌟 Key Features Covered
+## Key Features Covered
 
 - **Multi-protocol Support**: WebSockets, MQTT, REST, AMQP
 - **AI Integration**: OpenAI-compatible LLM providers
@@ -64,7 +63,7 @@ Follow the guide: [`solace-agent-mesh-setup.md`](./guides/020-solace-agent-mesh-
 - **Agent Orchestration**: Automated agent-to-agent workflows
 - **Cloud Deployment**: GitHub Codespaces integration
 
-## 📚 Workshop Materials
+## Workshop Materials
 
 ### Documentation
 - [`solace-cloud-signup-workshop.md`](./solace-cloud-signup-workshop.md) - Complete broker setup
@@ -74,7 +73,7 @@ Follow the guide: [`solace-agent-mesh-setup.md`](./guides/020-solace-agent-mesh-
 - **broker/** - Step-by-step screenshots for Solace Cloud setup
 - **Solace Agent Mesh/** - Visual guide for GitHub Codespaces and Solace Agent Mesh configuration
 
-## 🔧 Technical Requirements
+## Technical Requirements
 
 ### System Requirements
 - **Browser**: Chrome, Firefox, Safari, or Edge (latest versions)
@@ -86,7 +85,7 @@ Follow the guide: [`solace-agent-mesh-setup.md`](./guides/020-solace-agent-mesh-
 - **GitHub Codespaces**: Cloud development environment
 - **OpenAI Compatible LLM**: AI provider for agent capabilities
 
-## 🎓 Learning Outcomes
+## Learning Outcomes
 
 By completing this workshop, you will:
 1. **Understand** event-driven architecture principles
@@ -95,7 +94,7 @@ By completing this workshop, you will:
 4. **Implement** agent-to-agent communication patterns
 5. **Troubleshoot** distributed messaging applications
 
-## 🤝 Getting Help
+## Getting Help
 
 ### During the Workshop
 - Ask instructors for assistance
@@ -107,7 +106,7 @@ By completing this workshop, you will:
 - [Solace Agent Mesh Documentation](https://docs.solace.com/Solace-Agent-Mesh/)
 - [GitHub Codespaces Docs](https://docs.github.com/en/codespaces)
 
-## 📝 Workshop Flow
+## Workshop Flow
 
 ```mermaid
 graph TD
@@ -123,7 +122,7 @@ graph TD
     J --> K[Agent-to-Agent Communication]
 ```
 
-## 🏆 Next Steps
+## Next Steps
 
 After completing the workshop:
 1. **Explore Additional Agents**: Deploy more specialized agents
@@ -131,11 +130,11 @@ After completing the workshop:
 3. **Production Setup**: Learn enterprise deployment patterns
 4. **Community Engagement**: Join Solace developer forums
 
-## 📄 License
+## License
 
 This workshop content is provided for educational purposes during Solace Agent Mesh workshops.
 
 ---
 
 **© 2025 Solace Developer Workshops**  
-*Happy Learning! 🚀*
+*Happy Learning!*
