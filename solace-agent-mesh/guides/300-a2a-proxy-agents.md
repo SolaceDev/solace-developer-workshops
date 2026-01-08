@@ -1,10 +1,22 @@
-# 300 Connect External Agents with A2A Proxy
+# Connect External Agents with A2A Proxy
 
-Solace Agent Mesh supports **Agent-to-Agent (A2A) proxies** to integrate external agentic frameworks like AWS Bedrock Agents, Azure AI Agent Service, or custom REST-based agents into your mesh.
+## Table of Contents
+- [What is an A2A Proxy?](#what-is-an-a2a-proxy)
+- [Ways to add an A2A Agent](#ways-to-add-an-a2a-agent)
+- [Add Your First A2A Agent - GUI](#add-your-first-a2a-agent---gui)
+- [Add Your First A2A Agent Via File Configuration](#add-your-first-a2a-agent-via-file-configuration)
+- [Try It Out](#try-it-out)
+- [2. Add More A2A Agents](#2-add-more-a2a-agents)
+  - [Adding another a2a agent](#adding-another-a2a-agent)
+- [Fun Agent Ideas to Build](#fun-agent-ideas-to-build)
+
+---
+
+Solace Agent Mesh supports [Agent-to-Agent (A2A)](https://a2a-protocol.org/latest/) proxies to integrate external agentic frameworks that supports A2A like AWS Bedrock Agents, Azure AI Agent Service, or custom REST-based agents into your mesh.
 
 ### What is an A2A Proxy?
 
-An A2A proxy acts as a bridge between Solace Agent Mesh and external agent frameworks. Instead of rewriting agents in Python, you can expose existing agents through Solace Agent Mesh's event-driven architecture.
+An A2A proxy acts as a bridge between Solace Agent Mesh and external agent frameworks that supports A2A. Instead of rewriting agents in Python, you can expose existing agents through Solace Agent Mesh's event-driven architecture.
 
 **Use cases:**
 - Connect enterprise agents built on AWS, Azure, or Google platforms
@@ -115,12 +127,14 @@ Add a new a2a agent to the proxy
               value: "Bearer your_secure_password_here"  
    ```
 Start Solace Agent Mesh so it picks up the new configuration
+
    Save and restart agents:
+
     ```bash
     sam run
     ```
 
-## Now you can add your existing A2A agents to Solace Agent Mesh using the following configuration. You can also build new agents on whatever platform you would like and use them in your existing AI workflows, seamlessly with Solace Agent Mesh.
+Now you can add your existing A2A agents to Solace Agent Mesh using the following configuration. You can also build new agents on whatever platform you would like and use them in your existing AI workflows, seamlessly with Solace Agent Mesh.
 
 
 ### Fun Agent Ideas to Build
@@ -134,4 +148,4 @@ Want to host your own? Consider building:
 > 💡 **Tip:** You can deploy your custom a2a agents on any platform you would like and use them with Solace Agent Mesh
 
 --- 
-### [Next Section: 400-mcp-server-agents.md](./400-mcp-server-agents.md)
+[Next Section: MCP Server](./400-mcp-server-agents.md)
