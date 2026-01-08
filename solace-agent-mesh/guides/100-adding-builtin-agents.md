@@ -58,8 +58,6 @@ For example: The opened page URL `https://glorious-bassoon-j79qgqjxgrh996-5002.a
 
 <img src="../images/sam/sam-builtin-4.png" alt="Solace Agent Mesh Built-in Tools" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
-- Review the list of built-in tools available for use
-![alt text](image.png)
 <img src="../images/sam/sam-builtin-5.png" alt="Solace Agent Mesh Built-in Tools" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 - Select the following tools and add
