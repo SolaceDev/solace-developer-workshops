@@ -160,4 +160,4 @@ Your Solace Agent Mesh Chat interface will now appear:
 <img src="../images/sam/020-sam-chat.png" alt="Solace Agent Mesh Chat" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 ---
-### [Next Section: Adding Built-in Agents](./100-adding-builtin-agents.md)
+[Next Section: Adding Built-in Agents](./100-adding-builtin-agents.md)
