@@ -10,8 +10,8 @@ Navigate to the `<> Code` button at the top of the repo --> Open the Codespaces 
 1. Local Solace Software Broker 
 1. VSCode Solace extension
 1. Solace TryMe CLI tool `stm`
-1. [Solace Samples](./samples/)
-1. [Solace Agent Mesh Workshop](./solace-agent-mesh)
+1. [Solace Samples](./samples/README.md)
+1. [Solace Agent Mesh Workshop](./solace-agent-mesh/README.md)
 
 ## Solace Broker
 
