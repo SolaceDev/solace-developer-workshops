@@ -1,16 +1,20 @@
 # Solace Agent Mesh Setup
 
----
-
 ⭐️ Take a moment to check out the open source repo and give it a star! [https://github.com/SolaceLabs/solace-agent-mesh](https://github.com/SolaceLabs/solace-agent-mesh)
 
 ---
-> **Prerquisites:**  
-> You’ll need a GitHub account to participate in this workshop.  
-> Don’t have one yet? Follow these quick steps:  
-> - Visit [GitHub](https://github.com/)  
-> - Click **Sign up** or **Continue with Google**  
+> **Prerquisites:**
+> You'll need a GitHub account to participate in this workshop.
+> Don't have one yet? Follow these quick steps:
+> - Visit [GitHub](https://github.com/)
+> - Click **Sign up** or **Continue with Google**
 > - Follow the prompts to complete setup
+
+## Table of Contents
+- [1. Setup GitHub Codespace](#1-setup-github-codespace-skip-if-already-in-codespace)
+- [2. Install Solace Agent Mesh](#2-install-solace-agent-mesh)
+- [3. Initialize Solace Agent Mesh](#3-initialize-solace-agent-mesh)
+- [4. Start Solace Agent Mesh](#4-start-solace-agent-mesh)
 
 ---
 
