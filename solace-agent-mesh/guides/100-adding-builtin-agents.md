@@ -100,4 +100,4 @@ You will see an HTML report listing agentic capabilities available.
 
 ---
 
-### [Next Section: 200-adding-prebuilt-agents.md](./200-adding-prebuilt-agents.md)
+[Next Section: 200-adding-prebuilt-agents.md](./200-adding-prebuilt-agents.md)
