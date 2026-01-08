@@ -25,4 +25,4 @@ Navigate to the `<> Code` button at the top of the repo --> Open the Codespaces 
 
 ## Solace Agent Mesh
 
-To run the Solace Agent Mesh tutorial, navigate to the [Solace Agent Mesh](./solace-gent-mesh) directory
+To run the Solace Agent Mesh tutorial, navigate to the [Solace Agent Mesh](./solace-agent-mesh) directory
