@@ -10,19 +10,18 @@ Navigate to the `<> Code` button at the top of the repo --> Open the Codespaces 
 1. Local Solace Software Broker 
 1. VSCode Solace extension
 1. Solace TryMe CLI tool `stm`
-1. Solace Samples 
-    1. NodeJs
-    1. Python
-    1. Go
-    1. Java
+1. [Solace Samples](./samples/)
+1. [Solace Agent Mesh Workshop](./solace-agent-mesh)
 
-## Launching the Broker Manager
+## Solace Broker
+
+### Local Solace Broker
 1. Run the `setup_broker.sh` script as follows
    ```
    ./setup_broker.sh
    ```
 1. Navigate to the `PORTS` tab and click on the `Solace` link that exposes the `8080` port
+1. Enter `admin` `admin` as the username password credentials for the solace broker manager
 
-## Solace Agent Mesh
-
-To run the Solace Agent Mesh tutorial, navigate to the [Solace Agent Mesh](./solace-agent-mesh) directory
+### Solace Cloud
+To spin up a solace cloud broker, please follow the [Solace Cloud Signup guide](./solace-agent-mesh/solace-cloud-signup-workshop.md)
