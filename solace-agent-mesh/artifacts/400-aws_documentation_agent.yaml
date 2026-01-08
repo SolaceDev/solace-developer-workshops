@@ -1,0 +1,70 @@
+# Solace Agent Mesh Agent Configuration
+
+log:
+  stdout_log_level: INFO
+  log_file_level: DEBUG
+  log_file: a2a_agent.log
+
+!include ../shared_config.yaml
+
+apps:
+  - name: "AwsDocumentation__app"
+    app_base_path: .
+    app_module: solace_agent_mesh.agent.sac.app
+    broker:
+      <<: *broker_connection
+
+    app_config:
+      namespace: "${NAMESPACE}"
+      supports_streaming: false
+      agent_name: "AwsDocumentation"
+      display_name: "Aws Documentation Agent"
+      model: *general_model 
+
+      instruction: |
+        You are an AI documentation assistant named awsDocumentation. Your goal is to use the AWS documentation MCP server to explore and respond to requests about AWS product usage in an accurate and concise way. 
+      
+      tools: 
+        - group_name: artifact_management
+          tool_type: builtin-group
+        - connection_params:
+            args:
+            - awslabs.aws-documentation-mcp-server@latest
+            command: uvx
+            timeout: 30
+            type: stdio
+          environment_variables:
+            AWS_DOCUMENTATION_PARTITION: aws
+            FASTMCP_LOG_LEVEL: ERROR
+            MCP_USER_AGENT: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
+              like Gecko) Chrome/131.0.0.0 Safari/537.36
+          tool_type: mcp
+
+      session_service: 
+        type: "sql"
+        default_behavior: "PERSISTENT"
+        database_url: "${AWS_DOCUMENTATION_DATABASE_URL, sqlite:///aws_documentation.db}"
+      artifact_service: *default_artifact_service
+      
+      artifact_handling_mode: "reference"
+      enable_embed_resolution: true
+      enable_artifact_content_instruction: true
+      data_tools_config: *default_data_tools_config
+
+      # Agent Card Definition
+      agent_card:
+        description: |
+          A helpful AI assistant.
+        defaultInputModes: [text] 
+        defaultOutputModes: [text, file] 
+        skills: []
+      
+      # Discovery & Communication
+      agent_card_publishing: 
+        interval_seconds: 10
+      agent_discovery: 
+        enabled: true
+      inter_agent_communication:
+        allow_list: ["*"] 
+        deny_list: [] 
+        request_timeout_seconds: 600
