@@ -1,4 +1,11 @@
-# 400 MCP Server Agents
+# MCP Server Agents
+
+## Table of Contents
+- [Adding the AWS Documentation MCP Server Agent](#adding-the-aws-documentation-mcp-server-agent)
+  - [Option 1: Using the Solace Agent Mesh GUI](#option-1-using-the-solace-agent-mesh-gui)
+  - [Option 2: Using the CLI](#option-2-using-the-cli)
+
+---
 
 ### Adding the AWS Documentation MCP Server Agent
 
@@ -14,8 +21,8 @@ This section describes how to add the [AWS Documentation MCP server](https://aws
 3. Create a new agent 
   ``` solace-agent-mesh add agent --gui``` 
 4. Populate Agent Name and Instructions
-  ``` 
-  You are an AI documentation assistant named __AGENT_NAME__. Your goal is to use the AWS documentation MCP server to explore and respond to requests about AWS product usage in an accurate and concise way. 
+  ```text
+  You are an AI documentation assistant named awsDocumentation. Your goal is to use the AWS documentation MCP server to explore and respond to requests about AWS product usage in an accurate and concise way. 
 
   ```
 
@@ -27,7 +34,7 @@ This section describes how to add the [AWS Documentation MCP server](https://aws
 
 7. We have to add our MCP Server invocation options, the tools will be pulled from the MCP Server by the agent. 
 Connection Parameters
-```
+```json
 {
 "type": "stdio",
 "command": "uvx",
@@ -35,10 +42,12 @@ Connection Parameters
 }
 ```
 Environment Variables
-```
-{"FASTMCP_LOG_LEVEL": "ERROR",
-"AWS_DOCUMENTATION_PARTITION": "aws",
-"MCP_USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"}
+```json
+{
+  "FASTMCP_LOG_LEVEL": "ERROR",
+  "AWS_DOCUMENTATION_PARTITION": "aws",
+  "MCP_USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+}
 ```
 
 <img src="../images/sam/400-addTools.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
@@ -123,4 +132,4 @@ You can run a single agent at a time or a list of agents by supplying their path
 For more information, see the [AWS Documentation MCP server documentation](https://awslabs.github.io/mcp/servers/aws-documentation-mcp-server) and the [Solace Agent Mesh MCP integration tutorial](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/developing/tutorials/mcp-integration).
 
 ---
-### [Next Section: 500-bring-your-own-agents.md](./500-bring-your-own-agents.md)
+[Next Section: Bring your own agents](./500-bring-your-own-agents.md)
