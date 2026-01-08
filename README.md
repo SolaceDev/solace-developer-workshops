@@ -15,7 +15,7 @@ Navigate to the `<> Code` button at the top of the repo --> Open the Codespaces 
 
 ## Solace Broker
 
-### Local Solace Broker
+### 1. Local Solace Broker
 1. Run the `setup_broker.sh` script as follows
    ```
    ./setup_broker.sh
@@ -23,5 +23,5 @@ Navigate to the `<> Code` button at the top of the repo --> Open the Codespaces 
 1. Navigate to the `PORTS` tab and click on the `Solace` link that exposes the `8080` port
 1. Enter `admin` `admin` as the username password credentials for the solace broker manager
 
-### Solace Cloud
+### 2. Solace Cloud
 To spin up a solace cloud broker, please follow the [Solace Cloud Signup guide](./solace-agent-mesh/solace-cloud-signup-workshop.md)
