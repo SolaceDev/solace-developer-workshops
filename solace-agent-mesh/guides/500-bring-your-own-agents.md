@@ -1,4 +1,4 @@
-# 500 Bring Your Own Agents
+# Bring Your Own Agents
 > **Under Construction**
 
 Ready to integrate your organization's agents? Solace Agent Mesh supports any framework with a REST/HTTP interface.
@@ -57,4 +57,4 @@ You’ve successfully:
 > 🧠 Next step: Try deploying additional agents and experiment with **Agent-to-Agent (A2A)** communication.
 
 ---
-### [Resources Section](./999-resources.md)
+Next: [Resources Section](./999-resources.md)
