@@ -25,17 +25,17 @@ This guide walks you through setting up **GitHub Codespaces** and installing **S
 
 ### Step 1: **Open the Workshop Repository**
    Visit [Solace Developer Workshops](https://github.com/SolaceDev/solace-developer-workshops/)
-   <img src="../sam/020-github-workshop-repo.png" alt="Workshop Repo" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+   <img src="../images/sam/020-github-workshop-repo.png" alt="Workshop Repo" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 ### Step 2: Click **Open in GitHub Codespaces**
-   <img src="../sam/020-open-github-codespaces.png" alt="Open Codespace" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+   <img src="../images/sam/020-open-github-codespaces.png" alt="Open Codespace" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 ### Step 3: Choose **Change Options** → set machine type to **4-core**
-   <img src="../sam/020-codepsaces-change-options.png" alt="Change Options" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+   <img src="../images/sam/020-codepsaces-change-options.png" alt="Change Options" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 ### Step 4: Click **Create Codespace**
    Once it's ready, you'll see Visual Studio Code running in your browser — your personal VM workspace.
-   <img src="../sam/020-codespace-ready.png" alt="Codespace Ready" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+   <img src="../images/sam/020-codespace-ready.png" alt="Codespace Ready" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 ---
 
@@ -82,11 +82,11 @@ sam init --gui
 ```
 
 This opens a browser portal — click **Open in Browser** (or use Cmd/Ctrl + Click on the link in the log, e.g., `http://127.0.0.1:8000`).
-<img src="../sam/020-sam-init.png" alt="Initialize SAM" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/020-sam-init.png" alt="Initialize SAM" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 In the opened web page, configure SAM.
 
-<img src="../sam/020-sam-init-1.png" alt="Sam Initialize - 1" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/020-sam-init-1.png" alt="Sam Initialize - 1" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 1. From here, choose "Advanced Setup" to spin up an instance of the Agent Mesh that uses the Solace Broker as the communication backbone.
 
@@ -94,7 +94,7 @@ In the opened web page, configure SAM.
 
 2. Choose a namespace for your project
 
-<img src="../sam/020-sam-init-2.png" alt="Sam Initialize - 2" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/020-sam-init-2.png" alt="Sam Initialize - 2" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 > The namespace will act as the topic root for all events in SAM
 
@@ -110,7 +110,7 @@ Credentials you will need later for Solace Agent Mesh Setup
 
 - You can use the default values in the **Broker Setup** screen
   
-  <img src="../sam/020-sam-init-3.png" alt="Sam Initialize - 3" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+  <img src="../images/sam/020-sam-init-3.png" alt="Sam Initialize - 3" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
   
 4. Configure your LLM endpoint, API Key, and Model name
 > The model of choice impacts the performance of your results and system behavior. A performant model is recommended for advanced use-cases
@@ -120,26 +120,26 @@ Credentials you will need later for Solace Agent Mesh Setup
 - Enter the **LLM API Key** shared during the workshop
 - Select **vertex-claude-4-5-sonnet** from the model dropdown
 
-  <img src="../sam/020-sam-init-4.png" alt="Sam Initialize - 4" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+  <img src="../images/sam/020-sam-init-4.png" alt="Sam Initialize - 4" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 5. Configure the orchestrator agent
-<img src="../sam/020-sam-init-5.png" alt="Sam Initialize - 5" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/020-sam-init-5.png" alt="Sam Initialize - 5" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 > Keep all the configuration parameters as default. You can explore the other options for configuring the orchestrator agent to see what you have available for fine tuning the behavior
 
 6. Configure the WebUI Gateway
-<img src="../sam/020-sam-init-6.png" alt="Sam Initialize - 6" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/020-sam-init-6.png" alt="Sam Initialize - 6" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 > Note: Choose any Session Secret Key needed for the WebUI. Keep the remaining configurations as default.
 
 >If you are running a local broker on a docker container with SAM Enterprise in a docker container as well, we will configure this in the following steps
 
 7. After initialization completes, you'll see confirmation in your Codespaces terminal:
-<img src="../sam/020-sam-init-complete.png" alt="Init Complete" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/020-sam-init-complete.png" alt="Init Complete" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 The sam-bootcamp folder will have the basic structure created, and you are all set to go.
 
-<img src="../sam/020-sam-init-7.png" alt="Sam Initialize - 7" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/020-sam-init-7.png" alt="Sam Initialize - 7" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 ---
 
@@ -156,13 +156,13 @@ The sam-bootcamp folder will have the basic structure created, and you are all s
    ```
 
 You'll see logs as the system starts:
-<img src="../sam/020-sam-run-log.png" alt="SAM Run Log" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/020-sam-run-log.png" alt="SAM Run Log" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 > ⚠️ **Note:** When prompted to open a port (8080), wait until logs stabilize, then open the browser view or use the URL `http://127.0.0.1:8000`.
 
 Your Solace Agent Mesh Chat interface will now appear:
-<img src="../sam/020-sam-chat-launch.png" alt="SAM Chat Launch" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
-<img src="../sam/020-sam-chat.png" alt="SAM Chat" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/020-sam-chat-launch.png" alt="SAM Chat Launch" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/020-sam-chat.png" alt="SAM Chat" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 ---
 ### [Next Section: 100-adding-builtin-agents.md](./100-adding-builtin-agents.md)

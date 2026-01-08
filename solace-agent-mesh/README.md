@@ -35,7 +35,7 @@ This workshop teaches you how to:
 ### Step-by-Step Setup
 
 #### Solace Agent Mesh Installation & Configuration
-Follow the guide: [`solace-agent-mesh-setup.md`](./workshops/020-solace-agent-mesh-setup.md)
+Follow the guide: [`solace-agent-mesh-setup.md`](./guides/020-solace-agent-mesh-setup.md)
 - Launch GitHub Codespaces
 - Install Solace Agent Mesh CLI
 - Initialize Solace Agent Mesh with your broker

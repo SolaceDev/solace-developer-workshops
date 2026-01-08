@@ -8,21 +8,21 @@ This guide will walk you through setting up your **Solace Cloud Broker Trial Acc
 
 1. **Go to the Solace Cloud Console**  
    👉 [https://console.solace.cloud/](https://console.solace.cloud/)  
-   ![Login Page](broker/login-page.png)
+   ![Login Page](images/brokerlogin-page.png)
 
 2. **Click “Sign Up”** and fill in your details.  
-   ![Signup Page](broker/signup-page.png)
+   ![Signup Page](images/brokersignup-page.png)
 
 3. **Activate your account:**  
    - Check your email inbox for the activation message.  
    - Click **“Activate”** to confirm your registration.  
-   ![Activation Email](broker/activation-email.png)
+   ![Activation Email](images/brokeractivation-email.png)
 
 4. **Sign in** using your email and password.  
-   ![Sign In Page](broker/signin-page.png)
+   ![Sign In Page](images/brokersignin-page.png)
 
 5. Once logged in, you’ll land on the **Solace PubSub+ Cloud Console** — your home for managing event-driven services.  
-   ![Cloud Landing Page](broker/pubsub-cloud-landing.png)
+   ![Cloud Landing Page](images/brokerpubsub-cloud-landing.png)
 
 ---
 
@@ -32,7 +32,7 @@ This guide will walk you through setting up your **Solace Cloud Broker Trial Acc
    - From the main dashboard, scroll down and click **“Cluster Manager”**,  
      or  
    - Click the **Cluster Manager** icon on the left sidebar.  
-   ![Cluster Manager](broker/launch-cluster-manager.png)
+   ![Cluster Manager](images/brokerlaunch-cluster-manager.png)
 
 2. **Create a new service:**  
    Click **“Create Service”** and enter the following details:
@@ -46,16 +46,16 @@ This guide will walk you through setting up your **Solace Cloud Broker Trial Acc
    | **Broker Release** | Keep default: `10.25`                                     |
    | **Service Type**   | Keep default: `Developer`                                 |
 
-   ![Create Service](broker/create-service.png)
+   ![Create Service](images/brokercreate-service.png)
 
 3. **Click “Create Service”**  
    The provisioning process takes **2–3 minutes**.  
    Once complete, your broker will be ready with built-in support for **WebSocket (WS)**, **MQTT**, **SMR**, **REST**, and **AMQP** protocols.  
 
-   ![Creating Service](broker/creating-service.png)
+   ![Creating Service](images/brokercreating-service.png)
 
 4. When setup finishes, you’ll see the **Service Details** page confirming successful creation.  
-   ![Service Details](broker/service-details.png)
+   ![Service Details](images/brokerservice-details.png)
 
 ---
 
@@ -66,7 +66,7 @@ You’re all set! 🎉
 Now open the **Connect** tab to view connection settings — organized by language and protocol.  
 For this workshop, we’ll be using **Web Messaging (WebSockets)** for SAM connectivity.
 
-![Broker Connection](broker/broker-connection.png)
+![Broker Connection](images/brokerbroker-connection.png)
 
 ---
 

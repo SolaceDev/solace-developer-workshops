@@ -19,11 +19,11 @@ This section describes how to add the [AWS Documentation MCP server](https://aws
 
   ```
 
-<img src="../sam/400-awsDocumentationAgentName.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/400-awsDocumentationAgentName.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 5. Use Default artifact service
 6. Use Reference artifact handling
-<img src="../sam/400-referenceArtifactHandling.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/400-referenceArtifactHandling.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 7. We have to add our MCP Server invocation options, the tools will be pulled from the MCP Server by the agent. 
 Connection Parameters
@@ -41,13 +41,13 @@ Environment Variables
 "MCP_USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"}
 ```
 
-<img src="../sam/400-addTools.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/400-addTools.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 8. Populate Agent Card and Discovery options. We will use the same Agent Card description as agent description above
-<img src="../sam/400-agentCard.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/400-agentCard.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 9. Review the Agent configuration then **Save Agent & Finish**
-<img src="../sam/400-save.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/400-save.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 For more details, refer to the [Solace Agent Mesh MCP integration guide](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/developing/tutorials/mcp-integration).
 
