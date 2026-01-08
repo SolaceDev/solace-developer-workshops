@@ -1,7 +1,7 @@
 # 500 Bring Your Own Agents
 > **Under Construction**
 
-Ready to integrate your organization's agents? SAM supports any framework with a REST/HTTP interface.
+Ready to integrate your organization's agents? Solace Agent Mesh supports any framework with a REST/HTTP interface.
 
 ### Supported Frameworks
 
@@ -15,7 +15,7 @@ Ready to integrate your organization's agents? SAM supports any framework with a
 ### Integration Steps
 
 1. **Expose your a2a agent** via HTTP endpoint (GET/POST) Ensure your endpoints are secured
-2. **Add to SAM** using `sam add proxy` → A2A Proxy
+2. **Add to Solace Agent Mesh** using `sam add proxy` → A2A Proxy
 3. **Test connectivity** before deploying to production
 
 ### Example: Custom LangChain Agent
@@ -34,12 +34,12 @@ async def invoke_agent(query: str):
     return {"response": result}
 ```
 
-Then add to SAM with endpoint: `https://your-domain.com/invoke`
+Then add to Solace Agent Mesh with endpoint: `https://your-domain.com/invoke`
 
 ### 🎯 Challenge
 
 Before the workshop ends:
-1. Connect at least **2 A2A agents** to your SAM instance
+1. Connect at least **2 A2A agents** to your Solace Agent Mesh instance
 2. Create a **multi-agent workflow** (e.g., "Plan a trip, then create recipes for the destination")
 3. Share your coolest agent interaction in the workshop chat!
 
@@ -51,7 +51,7 @@ Before the workshop ends:
 You’ve successfully:  
 - Set up GitHub Codespaces  
 - Installed and initialized Solace Agent Mesh  
-- Started your own SAM instance  
+- Started your own Solace Agent Mesh instance
 - Explored and installed agents  
 
 > 🧠 Next step: Try deploying additional agents and experiment with **Agent-to-Agent (A2A)** communication.

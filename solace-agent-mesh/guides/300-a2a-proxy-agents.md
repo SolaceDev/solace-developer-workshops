@@ -4,7 +4,7 @@ Solace Agent Mesh supports **Agent-to-Agent (A2A) proxies** to integrate externa
 
 ### What is an A2A Proxy?
 
-An A2A proxy acts as a bridge between SAM and external agent frameworks. Instead of rewriting agents in Python, you can expose existing agents through SAM's event-driven architecture.
+An A2A proxy acts as a bridge between Solace Agent Mesh and external agent frameworks. Instead of rewriting agents in Python, you can expose existing agents through Solace Agent Mesh's event-driven architecture.
 
 **Use cases:**
 - Connect enterprise agents built on AWS, Azure, or Google platforms
@@ -21,7 +21,7 @@ Proxy creation i s currently not supported in the GUI Yet
 
 ### Add Your First A2A Agent Via File Configuration
 
-1. In a new terminal, navigate to your SAM workspace:
+1. In a new terminal, navigate to your Solace Agent Mesh workspace:
    ```bash
    cd sam-bootcamp
    source venv/bin/activate
@@ -78,25 +78,25 @@ Proxy creation i s currently not supported in the GUI Yet
 
 ### Try It Out
 
-In the SAM chat, ask:
+In the Solace Agent Mesh chat, ask:
 ```
 What is 10 * 22? Give me the answer and shaksperean style. The answer should be one short sentence
 ```
 
 The orchestrator will route the request to your AWS Travel Assistant via the A2A proxy!
 
-> 📖 **Learn more:** [SAM Proxy Documentation](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/components/proxies)
+> 📖 **Learn more:** [Solace Agent Mesh Proxy Documentation](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/components/proxies)
 
 ---
 
 ## 2. Add More A2A Agents
 
-Now that you've connected one external agent, let's add more so allow SAM to string agent calls together
+Now that you've connected one external agent, let's add more so allow Solace Agent Mesh to string agent calls together
 
 ### Adding another a2a agent
 We can re-use the same a2a proxy for multiple a2a agents. 
 
-Stop your SAM instance by issuing the following keystrokes in your terminal window
+Stop your Solace Agent Mesh instance by issuing the following keystrokes in your terminal window
 ``` ctrl + c ```
 
 Open your a2a proxy configuration file:
@@ -114,13 +114,13 @@ Add a new a2a agent to the proxy
             - name: "Authorization"
               value: "Bearer your_secure_password_here"  
    ```
-Start SAM so it picks up the new configuration
+Start Solace Agent Mesh so it picks up the new configuration
    Save and restart agents:
     ```bash
     sam run
     ```
 
-## Now you can add your existing A2A agents to SAM using the following configuration. You can also build new agents on whatever platform you would like and use them in your existing AI workflows, seamlessly with Solace Agent Mesh. 
+## Now you can add your existing A2A agents to Solace Agent Mesh using the following configuration. You can also build new agents on whatever platform you would like and use them in your existing AI workflows, seamlessly with Solace Agent Mesh.
 
 
 ### Fun Agent Ideas to Build

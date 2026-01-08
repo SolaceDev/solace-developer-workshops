@@ -17,7 +17,7 @@
 > - Click **Sign up** or **Continue with Google**  
 > - Follow the prompts to complete setup
 
-This guide walks you through setting up **GitHub Codespaces** and installing **Solace Agent Mesh (SAM)** for the workshop.
+This guide walks you through setting up **GitHub Codespaces** and installing **Solace Agent Mesh** for the workshop.
 
 ---
 
@@ -39,9 +39,9 @@ This guide walks you through setting up **GitHub Codespaces** and installing **S
 
 ---
 
-## 2. Install Solace Agent Mesh (SAM)
+## 2. Install Solace Agent Mesh
 
-### Step 1: Install SAM CLI
+### Step 1: Install Solace Agent Mesh CLI
 In the terminal, run the following commands.
 ```
 mkdir sam-bootcamp
@@ -73,7 +73,7 @@ You should see the installed sam version information.
 
 ## 3. Initialize Solace Agent Mesh
 
-### Step 1: Initialize SAM
+### Step 1: Initialize Solace Agent Mesh
 In the `/workspaces/solace-developer-workshops/sam-bootcamp` directory, run the following
 
 
@@ -82,9 +82,9 @@ sam init --gui
 ```
 
 This opens a browser portal — click **Open in Browser** (or use Cmd/Ctrl + Click on the link in the log, e.g., `http://127.0.0.1:8000`).
-<img src="../images/sam/020-sam-init.png" alt="Initialize SAM" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/020-sam-init.png" alt="Initialize Solace Agent Mesh" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
-In the opened web page, configure SAM.
+In the opened web page, configure Solace Agent Mesh.
 
 <img src="../images/sam/020-sam-init-1.png" alt="Sam Initialize - 1" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
@@ -96,7 +96,7 @@ In the opened web page, configure SAM.
 
 <img src="../images/sam/020-sam-init-2.png" alt="Sam Initialize - 2" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
-> The namespace will act as the topic root for all events in SAM
+> The namespace will act as the topic root for all events in Solace Agent Mesh
 
 3. Configure connection to the Solace Broker
 You will need the connection credentials from for the broker deployment method selected for your workshop. 
@@ -132,7 +132,7 @@ Credentials you will need later for Solace Agent Mesh Setup
 
 > Note: Choose any Session Secret Key needed for the WebUI. Keep the remaining configurations as default.
 
->If you are running a local broker on a docker container with SAM Enterprise in a docker container as well, we will configure this in the following steps
+>If you are running a local broker on a docker container with Solace Agent Mesh Enterprise in a docker container as well, we will configure this in the following steps
 
 7. After initialization completes, you'll see confirmation in your Codespaces terminal:
 <img src="../images/sam/020-sam-init-complete.png" alt="Init Complete" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
@@ -150,19 +150,19 @@ The sam-bootcamp folder will have the basic structure created, and you are all s
    sam -v
    ```
 
-2. Start SAM:
+2. Start Solace Agent Mesh:
    ```bash
    sam run
    ```
 
 You'll see logs as the system starts:
-<img src="../images/sam/020-sam-run-log.png" alt="SAM Run Log" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/020-sam-run-log.png" alt="Solace Agent Mesh Run Log" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 > ⚠️ **Note:** When prompted to open a port (8080), wait until logs stabilize, then open the browser view or use the URL `http://127.0.0.1:8000`.
 
 Your Solace Agent Mesh Chat interface will now appear:
-<img src="../images/sam/020-sam-chat-launch.png" alt="SAM Chat Launch" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
-<img src="../images/sam/020-sam-chat.png" alt="SAM Chat" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/020-sam-chat-launch.png" alt="Solace Agent Mesh Chat Launch" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/020-sam-chat.png" alt="Solace Agent Mesh Chat" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 ---
 ### [Next Section: 100-adding-builtin-agents.md](./100-adding-builtin-agents.md)

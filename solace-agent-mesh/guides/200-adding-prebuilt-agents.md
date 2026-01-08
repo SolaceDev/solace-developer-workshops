@@ -4,9 +4,9 @@
 
 While Solace Agent Mesh is running in the current terminal, open a **new terminal** and launch the plugin catalog to add new agents.
 
-<img src="../images/sam/sam-new-terminal.png" alt="SAM New Terminal" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/sam-new-terminal.png" alt="Solace Agent Mesh New Terminal" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
-Solace provides a set of reusable, open-source agents. SAM makes it easy to install agents from these repositories with just a few clicks.
+Solace provides a set of reusable, open-source agents. Solace Agent Mesh makes it easy to install agents from these repositories with just a few clicks.
 
 - **SolaceLabs Core Plugins:**  
   https://github.com/SolaceLabs/solace-agent-mesh-core-plugins  
@@ -17,7 +17,7 @@ Solace provides a set of reusable, open-source agents. SAM makes it easy to inst
 
 ### Steps
 
-1. In the terminal, navigate to your SAM workspace and activate the environment:
+1. In the terminal, navigate to your Solace Agent Mesh workspace and activate the environment:
    ```bash
    cd sam-bootcamp
    source venv/bin/activate
@@ -29,9 +29,9 @@ Solace provides a set of reusable, open-source agents. SAM makes it easy to inst
    ```
 
    This opens the catalog portal in your browser (typically `http://127.0.0.1:5003/?config_mode=pluginCatalog`).
-   <img src="../images/sam/sam-plugin-catalog.png" alt="SAM Plugin Catalog" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+   <img src="../images/sam/sam-plugin-catalog.png" alt="Solace Agent Mesh Plugin Catalog" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
-> **NOTE**: The opened page might show the SAM installation GUI - just add the URI element `?config_mode=pluginCatalog` to the end of the URL. 
+> **NOTE**: The opened page might show the Solace Agent Mesh installation GUI - just add the URI element `?config_mode=pluginCatalog` to the end of the URL.
 For example: The opened page URL `https://glorious-bassoon-j79qgqjxgrh996-5002.app.github.dev/`, change it to `https://glorious-bassoon-j79qgqjxgrh996-5002.app.github.dev/?config_mode=pluginCatalog`
 
 
@@ -54,7 +54,7 @@ For example: The opened page URL `https://glorious-bassoon-j79qgqjxgrh996-5002.a
 
 > **HINT:** Use the same name as the plugin for the agent name.
 
->**NOTE:** When done, you can close the SAM catalog tab and stop the process with `Ctrl+C` and launch `sam run`, which will start all the agents.
+>**NOTE:** When done, you can close the Solace Agent Mesh catalog tab and stop the process with `Ctrl+C` and launch `sam run`, which will start all the agents.
 Alternatively, you can launch the agents independently - open a new terminal and pass the agent configuration YAML files as arguments to the `sam run` command.
 > - Open a new terminal
 > - Activate the environment 
@@ -68,19 +68,19 @@ Alternatively, you can launch the agents independently - open a new terminal and
 
 ## 2. Review the Registered Agents
 
-In the SAM Chat console, click the **Agents** tool on the left sidebar. You should now see the newly registered agents alongside the **Orchestrator** agent.
+In the Solace Agent Mesh Chat console, click the **Agents** tool on the left sidebar. You should now see the newly registered agents alongside the **Orchestrator** agent.
 
-<img src="../images/sam/sam-new-agents.png" alt="SAM New Agents" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/sam-new-agents.png" alt="Solace Agent Mesh New Agents" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 Click **Click for details** on any agent card to learn more about its configuration and skills.
 
-Now, let's interact again with SAM:
+Now, let's interact again with Solace Agent Mesh:
 
 ```
 What agents do you have access to and what are their capabilities?
 ```
 
-<img src="../images/sam/sam-info-agents-new.png" alt="SAM Info Agents" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/sam-info-agents-new.png" alt="Solace Agent Mesh Info Agents" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 You can visualize agent interactions (e.g., **Orchestrator ↔ LLM**) by clicking the **network** icon below any chat response.
 
