@@ -1,4 +1,10 @@
-# 200 Adding Pre-Built Agents to Solace Agent Mesh
+# Adding Pre-Built Agents to Solace Agent Mesh
+
+## Table of Contents
+- [1. Install Agents (Contributed)](#1-install-agents-contributed)
+- [2. Review the Registered Agents](#2-review-the-registered-agents)
+
+---
 
 ## 1. Install Agents (Contributed)
 
@@ -86,4 +92,4 @@ You can visualize agent interactions (e.g., **Orchestrator ↔ LLM**) by clickin
 
 ---
 
-### [Next Section: 300-a2a-proxy-agents.md](./300-a2a-proxy-agents.md)
+[Next Section: Configure A2A Proxy](./300-a2a-proxy-agents.md)
