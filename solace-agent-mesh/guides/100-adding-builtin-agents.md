@@ -1,5 +1,11 @@
 # Adding Built-in Agents to Solace Agent Mesh
 
+## Table of Contents
+- [1. Explore Agents](#1-explore-agents)
+- [2. Install Built-in Tools (Agents)](#2-install-built-in-tools-agents)
+
+---
+
 ## 1. Explore Agents
 
 Now, let's interact with Solace Agent Mesh.
@@ -102,4 +108,4 @@ You will see an HTML report listing agentic capabilities available.
 
 ---
 
-[Next Section: 200-adding-prebuilt-agents.md](./200-adding-prebuilt-agents.md)
+[Next Section: Adding pre build agents](./200-adding-prebuilt-agents.md)
