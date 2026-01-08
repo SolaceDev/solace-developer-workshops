@@ -1,4 +1,4 @@
-# 100 Adding Built-in Agents to Solace Agent Mesh
+# Adding Built-in Agents to Solace Agent Mesh
 
 ## 1. Explore Agents
 
@@ -89,7 +89,9 @@ Alternatively, you can launch the agents independently - open a new terminal and
 <img src="../images/sam/sam-builtin-11.png" alt="Solace Agent Mesh Built-in Tools" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 > **HINT:** If the workflow panel is not visible, just click on the network image !at the bottom of the chat panel (left)
+<div style="text-align: center;">
 <img src="../images/sam/sam-builtin-12.png" alt="Solace Agent Mesh Built-in Tools" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+</div>
 
 3. Let us issue a query that makes use of the built-in tools.
    ```bash
