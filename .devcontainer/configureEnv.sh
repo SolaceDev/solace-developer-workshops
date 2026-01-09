@@ -61,12 +61,12 @@ echo "Node.js LTS installation complete"
 node --version
 npm --version
 
-# Run broker setup script
-# echo "Setting up Solace broker..."
-# bash ../setup_broker.sh
-
 # print the current execution path
 echo "Current execution path: $(pwd)"
+
+# Run broker setup script
+echo "Setting up Solace broker..."
+bash setup_broker.sh
 
 # End timer and calculate duration
 END_TIME=$(date +%s)
