@@ -61,9 +61,6 @@ echo "Node.js LTS installation complete"
 node --version
 npm --version
 
-# print the current execution path
-echo "Current execution path: $(pwd)"
-
 # Run broker setup script
 echo "Setting up Solace broker..."
 bash setup_broker.sh
@@ -76,6 +73,6 @@ SECONDS=$((DURATION % 60))
 
 echo "============================================"
 echo "Environment configuration complete!"
-echo "Total execution time: ${MINUTES}m ${SECONDS}s"
+echo "Total execution time: ${DURATION} seconds"
 echo "============================================"
 
