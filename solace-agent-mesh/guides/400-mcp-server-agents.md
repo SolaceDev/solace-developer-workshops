@@ -152,6 +152,30 @@ You can run a single agent at a time or a list of agents by supplying their path
   <img src="../images/sam/400-sam-command-1.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 ---
+### 🎯 Challenge
+
+Before the workshop ends:
+1. Connect at least **2 A2A agents** to your Solace Agent Mesh instance
+2. Create a **multi-agent workflow** (e.g., "Plan a trip, then create recipes for the destination")
+3. Share your coolest agent interaction in the workshop chat!
+
+> 🔧 **Need help?** Ask in [Solace Community](https://community.solace.com/c/solace-agent-mesh/16) or during the workshop Q&A.
+
+---
+
+### ✅ That's It!
+You’ve successfully:  
+- Set up GitHub Codespaces  
+- Installed and initialized Solace Agent Mesh  
+- Started your own Solace Agent Mesh instance
+- Explored and installed agents  
+- Brought your own A2A agents from multiple agent platforms together on Solace Agent Mesh
+- Brought your MCP Servers to Solace Agent Mesh
+
+> 🧠 Next step: Try deploying additional A2A agents onto Solace Agent Mesh so that you can call agents across multiple agentic platforms to accomplish your goals.
+
+
+---
 
 For more information, see the 
 [AWS Documentation MCP server documentation](https://awslabs.github.io/mcp/servers/aws-documentation-mcp-server) and the 
@@ -160,4 +184,4 @@ For more information, see the
 
 
 ---
-[Next Section: Bring your own agents](./500-bring-your-own-agents.md)
+Next: [Resources Section](./999-resources.md)
