@@ -57,6 +57,7 @@ For example: The opened page URL `https://glorious-bassoon-j79qgqjxgrh996-5002.a
 - Click on `+ Add Tool` button
 
 <img src="../images/sam/sam-builtin-4.png" alt="Solace Agent Mesh Built-in Tools" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/sam-builtin-4.1.png" alt="Solace Agent Mesh Built-in Tools" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 <img src="../images/sam/sam-builtin-5.png" alt="Solace Agent Mesh Built-in Tools" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
@@ -84,7 +85,7 @@ Alternatively, you can launch the agents independently - open a new terminal and
       `cd sam-bootcamp`
       `source venv/bin/activate`
 > - Launch the agents
-      `sam run config/agents/sam_geo_information.yaml config/agents/sam_mermaid.yaml config/agents/find_my_ip.yaml`
+      `sam run config/agents/built_in_tools_agent.yaml`
 
 2. Let us test the use of these agents. In the Chat, enter a simple query
    ```bash

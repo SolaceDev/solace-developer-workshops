@@ -43,10 +43,7 @@ For example: The opened page URL `https://glorious-bassoon-j79qgqjxgrh996-5002.a
 
 3. Review available agents and their capabilities by clicking **More** on each tile.
 
-4. Add the following registries:  
-   - **SolaceLabs Repository:**  
-     - URL: `https://github.com/SolaceLabs/solace-agent-mesh-core-plugins`  
-     - Name: `SolaceLabs`
+4. Add the Solace Community Repo. The Core plugins are already present.
    - **SolaceCommunity Repository:**  
      - URL: `https://github.com/solacecommunity/solace-agent-mesh-plugins`  
      - Name: `SolaceCommunity`

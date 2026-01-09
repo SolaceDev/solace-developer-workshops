@@ -22,6 +22,7 @@ By the end of this workshop, you will be proficient with the following:
 - Install and initialize Solace Agent Mesh
 - Deploy and interact with AI-powered agents
 - Explore agent-to-agent (A2A) communication
+- Bring MCP Servers to Solace Agent Mesh
 
 ## Quick Start
 

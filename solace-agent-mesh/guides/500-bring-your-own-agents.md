@@ -15,7 +15,7 @@ Ready to integrate your organization's agents? Solace Agent Mesh supports any fr
 ### Integration Steps
 
 1. **Expose your a2a agent** via HTTP endpoint (GET/POST) Ensure your endpoints are secured
-2. **Add to Solace Agent Mesh** using `sam add proxy` → A2A Proxy
+2. **Add your agent to Solace Agent Mesh** using `sam add proxy mya2a --skip` → A2A Proxy
 3. **Test connectivity** before deploying to production
 
 ### Example: Custom LangChain Agent
