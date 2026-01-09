@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Start timer
+START_TIME=$(date +%s)
+echo "============================================"
+echo "Starting environment configuration..."
+echo "============================================"
+
 # Update github submodules recursively
 git submodule update --init --recursive
 
@@ -55,11 +61,21 @@ echo "Node.js LTS installation complete"
 node --version
 npm --version
 
-# Wait for Docker to start
-# while (! docker info > /dev/null 2>&1); do
-#   echo "Waiting for Docker to start..."
-#   sleep 2
-# done
+# Run broker setup script
+# echo "Setting up Solace broker..."
+# bash ../setup_broker.sh
 
-# # Install the Solace image
-# docker run -d -p 8080:8080 -p 55555:55555  -p 1443:1443 -p 8008:8008 -p 1883:1883 -p 8000:8000 -p 5672:5672 -p 9000:9000 -p 2223:2222 --shm-size=2g --env username_admin_globalaccesslevel=admin --env username_admin_password=admin --name=solace solace/solace-pubsub-standard
+# print the current execution path
+echo "Current execution path: $(pwd)"
+
+# End timer and calculate duration
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+MINUTES=$((DURATION / 60))
+SECONDS=$((DURATION % 60))
+
+echo "============================================"
+echo "Environment configuration complete!"
+echo "Total execution time: ${MINUTES}m ${SECONDS}s"
+echo "============================================"
+

@@ -57,7 +57,7 @@ source venv/bin/activate
 
 ### Step 4: Install solace agent mesh
 ```
-pip install solace-agent-mesh
+pip install solace-agent-mesh==1.13.0
 ```
 
 ### Step 5: Verify sam installation
