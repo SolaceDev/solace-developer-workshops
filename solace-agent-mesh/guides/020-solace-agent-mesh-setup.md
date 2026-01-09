@@ -3,7 +3,7 @@
 ⭐️ Take a moment to check out the open source repo and give it a star! [https://github.com/SolaceLabs/solace-agent-mesh](https://github.com/SolaceLabs/solace-agent-mesh)
 
 ---
-> **Prerquisites:**
+> **Prerequisites:**
 > You'll need a GitHub account to participate in this workshop.
 > Don't have one yet? Follow these quick steps:
 > - Visit [GitHub](https://github.com/)
@@ -65,6 +65,13 @@ pip install solace-agent-mesh==1.13.0
 sam -v
 ```
 You should see the installed sam version information.
+
+### Step 6: Verify Solace Broker is up and running
+``` sh
+docker ps | grep solace
+```
+Look for container, image and port information for the Solace broker (auto started during dev container startup)
+<img src="../images/sam/020-sam-solace.png" alt="Initialize Solace Agent Mesh" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 ---
 
@@ -157,6 +164,10 @@ You'll see logs as the system starts:
 
 Your Solace Agent Mesh Chat interface will now appear:
 <img src="../images/sam/020-sam-chat-launch.png" alt="Solace Agent Mesh Chat Launch" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+
+> ⚠️ **Note:** If you cannot find the equivilent of  `http://127.0.0.1:8000` in your CodeSpace you can get to it by clicking on the `PORTS` tab next to your terminal tab. Then select the globe icon on the row with port 8000. This will open the Solace Agent Mesh in your browser. 
+<img src="../images/sam/020-sam-port-forward.png" alt="Solace Agent Mesh Chat" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+
 <img src="../images/sam/020-sam-chat.png" alt="Solace Agent Mesh Chat" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 ---

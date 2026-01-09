@@ -14,17 +14,30 @@ This section describes how to add the [AWS Documentation MCP server](https://aws
 ---
 
 #### Option 1: Using the Solace Agent Mesh GUI
+1. In a new terminal, navigate to your Solace Agent Mesh workspace:
 
-1. Open the terminal to your Solace Agent Mesh install location
-2. Ensure your virtual environment is activated
-``` source .venv/bin/activate``` 
-3. Create a new agent 
-  ``` solace-agent-mesh add agent --gui``` 
+   ```bash
+   cd sam-bootcamp
+   source venv/bin/activate
+   ```
+2. Install `Astral uv` a python package and project manager - used for many MCP Servers
+    ```bash
+    pip install uv
+    ``` 
+3. Create a proxy configuration:
+   ```bash
+   sam add agent --gui
+   ```
+   You might have to append `/?config_mode=addAgent` to the end of the url in your browser to reach the new agent page. 
+   It should look similar to `https://super-duper-space-spork-5r5w5ww44rh7gvp-5002.app.github.dev/?config_mode=addAgent`
 4. Populate Agent Name and Instructions
-  ```text
-  You are an AI documentation assistant named awsDocumentation. Your goal is to use the AWS documentation MCP server to explore and respond to requests about AWS product usage in an accurate and concise way. 
-
-  ```
+**Agent Name**
+`awsDocumentation`
+**Model Type**
+`General Model (*general_model)`
+**Instructions**
+  `
+  You are an AI documentation assistant named __AGENT_NAME__. Your goal is to use the AWS documentation MCP server to explore and respond to requests about AWS product usage in an accurate and concise way. `
 
 <img src="../images/sam/400-awsDocumentationAgentName.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
@@ -33,7 +46,10 @@ This section describes how to add the [AWS Documentation MCP server](https://aws
 <img src="../images/sam/400-referenceArtifactHandling.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
 
 7. We have to add our MCP Server invocation options, the tools will be pulled from the MCP Server by the agent. 
-Connection Parameters
+Press 'Add Tool' 
+<img src="../images/sam/400-selectAdd.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+
+Supply A tool name and Connection Parameters
 ```json
 {
 "type": "stdio",
@@ -41,7 +57,7 @@ Connection Parameters
 "args": ["awslabs.aws-documentation-mcp-server@latest"]
 }
 ```
-Environment Variables
+Supply Environment Variables then press the green 'Add Tool' button then 'Next'.
 ```json
 {
   "FASTMCP_LOG_LEVEL": "ERROR",
@@ -49,8 +65,8 @@ Environment Variables
   "MCP_USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 }
 ```
-
 <img src="../images/sam/400-addTools.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+
 
 8. Populate Agent Card and Discovery options. We will use the same Agent Card description as agent description above
 <img src="../images/sam/400-agentCard.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
@@ -123,13 +139,49 @@ tools:
 You will find a completed [MCP server yaml here](../artifacts/400-aws_documentation_agent.yaml) for reference or to copy if you run into issues
 You can run a single agent at a time or a list of agents by supplying their path after the run argument
 
+---
+## Run Solace Agent Mesh with the new AWS Documentation Agent
+
   ```sh
-  solace-agent-mesh run configs/agents/aws_documentation_agent.yaml
+  sam run
   ```
+  We can string together multiple agents with a prompt such as 
+  ```
+  How can I access a server running on port 9000 in an ec2 instance from my IP address?
+  ```
+  <img src="../images/sam/400-sam-command-1.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+
+---
+### 🎯 Challenge
+
+Before the workshop ends:
+1. Connect at least **2 A2A agents** to your Solace Agent Mesh instance
+2. Create a **multi-agent workflow** (e.g., "Plan a trip, then create recipes for the destination")
+3. Share your coolest agent interaction in the workshop chat!
+
+> 🔧 **Need help?** Ask in [Solace Community](https://community.solace.com/c/solace-agent-mesh/16) or during the workshop Q&A.
 
 ---
 
-For more information, see the [AWS Documentation MCP server documentation](https://awslabs.github.io/mcp/servers/aws-documentation-mcp-server) and the [Solace Agent Mesh MCP integration tutorial](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/developing/tutorials/mcp-integration).
+### ✅ That's It!
+You’ve successfully:  
+- Set up GitHub Codespaces  
+- Installed and initialized Solace Agent Mesh  
+- Started your own Solace Agent Mesh instance
+- Explored and installed agents  
+- Brought your own A2A agents from multiple agent platforms together on Solace Agent Mesh
+- Brought your MCP Servers to Solace Agent Mesh
+
+> 🧠 Next step: Try deploying additional A2A agents onto Solace Agent Mesh so that you can call agents across multiple agentic platforms to accomplish your goals.
+
 
 ---
-[Next Section: Bring your own agents](./500-bring-your-own-agents.md)
+
+For more information, see the 
+[AWS Documentation MCP server documentation](https://awslabs.github.io/mcp/servers/aws-documentation-mcp-server) and the 
+[Solace Agent Mesh MCP integration tutorial](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/developing/tutorials/mcp-integration) and 
+[Astral UV](https://docs.astral.sh/uv/)
+
+
+---
+Next: [Resources Section](./999-resources.md)

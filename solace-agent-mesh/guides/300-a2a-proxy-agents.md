@@ -16,7 +16,7 @@ Solace Agent Mesh supports [Agent-to-Agent (A2A)](https://a2a-protocol.org/lates
 
 ### What is an A2A Proxy?
 
-An A2A proxy acts as a bridge between Solace Agent Mesh and external agent frameworks that supports A2A. Instead of rewriting agents in Python, you can expose existing agents through Solace Agent Mesh's event-driven architecture.
+An A2A proxy acts as a bridge between Solace Agent Mesh and external agent frameworks that supports A2A. If you would like to use existing agents together you can add them to Solace Agent Mesh using the A2A proxy and enjoy all the benefits of event driven agent communication without having to re-write or re-platform your agents.
 
 **Use cases:**
 - Connect enterprise agents built on AWS, Azure, or Google platforms
@@ -24,16 +24,15 @@ An A2A proxy acts as a bridge between Solace Agent Mesh and external agent frame
 - Enable cross-platform agent collaboration
 
 ### Ways to add an A2A Agent
-1. Solace Agent Mesh add agent GUI
-2. Solace Agent Mesh agent via file configuration
+1. Solace Agent Mesh agent via Configuration File
+2. **Coming Soon** you can add an existing A2A agent proxy via the Solace Agent Mesh GUI. 
 
-### Add Your First A2A Agent - GUI
-
-Proxy creation i s currently not supported in the GUI Yet
-
-### Add Your First A2A Agent Via File Configuration
+### Add Your First A2A Agent Via Configuration File
+> Note: If you completed steps 100 and 200 please kill your existing terminal sessions and start with a fresh terminal.  All your previously configured agents will start when you run `sam run`
 
 1. In a new terminal, navigate to your Solace Agent Mesh workspace:
+
+
    ```bash
    cd sam-bootcamp
    source venv/bin/activate
@@ -41,44 +40,19 @@ Proxy creation i s currently not supported in the GUI Yet
 
 2. Create a proxy configuration:
    ```bash
-   sam add agent a2a-proxy --skip
+   sam add proxy a2a --skip
    ```
 
-3. A configuration file will be created for your new agent, the agent in this case is an a2a proxy:
-   ```bash
-   vi ./configs/agents/a2a_proxy_agent.yaml
-   ```
-   You can find a finished [a2a_proxy agent card](../artifacts/300-a2a_proxy_agent.yaml)
-   We will need to modify a few values:
-   **app_module**: solace_agent_mesh.agent.proxies.a2a.app
-   We will clean up other values like the tools, prompt and other sections. 
-   Leaving behind:
-   ``` yaml
-   app_config:
-      namespace: ${NAMESPACE}
+3. A configuration file will be created for your new agent, the agent in this case is an a2a proxy. Open the [a2a_proxy.yaml](/workspaces/solace-developer-workshops/sam-bootcamp/configs/agents/a2a_proxy.yaml) in your vscode editor.
 
-      # Configuration for the artifact service used by the proxy itself.
-      # When the proxy receives an artifact from a downstream agent, it will
-      # store it here before forwarding it on the Solace mesh.
-      artifact_service:
-        type: "filesystem"
-        base_path: "/tmp/samv2"
-        artifact_scope: namespace # Default scope, shares artifacts within the NAMESPACE
 
-      # How the proxy should handle artifacts it sends over Solace.
-      # 'reference': Sends an artifact:// URI.
-      # 'embed': Sends the full content base64 encoded.
-      artifact_handling_mode: "reference"
-
-      # Interval in seconds for the proxy to re-fetch agent cards from
-      # downstream agents. Set to 0 to disable periodic checks.
-      discovery_interval_seconds: 5
-   ```
-
-   Finally we can add our proxied a2a agents
+   You can find a finished [a2a_proxy agent card](solace-agent-mesh/artifacts/300-a2a_proxy.yaml)
+   We need to add our proxied a2a agents:
+   Remove the Example 1 and Example 2 agents under `proxied_agents:` by commenting them out with `#` at the start of the lines. 
+   Add our first A2A agent, the Strands Calculator Agent
    ```yaml
    proxied_agents:
-        # Example 1: A simple calculator agent hosted on AWS with basic authentication
+        # Strands Calculator: A simple calculator agent hosted on AWS with basic authentication
         - name: "StrandsCalculator" # The name this agent will have on the Solace mesh
           url: "http://0.0.0.0:9001" # The real HTTP endpoint of the agent
    ```
@@ -88,11 +62,13 @@ Proxy creation i s currently not supported in the GUI Yet
    sam run
    ```
 
+> Note: If you want to host Strands Agents locally 
+
 ### Try It Out
 
 In the Solace Agent Mesh chat, ask:
 ```
-What is 10 * 22? Give me the answer and shaksperean style. The answer should be one short sentence
+What is 10 * 22? Give me the answer and Shakespearean style. The answer should be one short sentence. Use the calculator agent.
 ```
 
 The orchestrator will route the request to your AWS Travel Assistant via the A2A proxy!
@@ -116,21 +92,24 @@ Open your a2a proxy configuration file:
 Add a new a2a agent to the proxy
    ```
    proxied_agents:
-        # Example 1: A simple calculator agent hosted on AWS with basic authentication
-        - name: "StrandsCalculator" # The name this agent will have on the Solace mesh
-          url: "http://0.0.0.0:9000" # The real HTTP endpoint of the agent
+        # Example 1: A simple agent without authentication
+        - name: "Calculator" # The name this agent will have on the Solace mesh
+          url: "http://18.223.124.73:9000" # The real HTTP endpoint of the agent
+          task_headers:
+          - name: "Authorization"
+            value: "Bearer january_workshop" 
         # Example 2: A simple factorization agent hosted on AWS with basic authentication
-        - name: "StrandsCalculator" # The name this agent will have on the Solace mesh
-          url: "http://0.0.0.0:9001" # The real HTTP endpoint of the agent
+        - name: "Factor" # The name this agent will have on the Solace mesh
+          url: "http://ec2-18-223-124-73.us-east-2.compute.amazonaws.com:9001" # The real HTTP endpoint of the agent
           task_headers:
             - name: "Authorization"
-              value: "Bearer your_secure_password_here"  
+              value: "Bearer january_workshop"  
    ```
 Start Solace Agent Mesh so it picks up the new configuration
 
    Save and restart agents:
 
-    ```bash
+    ```sh
     sam run
     ```
 
