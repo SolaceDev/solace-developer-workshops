@@ -46,7 +46,7 @@ An A2A proxy acts as a bridge between Solace Agent Mesh and external agent frame
 3. A configuration file will be created for your new agent, the agent in this case is an a2a proxy. Open the [a2a_proxy.yaml](/workspaces/solace-developer-workshops/sam-bootcamp/configs/agents/a2a_proxy.yaml) in your vscode editor.
 
 
-   You can find a finished [a2a_proxy agent card](solace-agent-mesh/artifacts/300-a2a_proxy.yaml)
+   You can find a finished [a2a_proxy agent card](../artifacts/300-a2a_proxy.yaml)
    We need to add our proxied a2a agents:
    Remove the Example 1 and Example 2 agents under `proxied_agents:` by commenting them out with `#` at the start of the lines. 
    Add our first A2A agent, the Strands Calculator Agent
