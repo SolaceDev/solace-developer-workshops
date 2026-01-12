@@ -24,17 +24,6 @@ By the end of this workshop, you will be proficient with the following:
 - Explore agent-to-agent (A2A) communication
 - Bring MCP Servers to Solace Agent Mesh
 
-## Quick Start
-
-### Prerequisites
-- GitHub account
-- Modern web browser
-- Internet connection
-
-### Get started
-
-Follow the guide: [Solace Agent Mesh Setup](./guides/020-solace-agent-mesh-setup.md) to get started
-
 ## What You'll Learn
 
 ### Core Concepts
@@ -59,16 +48,11 @@ Follow the guide: [Solace Agent Mesh Setup](./guides/020-solace-agent-mesh-setup
 - [Solace Developer Portal](https://solace.dev)
 - [GitHub Codespaces Docs](https://docs.github.com/en/codespaces)
 
-## Next Steps
-
-After completing the workshop:
-1. **Explore Additional Agents**: Deploy more specialized agents
-2. **Custom Integrations**: Connect your own applications
-3. **Production Setup**: Learn enterprise deployment patterns
-4. **Community Engagement**: Join Solace developer forums
+## Quick Start
+Follow the guide: [Solace Agent Mesh Setup](./guides/020-solace-agent-mesh-setup.md) to get started
 
 ## License
 
-This workshop content is provided for educational purposes during Solace Agent Mesh workshops.
-*Happy Learning!*
+*This workshop content is provided for educational purposes during Solace Agent Mesh workshops.
+Happy Learning!*
 
