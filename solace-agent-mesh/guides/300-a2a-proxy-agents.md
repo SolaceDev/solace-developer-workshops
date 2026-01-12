@@ -43,7 +43,7 @@ An A2A proxy acts as a bridge between Solace Agent Mesh and external agent frame
    sam add proxy a2a --skip
    ```
 
-3. A configuration file will be created for your new agent, the agent in this case is an a2a proxy. Open your [a2a_proxy.yaml](/workspaces/solace-developer-workshops/sam-bootcamp/configs/agents/a2a_proxy.yaml) in your vscode editor.
+3. A configuration file will be created for your new agent, the agent in this case is an a2a proxy. Open your [a2a_proxy.yaml](/solace-developer-workshops/sam-bootcamp/configs/agents/a2a_proxy.yaml) in your vscode editor.
 
 
    You can find a finished [a2a_proxy agent card](../artifacts/300-a2a_proxy.yaml)
@@ -120,6 +120,7 @@ Add a new a2a agent to the proxy
                 value: "Bearer january_workshop"   
    ```
 Start Solace Agent Mesh so it picks up the new configuration
+If you ran into issues or would like to use the pre filled out solution it can be found at [a2a_proxy agent card](../artifacts/300-a2a_proxy.yaml)
 
 ```bash
 sam run

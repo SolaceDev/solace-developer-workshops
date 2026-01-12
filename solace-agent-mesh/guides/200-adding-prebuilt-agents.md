@@ -71,7 +71,7 @@ Click **Click for details** on any agent card to learn more about its configurat
 Now, let's interact again with Solace Agent Mesh:
 
 ```
-What agents do you have access to and what are their capabilities?
+I'm planning a business trip and need a complete travel briefing. First, detemine where I am. Then, get the weather forecast for both my current city and Paris, France. Calculate the time difference between my location and Paris.
 ```
 
 <img src="../images/sam/sam-info-agents-new.png" alt="Solace Agent Mesh Info Agents" width="70%">
