@@ -27,7 +27,7 @@ You can visualize agent interactions (e.g., **Orchestrator ↔ LLM**) by clickin
 ## 2. Install Built-in Tools (Agents)
 
 There are 2 ways to run Solace Agent Mesh Agents:
-1. `sam run` This will start all of the Solace Agent Mesh agents that are present in the `config/agents/` directory. During this workshop you will likely have to kill the existing process with `Ctrl+C` and enter `sam run`, to pickup your new changes as we add and modify agents.
+1. `sam run` This will start all of the Solace Agent Mesh agents that are present in the `configs/agents/` directory. During this workshop you will likely have to kill the existing process with `Ctrl+C` and enter `sam run`, to pickup your new changes as we add and modify agents.
 2. Launch the agents independently. This is useful in production scenarios, the Orchestrator and each agent will be run as a seperate task which can be brought online and offiline independently.  To use this approach you must have Solace Agent Mesh already running with `sam run` then open a new terminal and pass the agent configuration YAML files as arguments to a new `sam run` command.
 The process would be as follows:
 > - Open a new terminal
