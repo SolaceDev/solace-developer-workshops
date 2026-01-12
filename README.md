@@ -1,6 +1,10 @@
 # Solace Workshops
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new/SolaceDev/solace-developer-workshops?quickstart=1)
+<p align="center">
+  <a href="https://github.com/codespaces/new/SolaceDev/solace-developer-workshops?quickstart=1">
+    <img src="https://github.com/codespaces/badge.svg" alt="Open in GitHub Codespaces" width="300" style="border: 2px solid #0366d6; border-radius: 6px; padding: 4px;">
+  </a>
+</p>
 
 ## To Start
 Navigate to the `<> Code` button at the top of the repo --> Open the Codespaces tab --> Click `Create codespaces on main`
