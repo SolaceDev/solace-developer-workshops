@@ -43,7 +43,7 @@ An A2A proxy acts as a bridge between Solace Agent Mesh and external agent frame
    sam add proxy a2a --skip
    ```
 
-3. A configuration file will be created for your new agent, the agent in this case is an a2a proxy. Open the [a2a_proxy.yaml](/workspaces/solace-developer-workshops/sam-bootcamp/configs/agents/a2a_proxy.yaml) in your vscode editor.
+3. A configuration file will be created for your new agent, the agent in this case is an a2a proxy. Open your [a2a_proxy.yaml](/workspaces/solace-developer-workshops/sam-bootcamp/configs/agents/a2a_proxy.yaml) in your vscode editor.
 
 
    You can find a finished [a2a_proxy agent card](../artifacts/300-a2a_proxy.yaml)
@@ -51,11 +51,26 @@ An A2A proxy acts as a bridge between Solace Agent Mesh and external agent frame
    Remove the Example 1 and Example 2 agents under `proxied_agents:` by commenting them out with `#` at the start of the lines. 
    Add our first A2A agent, the Strands Calculator Agent
    ```yaml
-   proxied_agents:
-        # Strands Calculator: A simple calculator agent hosted on AWS with basic authentication
-        - name: "StrandsCalculator" # The name this agent will have on the Solace mesh
-          url: "http://0.0.0.0:9001" # The real HTTP endpoint of the agent
+        proxied_agents:
+          # Example 1: A simple agent without authentication
+          - name: "Calculator" # The name this agent will have on the Solace mesh
+            url: "http://ec2-18-223-124-73.us-east-2.compute.amazonaws.com:9000" # The real HTTP endpoint of the agent
+            task_headers:
+            - name: "Authorization"
+              value: "Bearer january_workshop"
    ```
+   > Note: Here we are using a password as a bearer token passed in on a custom header.  
+   > When using your agents on platforms like AWS Agent Core you will likely need to supply [OAUTH credentials to authenticate](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/components/proxies#oauth-20-client-credentials)
+    ```bash
+   authentication:
+      type: "oauth2_client_credentials"
+      token_url: "https://auth.example.com/oauth/token"
+      client_id: "${OAUTH_CLIENT_ID}"
+      client_secret: "${OAUTH_CLIENT_SECRET}"
+      scope: "agent.read agent.write"  # Optional
+      token_cache_duration_seconds: 3300  # Optional, default: 3300 (55 minutes)
+    # use_auth_for_agent_card: true  # Optional: Apply auth to agent card fetching
+    ```
 
 4. Save and restart agents:
    ```bash
@@ -88,41 +103,30 @@ Stop your Solace Agent Mesh instance by issuing the following keystrokes in your
 ``` ctrl + c ```
 
 Open your a2a proxy configuration file:
-```~/sam/workshop/configs/agents/a2a_proxy_agent.yaml```
+[a2a_proxy.yaml](/workspaces/solace-developer-workshops/sam-bootcamp/configs/agents/a2a_proxy.yaml)
 Add a new a2a agent to the proxy
    ```
-   proxied_agents:
-        # Example 1: A simple agent without authentication
-        - name: "Calculator" # The name this agent will have on the Solace mesh
-          url: "http://18.223.124.73:9000" # The real HTTP endpoint of the agent
-          task_headers:
-          - name: "Authorization"
-            value: "Bearer january_workshop" 
-        # Example 2: A simple factorization agent hosted on AWS with basic authentication
-        - name: "Factor" # The name this agent will have on the Solace mesh
-          url: "http://ec2-18-223-124-73.us-east-2.compute.amazonaws.com:9001" # The real HTTP endpoint of the agent
-          task_headers:
+        proxied_agents:
+          # Example 1: A simple agent without authentication
+          - name: "Calculator" # The name this agent will have on the Solace mesh
+            url: "http://ec2-18-223-124-73.us-east-2.compute.amazonaws.com:9000" # The real HTTP endpoint of the agent
+            task_headers:
             - name: "Authorization"
               value: "Bearer january_workshop"  
+          - name: "Factor" # The name this agent will have on the Solace mesh
+            url: "http://ec2-18-223-124-73.us-east-2.compute.amazonaws.com:9001" # The real HTTP endpoint of the agent
+            task_headers:
+              - name: "Authorization"
+                value: "Bearer january_workshop"   
    ```
 Start Solace Agent Mesh so it picks up the new configuration
 
-   Save and restart agents:
-
-    ```sh
-    sam run
-    ```
+```bash
+sam run
+```
 
 Now you can add your existing A2A agents to Solace Agent Mesh using the following configuration. You can also build new agents on whatever platform you would like and use them in your existing AI workflows, seamlessly with Solace Agent Mesh.
 
-
-### Fun Agent Ideas to Build
-
-Want to host your own? Consider building:
-- **Fitness Coach:** Workout plans and nutrition advice
-- **Meeting Summarizer:** Digest meeting notes and action items
-- **Bug Bounty Hunter:** Analyzes code for security vulnerabilities
-- **Dad Joke Generator:** Because every mesh needs humor 
 
 > 💡 **Tip:** You can deploy your custom a2a agents on any platform you would like and use them with Solace Agent Mesh
 

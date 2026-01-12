@@ -6,6 +6,11 @@
   - [Option 2: Using the CLI](#option-2-using-the-cli)
 
 ---
+## What is an MCP Server?
+The Model Context Protocol (MCP) is an open standard designed to connect Large Language Models (LLMs) to external data sources and tools. An MCP Server acts as a standardized interface or "connector" that exposes specific capabilities such as database access, local file manipulation, or API integrations to an LLM. By providing a uniform way for models to discover and execute tools, MCP eliminates the need to write custom integration code for every new data source.
+
+## Why add MCP Servers to Solace Agent Mesh
+MCP Servers are no longer the newest technology on the block for allowing agent to agent communication but they serve a valuable role in providing a means for existing applications to be utilized by LLMs.  By adding MCP Servers to our Solace Agent Mesh we can take advanatage of a vast catalog of tools that are exposed in a way that is easy for LLMs to consume and act on without having to re-write or re-wrap those tools in A2A frameworks.  
 
 ### Adding the AWS Documentation MCP Server Agent
 
@@ -20,17 +25,13 @@ This section describes how to add the [AWS Documentation MCP server](https://aws
    cd sam-bootcamp
    source venv/bin/activate
    ```
-2. Install `Astral uv` a python package and project manager - used for many MCP Servers
-    ```bash
-    pip install uv
-    ``` 
-3. Create a proxy configuration:
+2. Create a proxy configuration:
    ```bash
    sam add agent --gui
    ```
    You might have to append `/?config_mode=addAgent` to the end of the url in your browser to reach the new agent page. 
    It should look similar to `https://super-duper-space-spork-5r5w5ww44rh7gvp-5002.app.github.dev/?config_mode=addAgent`
-4. Populate Agent Name and Instructions
+3. Populate Agent Name and Instructions
 **Agent Name**
 `awsDocumentation`
 **Model Type**
@@ -39,15 +40,15 @@ This section describes how to add the [AWS Documentation MCP server](https://aws
   `
   You are an AI documentation assistant named __AGENT_NAME__. Your goal is to use the AWS documentation MCP server to explore and respond to requests about AWS product usage in an accurate and concise way. `
 
-<img src="../images/sam/400-awsDocumentationAgentName.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/400-awsDocumentationAgentName.png" alt="Broker Details" width="70%">
 
-5. Use Default artifact service
-6. Use Reference artifact handling
-<img src="../images/sam/400-referenceArtifactHandling.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+4. Use Default artifact service
+5. Use Reference artifact handling
+<img src="../images/sam/400-referenceArtifactHandling.png" alt="Broker Details" width="70%">
 
-7. We have to add our MCP Server invocation options, the tools will be pulled from the MCP Server by the agent. 
+6. We have to add our MCP Server invocation options, the tools will be pulled from the MCP Server by the agent. 
 Press 'Add Tool' 
-<img src="../images/sam/400-selectAdd.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/400-selectAdd.png" alt="Broker Details" width="70%">
 
 Supply A tool name and Connection Parameters
 ```json
@@ -65,14 +66,21 @@ Supply Environment Variables then press the green 'Add Tool' button then 'Next'.
   "MCP_USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 }
 ```
-<img src="../images/sam/400-addTools.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+<img src="../images/sam/400-addTools.png" alt="Broker Details" width="70%">
 
 
-8. Populate Agent Card and Discovery options. We will use the same Agent Card description as agent description above
-<img src="../images/sam/400-agentCard.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+7. Populate Agent Card and Discovery options. We will use the same Agent Card description as agent description above
+```
+You are an AI documentation assistant named awsDocumentation. Your goal is to use the AWS documentation MCP server to explore and respond to requests about AWS product usage in an accurate and concise way. 
+```
+<img src="../images/sam/400-agentCard.png" alt="Broker Details" width="70%">
 
-9. Review the Agent configuration then **Save Agent & Finish**
-<img src="../images/sam/400-save.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+8. Review the Agent configuration then **Save Agent & Finish**
+<img src="../images/sam/400-save.png" alt="Broker Details" width="70%">
+
+
+**[Continue by starting Solace Agent Mesh](#run-solace-agent-mesh-with-the-new-aws-documentation-agent)**
+You can also copy the premade [aws_documentation_agent.yaml](../artifacts/400-aws_documentation_agent.yaml) into your config if you have issues or follow the configuration guide below. 
 
 For more details, refer to the [Solace Agent Mesh MCP integration guide](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/developing/tutorials/mcp-integration).
 
@@ -88,7 +96,8 @@ You can also add the agent via the CLI and manually configure the YAML.
   solace-agent-mesh add agent aws-documentation --skip
   ```
 
-2. This will create a new agent YAML file (e.g., `agents/aws-documentation.yaml`). Open this file and configure it as follows:
+2. This will create a new agent YAML file (e.g., `agents/aws-documentation_agent.yaml`). 
+Open your [aws-documentation_agent.yaml](/workspaces/solace-developer-workshops/sam-bootcamp/configs/agents/aws_documentation_agent.yaml) and configure it as follows:
 
   ```yaml
   # Solace Agent Mesh Agent Configuration
@@ -116,7 +125,7 @@ apps:
     # Add any additional configuration see 400-aws_documentation_agent.yaml
   ```
 
-3. Add you MCP Server as a tool to the agent config
+3. Add you MCP Server as a tool to the agent config by replacing the line `tools: []`.  Leave everything below that such as `Agent Card Definition` and `Discovery & Communication` sections alone.
 ``` yaml
 tools: 
         - group_name: artifact_management
@@ -149,7 +158,7 @@ You can run a single agent at a time or a list of agents by supplying their path
   ```
   How can I access a server running on port 9000 in an ec2 instance from my IP address?
   ```
-  <img src="../images/sam/400-sam-command-1.png" alt="Broker Details" style="display: block; margin: 20px auto; max-width: 70%; box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 4px;">
+  <img src="../images/sam/400-sam-command-1.png" alt="Broker Details" width="70%">
 
 ---
 ### 🎯 Challenge

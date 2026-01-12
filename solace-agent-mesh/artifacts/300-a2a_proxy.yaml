@@ -40,12 +40,12 @@ apps:
       # --- List of Downstream Agents to Proxy ---
       proxied_agents:
         # Example 1: A simple agent without authentication
-        - name: "StrandsCalculator" # The name this agent will have on the Solace mesh
+        - name: "Calculator" # The name this agent will have on the Solace mesh
           url: "http://ec2-18-223-124-73.us-east-2.compute.amazonaws.com:9000" # The real HTTP endpoint of the agent
           task_headers:
           - name: "Authorization"
             value: "Bearer january_workshop"  
-        - name: "StrandsCalculator" # The name this agent will have on the Solace mesh
+        - name: "Factor" # The name this agent will have on the Solace mesh
           url: "http://ec2-18-223-124-73.us-east-2.compute.amazonaws.com:9001" # The real HTTP endpoint of the agent
           task_headers:
             - name: "Authorization"
