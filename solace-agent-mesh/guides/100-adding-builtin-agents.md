@@ -59,7 +59,7 @@ Let's go ahead and do the agent creation from the cli
     ```
     sam add agent built-in-tools --skip
     ```
-    This creates a new file under [built_in_tools_agent.yaml](../../sam-bootcamp/configs/agents/built_in_tools_agent.yaml)
+    This creates a new file under [sam-bootcamp/configs/agents/built_in_tools_agent.yaml](../../sam-bootcamp/configs/agents/built_in_tools_agent.yaml)
 
 1. Copy the modified built-in-tools agent yaml configuration into the new file that was created. From terminal, run the following
 
