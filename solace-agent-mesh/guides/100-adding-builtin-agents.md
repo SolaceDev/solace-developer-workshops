@@ -15,6 +15,8 @@ Enter in the chat area:
 What agents do you have access to and what are their capabilities?
 ```
 
+> Note: For the rest of the workshop, you can pull up all the saved prompts by typing forward slash `/` in the chat bar and prefixing the prompt with the step number e.g. `100-`
+
 You can visualize agent interactions (e.g., **Orchestrator ↔ LLM**) by clicking the **network** icon below any chat response.
 
 > 💬 As you install more agents, you can always ask Solace Agent Mesh for a list of available agents and capabilities.
@@ -39,22 +41,23 @@ The process would be as follows:
 ```
 > - Launch the agents
 
-  ```sam run config/agents/built_in_tools_agent.yaml```
+  ```sam run config/agents/name_of_agent.yaml```
 
-**We will be using approach 1 in this workshop.  We will kill the existing `sam run` execution and start it again as we add new agents.**
-
-
+**In this workshop we will be using the first approach in this workshop.  We will kill the existing sam instance with `Ctrl+C` and start it again as we add new agents.**
 
 Solace Agent Mesh comes with a set of built-in tools. Built-in tools are pre-packaged functionalities that can be granted to agents without requiring custom Python code. These tools address common operations such as file management, data analysis, web requests, and multi-modal generation.
 
 ### Adding agents with the GUI
 1. **Access the Add Agent GUI**
+
   Kill your existing `sam run` execution with `ctrl + c` in your terminal
   then issue:
+
    ```bash
    sam add agent --gui
    ```
 > **NOTE**: The opened page might show the Solace Agent Mesh installation GUI to the end of the URL.
+
 ```bash
 
 /?config_mode=addAgent
@@ -98,6 +101,7 @@ For example: The opened page URL `https://glorious-bassoon-j79qgqjxgrh996-5002.a
   + General
   + Internal
   + Web
+
 **Click on `Next`**
 
 <div align="center">
@@ -105,6 +109,7 @@ For example: The opened page URL `https://glorious-bassoon-j79qgqjxgrh996-5002.a
 </div>
 
 **Update the Agent Card Description and click on `Next`**
+
 ```
 A helpful AI Assistant. You have access to internal tools such as data analytics, web, and other general tools
 ```
@@ -130,8 +135,8 @@ Review the Agents. In the Solace Agent Mesh browser tab, click on `Agents` to se
 </div>
 
 3. **Let us test the use of these agents. In the Chat, enter a simple query**
-```bash
 
+```bash
 What agents do you have access to and what are their capabilities?
 ```
 
@@ -141,11 +146,13 @@ What agents do you have access to and what are their capabilities?
 
 > **HINT:** If the workflow panel is not visible, just click on the network image !at the bottom of the chat panel (left)
 
+
 <div align="center">
-    <img src="../images/sam/sam-builtin-12.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    <img src="../images/sam/sam-builtin-12.png" alt="Solace Agent Mesh Built-in Tools" width="30%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
 </div>
 
 4. **Let us issue a query that makes use of the built-in tools.**
+
 ```bash
 Summarize the capabilities of the agent with sample queries as a HTML report
 ```

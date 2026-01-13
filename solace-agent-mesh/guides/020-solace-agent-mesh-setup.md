@@ -222,5 +222,28 @@ Your Solace Agent Mesh Chat interface will now appear:
    <img src="../images/sam/020-sam-chat.png" alt="Solace Agent Mesh Chat" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
 </div>
 
+## Optional: Import the prompts set
+
+We can pre-populate the solace agent mesh instance with prompts. To do this: 
+
+1. Open a new terminal
+
+   <div align="center">
+      <img src="../images/sam/020-new-terminal.png" alt="Solace Agent Mesh Chat" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+   </div>
+
+1. Run the following script
+   ```
+   cd solace-agent-mesh
+   python3.12 util/populate_prompts.py --file util/ws_prompts.json
+   ```
+
+   > Note: You can delete all the prompts by executing `python3 util/populate_prompts.py --delete-all`
+   
+1. Navigate to the `Prompts` tab from your Solace Agent Mesh and observe the new prompts that got added
+
+1. You can safely kill the new terminal 
+
+
 ---
-[Next Section: What is Solace Agent Mesh](./100-adding-builtin-agents.md)
+[Next Section: What is Solace Agent Mesh](./021-what-is-sam.md)
