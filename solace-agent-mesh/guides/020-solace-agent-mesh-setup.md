@@ -68,7 +68,7 @@ source venv/bin/activate
 
 ### Step 4: Install solace agent mesh and Astral UV
 ```
-pip install solace-agent-mesh==1.13.0 uv
+pip install solace-agent-mesh uv
 ```
 
 ### Step 5: Verify installation
@@ -223,4 +223,4 @@ Your Solace Agent Mesh Chat interface will now appear:
 </div>
 
 ---
-[Next Section: Adding Built-in Agents](./100-adding-builtin-agents.md)
+[Next Section: What is Solace Agent Mesh](./100-adding-builtin-agents.md)
