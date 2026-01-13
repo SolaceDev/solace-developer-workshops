@@ -1,0 +1,64 @@
+# Solace Agent Mesh Agent Configuration
+
+log:
+  stdout_log_level: INFO
+  log_file_level: DEBUG
+  log_file: a2a_agent.log
+
+!include ../shared_config.yaml
+
+apps:
+  - name: "BuiltInTools__app"
+    app_base_path: .
+    app_module: solace_agent_mesh.agent.sac.app
+    broker:
+      <<: *broker_connection
+
+    app_config:
+      namespace: "${NAMESPACE}"
+      supports_streaming: true
+      agent_name: "BuiltInTools"
+      display_name: "Built In Tools Agent"
+      model: *general_model 
+
+      instruction: |
+        You are a helpful AI assistant named built-in-tools.
+      
+      tools: 
+        - tool_type: builtin-group
+          group_name: artifact_management
+        - tool_type: builtin-group
+          group_name: general
+        - tool_type: builtin-group
+          group_name: internal
+        - tool_type: builtin-group
+          group_name: web
+
+      session_service: 
+        type: "sql"
+        default_behavior: "PERSISTENT"
+        database_url: "${BUILT_IN_TOOLS_DATABASE_URL, sqlite:///built_in_tools.db}"
+      artifact_service: *default_artifact_service
+      
+      artifact_handling_mode: "reference"
+      enable_embed_resolution: true
+      enable_artifact_content_instruction: true
+      data_tools_config: *default_data_tools_config
+
+      # Agent Card Definition
+      agent_card:
+        description: |
+          A helpful AI Assistant. You have access to internal tools such as data analytics, web, and other general tools
+        defaultInputModes: [text] 
+        defaultOutputModes: [text, file] 
+        skills: []
+      
+      # Discovery & Communication
+      agent_card_publishing: 
+        interval_seconds: 10
+      agent_discovery: 
+        enabled: true
+      inter_agent_communication:
+        allow_list: ["*"] 
+        deny_list: [] 
+        request_timeout_seconds: 600

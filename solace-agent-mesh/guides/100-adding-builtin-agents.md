@@ -27,7 +27,7 @@ You can visualize agent interactions (e.g., **Orchestrator ↔ LLM**) by clickin
 
 ---
 
-## 2. Install Built-in Tools (Agents)
+## 2. Install Agent with Built-in Tools
 
 There are 2 ways to run Solace Agent Mesh Agents:
 1. `sam run` This will start all of the Solace Agent Mesh agents that are present in the `configs/agents/` directory. During this workshop you will likely have to kill the existing process with `Ctrl+C` and enter `sam run`, to pickup your new changes as we add and modify agents.
@@ -47,123 +47,82 @@ The process would be as follows:
 
 Solace Agent Mesh comes with a set of built-in tools. Built-in tools are pre-packaged functionalities that can be granted to agents without requiring custom Python code. These tools address common operations such as file management, data analysis, web requests, and multi-modal generation.
 
-### Adding agents with the GUI
-1. **Access the Add Agent GUI**
+### Adding an agent the uses built-in tools
 
-  Kill your existing `sam run` execution with `ctrl + c` in your terminal
-  then issue:
+You have two ways to add agents
+1. Add an agent using the [Solace Agent Mesh add agent GUI interface](./101-adding-builtin-agents-gui.md)
+1. Author the yaml configuration for the agent definition
 
-   ```bash
-   sam add agent --gui
-   ```
-> **NOTE**: The opened page might show the Solace Agent Mesh installation GUI to the end of the URL.
+Let's go ahead and do the agent creation from the cli
 
-```bash
+1. Create an agent scaffold
+    ```
+    sam add agent built-in-tools --skip
+    ```
+    This creates a new file under [built_in_tools_agent.yaml](../../sam-bootcamp/configs/agents/built_in_tools_agent.yaml)
 
-/?config_mode=addAgent
-```
-For example: The opened page URL `https://glorious-bassoon-j79qgqjxgrh996-5002.app.github.dev/`, change it to `https://glorious-bassoon-j79qgqjxgrh996-5002.app.github.dev/?config_mode=addAgent`
+1. Copy the modified built-in-tools agent yaml configuration into the new file that was created. From terminal, run the following
 
-**Name the agent as `Builtin Tools` and click on `Next`**
+    ```
+    cp ../solace-agent-mesh/artifacts/100-built_in_tools_agent.yaml configs/agents/built_in_tools_agent.yaml
+    ```
 
-<div align="center">
-    <img src="../images/sam/sam-builtin-1.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
-</div>
+    Note that the following changes were made:
 
-**Use the default setting and click on `Next`**
+    - The `tools` section was updated to 
+        ```yaml
+        tools: 
+            - tool_type: builtin-group
+            group_name: artifact_management
+            - tool_type: builtin-group
+            group_name: general
+            - tool_type: builtin-group
+            group_name: internal
+            - tool_type: builtin-group
+            group_name: web
+        ```
+    - The AgentCard Description was updated to
+        ```
+        A helpful AI Assistant. You have access to internal tools such as data analytics, web, and other general tools
+        ```
 
-<div align="center">
-    <img src="../images/sam/sam-builtin-2.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
-</div>
-
-**Use the default setting and click on `Next`**
-
-<div align="center">
-    <img src="../images/sam/sam-builtin-3.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
-</div>
-
-**Click on `+ Add Tool` button**
-
-<div align="center">
-    <img src="../images/sam/sam-builtin-4.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
-</div>
-
-<div align="center">
-    <img src="../images/sam/sam-builtin-4.1.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
-</div>
-
-<div align="center">
-    <img src="../images/sam/sam-builtin-5.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
-</div>
-
-**Select the following tools and add**
-  + Data Analysis
-  + General
-  + Internal
-  + Web
-
-**Click on `Next`**
-
-<div align="center">
-    <img src="../images/sam/sam-builtin-6.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
-</div>
-
-**Update the Agent Card Description and click on `Next`**
-
-```
-A helpful AI Assistant. You have access to internal tools such as data analytics, web, and other general tools
-```
-
-<div align="center">
-    <img src="../images/sam/sam-builtin-7.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
-</div>
-
-**Review the agent summary configuration and click on `Save Agent & Finish`**.
-
-<div align="center">
-    <img src="../images/sam/sam-builtin-8.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
-</div>
-
-2. **Start Solace Agent Mesh with the new Agents**
-
-    - Close your brower tab. 
+1. Start Solace Agent Mesh with the new Agent
     - Back in the codespace Terminal, kill the add agent instance by running `Ctrl + C`
     - Issue `sam run`
     - Return to the Solace Agent Mesh UI at port 8000 forwarded from your codespace.
     - Review the Agents. In the Solace Agent Mesh browser tab, click on `Agents` to see the newly added agent.
 
-<div align="center">
-    <img src="../images/sam/sam-builtin-10.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
-</div>
+    <div align="center">
+        <img src="../images/sam/sam-builtin-10.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    </div>
 
-3. **Let us test the use of these agents. In the Chat, enter a simple query**
+1. Let us test the use of these agents. In the Chat, enter a simple query
 
-```bash
-What agents do you have access to and what are their capabilities?
-```
+    ```bash
+    What agents do you have access to and what are their capabilities?
+    ```
 
-<div align="center">
-    <img src="../images/sam/sam-builtin-11.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
-</div>
+    <div align="center">
+        <img src="../images/sam/sam-builtin-11.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    </div>
 
-> **HINT:** If the workflow panel is not visible, just click on the network image !at the bottom of the chat panel (left)
+    > **HINT:** If the workflow panel is not visible, just click on the network image !at the bottom of the chat panel (left)
 
 
-<div align="center">
-    <img src="../images/sam/sam-builtin-12.png" alt="Solace Agent Mesh Built-in Tools" width="30%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
-</div>
+    <div align="center">
+        <img src="../images/sam/sam-builtin-12.png" alt="Solace Agent Mesh Built-in Tools" width="30%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    </div>
 
-4. **Let us issue a query that makes use of the built-in tools.**
+1. Let us issue a query that makes use of the built-in tools.
 
-```bash
-Summarize the capabilities of the agent with sample queries as a HTML report
-```
-You will see an HTML report listing agentic capabilities available.
+    ```bash
+    Summarize the capabilities of the agent with sample queries as a HTML report
+    ```
+    You will see an HTML report listing agentic capabilities available.
 
-<div align="center">
-    <img src="../images/sam/sam-builtin-13.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
-</div>
-
+    <div align="center">
+        <img src="../images/sam/sam-builtin-13.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    </div>
 ---
 
 [Next Section: Adding pre build agents](./200-adding-prebuilt-agents.md)
