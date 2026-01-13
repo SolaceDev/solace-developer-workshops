@@ -88,7 +88,7 @@ To learn more about EDA in Agentic Systems, read more about:
 
 1. **The real challenge is integration, not model intelligence**
 
-    *AI models are powerful, but their value depends on access to real enterprise data and systems. Agent Mesh focuses on connecting agents to where data and actions actually live.*
+    *AI models are powerful, but their value depends on access to real enterprise data and systems. Agent Mesh focuses on connecting agents to where data and actions actually live. Remember the 80/20 rule: 80% of AI challenges is Data access; the remaining 20% is the AI technology*
 
 1. **Asynchronous, event driven communication is foundational**
 
