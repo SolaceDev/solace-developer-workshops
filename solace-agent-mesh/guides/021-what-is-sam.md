@@ -84,31 +84,31 @@ To learn more about EDA in Agentic Systems, read more about:
 
 1. **Agentic systems work best as distributed systems, not monoliths**
 
-    Instead of building a single large AI application, Agent Mesh enables teams of specialized agents that collaborate to solve complex problems across data, tools, and systems.
+    *Instead of building a single large AI application, Agent Mesh enables teams of specialized agents that collaborate to solve complex problems across data, tools, and systems.*
 
 1. **The real challenge is integration, not model intelligence**
 
-    AI models are powerful, but their value depends on access to real enterprise data and systems. Agent Mesh focuses on connecting agents to where data and actions actually live.
+    *AI models are powerful, but their value depends on access to real enterprise data and systems. Agent Mesh focuses on connecting agents to where data and actions actually live.*
 
 1. **Asynchronous, event driven communication is foundational**
 
-    True agentic behavior requires agents to react to live signals, work in parallel, and operate independently. Event driven architecture enables this through decoupled, real time messaging.
+    *True agentic behavior requires agents to react to live signals, work in parallel, and operate independently. Event driven architecture enables this through decoupled, real time messaging.*
 
 1. **Loose coupling enables scalability, resilience, and evolution**
 
-    Agents communicate through standardized messages without knowing each other’s internals, allowing systems to scale horizontally, tolerate failures, and evolve safely over time.
+    *Agents communicate through standardized messages without knowing each other’s internals, allowing systems to scale horizontally, tolerate failures, and evolve safely over time.*
 
 1. **Real time collaboration requires more than APIs**
 
-    Synchronous APIs create tight dependencies and bottlenecks. Event streams enable continuous coordination, fault tolerance, and responsive workflows across agents.
+    *Synchronous APIs create tight dependencies and bottlenecks. Event streams enable continuous coordination, fault tolerance, and responsive workflows across agents.*
 
 1. **Observability and reliability are first class requirements**
 
-    Distributed agent systems demand end to end traceability, guaranteed delivery, and resilience to failures to remain understandable and trustworthy in production.
+    *Distributed agent systems demand end to end traceability, guaranteed delivery, and resilience to failures to remain understandable and trustworthy in production.*
 
 1. **Event driven architecture is the path forward for agentic AI**
 
-    By combining standardized agent communication with enterprise grade eventing, Agent Mesh provides the architectural foundation needed for scalable, real time, and production ready agentic systems.
+    *By combining standardized agent communication with enterprise grade eventing, Agent Mesh provides the architectural foundation needed for scalable, real time, and production ready agentic systems.*
 
 Now lets get back to the hands-on!
 ---
