@@ -48,7 +48,7 @@ An A2A proxy acts as a bridge between Solace Agent Mesh and external agent frame
 1. Copy the modified a2a_proxy yaml configuration into the new file that was created. From terminal, run the following
 
     ```
-    cp ../artifacts/300-a2a_proxy.yaml configs/agents/a2a_proxy.yaml
+    cp ../solace-agent-mesh/artifacts/300-a2a_proxy.yaml configs/agents/a2a_proxy.yaml
     ```
 
     Note that the following changes were made:

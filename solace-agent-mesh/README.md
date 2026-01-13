@@ -47,7 +47,7 @@ Follow the guide: [Solace Agent Mesh Setup](./guides/020-solace-agent-mesh-setup
 
 ## License
 
-*This workshop content is provided for educational purposes during Solace Agent Mesh workshops.
+*This workshop content is provided for educational purposes during Solace Agent Mesh workshops*
 
-Happy Learning!*
+*Happy Learning!*
 

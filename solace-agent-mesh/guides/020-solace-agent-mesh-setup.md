@@ -180,7 +180,8 @@ Credentials you will need later for Solace Agent Mesh Setup
 </div>
 
 
-7. After initialization completes, you'll see confirmation in your Codespaces terminal:
+7. After initialization completes, feel free to close the browser tab. You'll see confirmation in your Codespaces terminal:
+
 <div align="center">
    <img src="../images/sam/020-sam-init-complete.png" alt="Init Complete" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
 </div>
@@ -243,6 +244,10 @@ We can pre-populate the solace agent mesh instance with prompts. To do this:
 1. Navigate to the `Prompts` tab from your Solace Agent Mesh and observe the new prompts that got added
 
 1. You can safely kill the new terminal 
+
+   <div align="center">
+      <img src="../images/sam/020-kill-terminal.png" alt="Solace Agent Mesh Chat" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+   </div>
 
 
 ---

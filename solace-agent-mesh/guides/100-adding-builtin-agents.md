@@ -118,17 +118,19 @@ A helpful AI Assistant. You have access to internal tools such as data analytics
     <img src="../images/sam/sam-builtin-7.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
 </div>
 
-**Review the agent summary configuration and click on `Save Agent & Finish`**
+**Review the agent summary configuration and click on `Save Agent & Finish`**.
 
 <div align="center">
     <img src="../images/sam/sam-builtin-8.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
 </div>
 
 2. **Start Solace Agent Mesh with the new Agents**
-Close your brower tab. 
-Back in the codelab Terminal issue `sam run`
-Return to the Solace Agent Mesh UI at port 8000 forwarded from your codespace.
-Review the Agents. In the Solace Agent Mesh browser tab, click on `Agents` to see the newly added agent.
+
+    - Close your brower tab. 
+    - Back in the codespace Terminal, kill the add agent instance by running `Ctrl + C`
+    - Issue `sam run`
+    - Return to the Solace Agent Mesh UI at port 8000 forwarded from your codespace.
+    - Review the Agents. In the Solace Agent Mesh browser tab, click on `Agents` to see the newly added agent.
 
 <div align="center">
     <img src="../images/sam/sam-builtin-10.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
