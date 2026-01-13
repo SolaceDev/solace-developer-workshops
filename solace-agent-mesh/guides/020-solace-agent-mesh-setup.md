@@ -68,7 +68,7 @@ source venv/bin/activate
 
 ### Step 4: Install solace agent mesh and Astral UV
 ```
-pip install solace-agent-mesh uv
+pip install solace-agent-mesh==1.13.2 uv
 ```
 
 ### Step 5: Verify installation
