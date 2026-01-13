@@ -16,6 +16,8 @@ MCP Servers are no longer the newest technology on the block for allowing agent 
 
 This section describes how to add the [AWS Documentation MCP server](https://awslabs.github.io/mcp/servers/aws-documentation-mcp-server) to your Solace Agent Mesh deployment, both via the GUI and using the CLI.
 
+**For the sake of time we will use the yaml configuration and replace it with the pre-configured file.  [Option 2: Using the CLI](#option-2-using-the-cli)**
+
 ---
 
 #### Option 1: Using the Solace Agent Mesh GUI
@@ -42,11 +44,11 @@ This section describes how to add the [AWS Documentation MCP server](https://aws
 
 <img src="../images/sam/400-awsDocumentationAgentName.png" alt="Broker Details" width="70%">
 
-4. Use Default artifact service
-5. Use Reference artifact handling
+4. **Use Default artifact service**
+5. **Use Reference artifact handling**
 <img src="../images/sam/400-referenceArtifactHandling.png" alt="Broker Details" width="70%">
 
-6. We have to add our MCP Server invocation options, the tools will be pulled from the MCP Server by the agent. 
+6. **We have to add our MCP Server invocation options, the tools will be pulled from the MCP Server by the agent.** 
 Press 'Add Tool' 
 <img src="../images/sam/400-selectAdd.png" alt="Broker Details" width="70%">
 
@@ -69,13 +71,13 @@ Supply Environment Variables then press the green 'Add Tool' button then 'Next'.
 <img src="../images/sam/400-addTools.png" alt="Broker Details" width="70%">
 
 
-7. Populate Agent Card and Discovery options. We will use the same Agent Card description as agent description above
+7. **Populate Agent Card and Discovery options. We will use the same Agent Card description as agent description above**
 ```
 You are an AI documentation assistant named awsDocumentation. Your goal is to use the AWS documentation MCP server to explore and respond to requests about AWS product usage in an accurate and concise way. 
 ```
 <img src="../images/sam/400-agentCard.png" alt="Broker Details" width="70%">
 
-8. Review the Agent configuration then **Save Agent & Finish**
+8. **Review the Agent configuration then Save Agent & Finish**
 <img src="../images/sam/400-save.png" alt="Broker Details" width="70%">
 
 
@@ -89,6 +91,7 @@ For more details, refer to the [Solace Agent Mesh MCP integration guide](https:/
 #### Option 2: Using the CLI
 
 You can also add the agent via the CLI and manually configure the YAML.
+Stop any existing execution by issuing `ctrl + c` in your terminal. 
 
 1. Run the following command to generate the agent configuration:
 
@@ -98,6 +101,13 @@ You can also add the agent via the CLI and manually configure the YAML.
 
 2. This will create a new agent YAML file (e.g., `agents/aws-documentation_agent.yaml`). 
 Open your [aws-documentation_agent.yaml](/workspaces/solace-developer-workshops/sam-bootcamp/configs/agents/aws_documentation_agent.yaml) and configure it as follows:
+
+We can issue the following cp command to move the pre-configured mcp server yaml into your sam-bootcamp deployment
+```
+cp /solace-developer-workshops/sam-bootcamp/configs/agents/aws_documentation_agent.yaml configs/agents/aws-documentation_agent.yaml
+```
+
+Look at these sections of the [aws-documentation_agent.yaml](/solace-developer-workshops/sam-bootcamp/configs/agents/aws_documentation_agent.yaml) to see what we updated. 
 
   ```yaml
   # Solace Agent Mesh Agent Configuration
@@ -156,7 +166,7 @@ You can run a single agent at a time or a list of agents by supplying their path
   ```
   We can string together multiple agents with a prompt such as 
   ```
-  How can I access a server running on port 9000 in an ec2 instance from my IP address?
+  How can I access a server running on port 9000 in an ec2 instance from my IP address? Also list the factors of my IP address if it was a decimal number not an IP address. 
   ```
   <img src="../images/sam/400-sam-command-1.png" alt="Broker Details" width="70%">
 
@@ -164,9 +174,9 @@ You can run a single agent at a time or a list of agents by supplying their path
 ### 🎯 Challenge
 
 Before the workshop ends:
-1. Connect at least **2 A2A agents** to your Solace Agent Mesh instance
-2. Create a **multi-agent workflow** (e.g., "Plan a trip, then create recipes for the destination")
-3. Share your coolest agent interaction in the workshop chat!
+1. Come up with some prompts that leverage 2 or more of the agents that we added today to accomplish a cohesive task.  Share your prompts in the chat.  
+2. Connect at least **2 A2A agents** to your Solace Agent Mesh instance. Share in the chat what agents you are adding to your Solace Agent Mesh. 
+3. Leverage any new A2A agents that you added together on a single objective.  Share in the chat your favorite agent interaction from the day. 
 
 > 🔧 **Need help?** Ask in [Solace Community](https://community.solace.com/c/solace-agent-mesh/16) or during the workshop Q&A.
 
