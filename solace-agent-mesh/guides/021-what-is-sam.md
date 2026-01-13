@@ -1,7 +1,7 @@
 
 # What is Solace Agent Mesh
 
-[Solace Agent Mesh](https://github.com/SolaceLabs/solace-agent-mesh) is an open-source, event-driven framework that creates a distributed ecosystem of collaborative AI agents.
+[Solace Agent Mesh](https://github.com/SolaceLabs/solace-agent-mesh) (also known as SAM) is an open-source, event-driven framework that creates a distributed ecosystem of collaborative AI agents.
 
 ## Table of Contents
 - [Key Architectural Principles](#key-architectural-principles)
