@@ -42,15 +42,23 @@ This section describes how to add the [AWS Documentation MCP server](https://aws
   `
   You are an AI documentation assistant named __AGENT_NAME__. Your goal is to use the AWS documentation MCP server to explore and respond to requests about AWS product usage in an accurate and concise way. `
 
-<img src="../images/sam/400-awsDocumentationAgentName.png" alt="Broker Details" width="70%">
+<div align="center">
+    <img src="../images/sam/400-awsDocumentationAgentName.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
 
 4. **Use Default artifact service**
 5. **Use Reference artifact handling**
-<img src="../images/sam/400-referenceArtifactHandling.png" alt="Broker Details" width="70%">
 
-6. **We have to add our MCP Server invocation options, the tools will be pulled from the MCP Server by the agent.** 
-Press 'Add Tool' 
-<img src="../images/sam/400-selectAdd.png" alt="Broker Details" width="70%">
+<div align="center">
+    <img src="../images/sam/400-referenceArtifactHandling.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
+
+6. **We have to add our MCP Server invocation options, the tools will be pulled from the MCP Server by the agent.**
+Press 'Add Tool'
+
+<div align="center">
+    <img src="../images/sam/400-selectAdd.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
 
 Supply A tool name and Connection Parameters
 ```json
@@ -68,18 +76,25 @@ Supply Environment Variables then press the green 'Add Tool' button then 'Next'.
   "MCP_USER_AGENT": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
 }
 ```
-<img src="../images/sam/400-addTools.png" alt="Broker Details" width="70%">
 
+<div align="center">
+    <img src="../images/sam/400-addTools.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
 
 7. **Populate Agent Card and Discovery options. We will use the same Agent Card description as agent description above**
 ```
-You are an AI documentation assistant named awsDocumentation. Your goal is to use the AWS documentation MCP server to explore and respond to requests about AWS product usage in an accurate and concise way. 
+You are an AI documentation assistant named awsDocumentation. Your goal is to use the AWS documentation MCP server to explore and respond to requests about AWS product usage in an accurate and concise way.
 ```
-<img src="../images/sam/400-agentCard.png" alt="Broker Details" width="70%">
+
+<div align="center">
+    <img src="../images/sam/400-agentCard.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
 
 8. **Review the Agent configuration then Save Agent & Finish**
-<img src="../images/sam/400-save.png" alt="Broker Details" width="70%">
 
+<div align="center">
+    <img src="../images/sam/400-save.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
 
 **[Continue by starting Solace Agent Mesh](#run-solace-agent-mesh-with-the-new-aws-documentation-agent)**
 You can also copy the premade [aws_documentation_agent.yaml](../artifacts/400-aws_documentation_agent.yaml) into your config if you have issues or follow the configuration guide below. 
@@ -166,9 +181,12 @@ You can run a single agent at a time or a list of agents by supplying their path
   ```
   We can string together multiple agents with a prompt such as 
   ```
-  How can I access a server running on port 9000 in an ec2 instance from my IP address? Also list the factors of my IP address if it was a decimal number not an IP address. 
+  How can I access a server running on port 9000 in an ec2 instance from my IP address? Also list the factors of my IP address if it was a decimal number not an IP address.
   ```
-  <img src="../images/sam/400-sam-command-1.png" alt="Broker Details" width="70%">
+
+<div align="center">
+    <img src="../images/sam/400-sam-command-1.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
 
 ---
 ### 🎯 Challenge
