@@ -42,3 +42,6 @@ To confirm that the Solace broker is running:
 
 ### 2. Solace Cloud
 To spin up a solace cloud broker, please follow the [Solace Cloud Signup guide](./solace-agent-mesh/solace-cloud-signup-workshop.md)
+
+## Questions? 
+Reach out on the [Solace Community Forum](https://community.solace.com)
