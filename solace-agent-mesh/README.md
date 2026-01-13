@@ -45,8 +45,10 @@ By the end of this workshop, you will be proficient with the following:
 - Refer to visual guides in the screenshots folders
 
 ### Additional Resources
+- [Solace Community Forum](https://community.solace.com)
 - [Solace Developer Portal](https://solace.dev)
 - [GitHub Codespaces Docs](https://docs.github.com/en/codespaces)
+- Get certified as an Agent Mesh Practitioner [here](https://training.solace.com/learn/learning-plans/107/solace-certified-agent-mesh-practitioner)
 
 ## Quick Start
 Follow the guide: [Solace Agent Mesh Setup](./guides/020-solace-agent-mesh-setup.md) to get started
