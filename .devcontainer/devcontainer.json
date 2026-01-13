@@ -18,7 +18,8 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "solace-tools.solace-try-me-vsc-extension"
+        "solace-tools.solace-try-me-vsc-extension",
+        "barnim.markdown-code-copy-button"
       ],
        "settings": {
         "files.autoSave": "afterDelay",
