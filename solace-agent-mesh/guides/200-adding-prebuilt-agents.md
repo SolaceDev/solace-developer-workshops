@@ -32,9 +32,11 @@ Solace provides a set of reusable, open-source agents. Solace Agent Mesh makes i
    ```
 
    This opens the catalog portal in your browser (typically `https://glorious-bassoon-j79qgqjxgrh996-5002.app.github.dev/?config_mode=pluginCatalog`).
-   Reminder you may have to append `/?config_mode=pluginCatalog` to your codespaces url manually to access the catalog. 
-   <img src="../images/sam/sam-plugin-catalog.png" alt="Solace Agent Mesh Plugin Catalog" width="70%">
+   Reminder you may have to append `/?config_mode=pluginCatalog` to your codespaces url manually to access the catalog.
 
+<div align="center">
+    <img src="../images/sam/sam-plugin-catalog.png" alt="Solace Agent Mesh Plugin Catalog" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
 
 3. Review available agents and their capabilities by clicking **More** on each tile.
 
@@ -64,7 +66,9 @@ Solace provides a set of reusable, open-source agents. Solace Agent Mesh makes i
 
 In the Solace Agent Mesh Chat console, click the **Agents** tool on the left sidebar. You should now see the newly registered agents alongside the **Orchestrator** agent.
 
-<img src="../images/sam/sam-new-agents.png" alt="Solace Agent Mesh New Agents" width="70%">
+<div align="center">
+    <img src="../images/sam/sam-new-agents.png" alt="Solace Agent Mesh New Agents" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
 
 Click **Click for details** on any agent card to learn more about its configuration and skills.
 
@@ -74,7 +78,9 @@ Now, let's interact again with Solace Agent Mesh:
 I'm planning a business trip and need a complete travel briefing. First, detemine where I am. Then, get the weather forecast for both my current city and Paris, France. Calculate the time difference between my location and Paris.
 ```
 
-<img src="../images/sam/sam-info-agents-new.png" alt="Solace Agent Mesh Info Agents" width="70%">
+<div align="center">
+    <img src="../images/sam/sam-info-agents-new.png" alt="Solace Agent Mesh Info Agents" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
 
 You can visualize agent interactions (e.g., **Orchestrator ↔ LLM**) by clicking the **network** icon below any chat response.
 

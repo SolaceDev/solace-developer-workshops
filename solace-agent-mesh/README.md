@@ -27,15 +27,9 @@ By the end of this workshop, you will be proficient with the following:
 ## What You'll Learn
 
 ### Core Concepts
-- **Event-driven architecture** with Solace PubSub+
+- **Event-driven architecture** with Solace
 - **Agent-based systems** and their capabilities
 - **AI integration** with messaging platforms
-
-### Hands-on Experience
-- Setting up enterprise messaging infrastructure
-- Deploying and managing AI agents
-- Real-time agent communication
-- Troubleshooting distributed systems
 
 ## Getting Help
 
@@ -49,12 +43,14 @@ By the end of this workshop, you will be proficient with the following:
 - [Solace Developer Portal](https://solace.dev)
 - [GitHub Codespaces Docs](https://docs.github.com/en/codespaces)
 - Get certified as an Agent Mesh Practitioner [here](https://training.solace.com/learn/learning-plans/107/solace-certified-agent-mesh-practitioner)
+- [Solace Community](https://solace.community/)
 
 ## Quick Start
 Follow the guide: [Solace Agent Mesh Setup](./guides/020-solace-agent-mesh-setup.md) to get started
 
 ## License
 
-*This workshop content is provided for educational purposes during Solace Agent Mesh workshops.
-Happy Learning!*
+*This workshop content is provided for educational purposes during Solace Agent Mesh workshops*
+
+*Happy Learning!*
 
