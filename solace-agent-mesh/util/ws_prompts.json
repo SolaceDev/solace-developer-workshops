@@ -26,5 +26,19 @@
     "category": "a2a",
     "command": "strands_calculator",
     "initial_prompt": "What is 10 * 22? Give me the answer and Shakespearean style. The answer should be one short sentence. Use the calculator agent."
+  },
+  {
+    "name": "400 - AWS Documentation Agent: S3",
+    "description": "Interacting with the AWS Documentation Agent",
+    "category": "mcp",
+    "command": "aws_documentation_agent",
+    "initial_prompt": "Find information about 'Amazon S3' using the AWS Documentation Agent. Provide a summary of its key features and use cases in markdown format."
+  },
+  {
+    "name": "400 - AWS Documentation Agent: EC2",
+    "description": "Interacting with the AWS Documentation Agent",
+    "category": "mcp",
+    "command": "aws_documentation_agent_ec2",
+    "initial_prompt": "How can I access a server running on port 9000 in an ec2 instance from my IP address? Also list the factors of my IP address if it was a decimal number not an IP address."
   }
 ]

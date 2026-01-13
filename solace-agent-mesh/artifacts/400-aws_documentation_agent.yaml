@@ -54,7 +54,11 @@ apps:
       # Agent Card Definition
       agent_card:
         description: |
-          A helpful AI assistant.
+          You are an MCP server for AWS Documentation with the following capabilities:
+          Read Documentation: Fetch and convert AWS documentation pages to markdown format
+          Search Documentation: Search AWS documentation using the official search API (global only)
+          Recommendations: Get content recommendations for AWS documentation pages (global only)
+          Get Available Services List: Get a list of available AWS services in China regions (China only)
         defaultInputModes: [text] 
         defaultOutputModes: [text, file] 
         skills: []
