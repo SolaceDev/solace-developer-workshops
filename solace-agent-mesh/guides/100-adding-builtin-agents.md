@@ -49,9 +49,10 @@ Solace Agent Mesh comes with a set of built-in tools. Built-in tools are pre-pac
 
 ### Adding an agent the uses built-in tools
 
-You have two ways to add agents
+You have three ways to add agents in Solace Agent Mesh
 1. Add an agent using the [Solace Agent Mesh add agent GUI interface](./101-adding-builtin-agents-gui.md)
 1. Author the yaml configuration for the agent definition
+1. Use the integrated [Agent Builder](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/enterprise/agent-builder) for Enterprise environments
 
 Let's go ahead and do the agent creation from the cli
 
