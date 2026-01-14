@@ -12,6 +12,10 @@
 
 ---
 
+### What is A2A?
+
+A2A (Agent-to-Agent) is an open protocol that lets different AI agents talk to each other 1-to-1 in a standardized way so they can coordinate work across tools, vendors, and tech stacks. Instead of each agent being an isolated black box, A2A turns them into collaborators that can discover each other’s capabilities, negotiate tasks, and exchange structured results. In practice, this makes multi-agent workflows more reliable and reusable, because teams can plug in new agents without custom integrations every time.
+
 Solace Agent Mesh supports [Agent-to-Agent (A2A)](https://a2a-protocol.org/latest/) proxies to integrate external agentic frameworks that supports A2A like AWS Bedrock Agents, Azure AI Agent Service, or custom REST-based agents into your mesh.
 
 ### What is an A2A Proxy?
