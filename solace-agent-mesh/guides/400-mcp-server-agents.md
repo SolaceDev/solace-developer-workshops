@@ -9,6 +9,10 @@
 ## What is an MCP Server?
 The Model Context Protocol (MCP) is an open standard designed to connect Large Language Models (LLMs) to external data sources and tools. An MCP Server acts as a standardized interface or "connector" that exposes specific capabilities such as database access, local file manipulation, or API integrations to an LLM. By providing a uniform way for models to discover and execute tools, MCP eliminates the need to write custom integration code for every new data source.
 
+<div align="center">
+    <img src="../images/sam/400-mcp-a2a.png" alt="MCP/A2A Comparison" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
+
 ## Why add MCP Servers to Solace Agent Mesh
 MCP Servers are no longer the newest technology on the block for allowing agent to agent communication but they serve a valuable role in providing a means for existing applications to be utilized by LLMs.  By adding MCP Servers to our Solace Agent Mesh we can take advanatage of a vast catalog of tools that are exposed in a way that is easy for LLMs to consume and act on without having to re-write or re-wrap those tools in A2A frameworks.  
 
