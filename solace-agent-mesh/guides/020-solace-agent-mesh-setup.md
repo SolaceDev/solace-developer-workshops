@@ -58,7 +58,7 @@ cd sam-bootcamp
 
 ### Step 2: Setup Python virtual environment
 ```
-python3.12 -m venv venv
+python3 -m venv venv
 ```
 
 ### Step 3: Activate virtual environment
@@ -68,12 +68,12 @@ source venv/bin/activate
 
 ### Step 4: Install solace agent mesh and Astral UV
 ```
-pip install solace-agent-mesh==1.13.2 uv
+pip install solace-agent-mesh==1.16.4 uv
 ```
 
 ### Step 5: Verify installation
 ```
-uvx -v
+uvx -V
 sam -v
 ```
 You should see the installed sam version information.

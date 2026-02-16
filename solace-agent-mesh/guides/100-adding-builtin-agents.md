@@ -22,7 +22,7 @@ You can visualize agent interactions (e.g., **Orchestrator ↔ LLM**) by clickin
 > 💬 As you install more agents, you can always ask Solace Agent Mesh for a list of available agents and capabilities.
 
 <div align="center">
-    <img src="../images/sam/sam-info-agents.png" alt="Solace Agent Mesh Info Agents" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    <img src="../images/sam/100-sam-info-agents.png" alt="Solace Agent Mesh Info Agents" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
 </div>
 
 ---
@@ -94,7 +94,7 @@ Let's go ahead and do the agent creation from the cli
     - Review the Agents. In the Solace Agent Mesh browser tab, click on `Agents` to see the newly added agent.
 
     <div align="center">
-        <img src="../images/sam/sam-builtin-10.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+        <img src="../images/sam/100-sam-builtin-10.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
     </div>
 
 1. Let us test the use of these agents. In the Chat, enter a simple query
@@ -104,14 +104,14 @@ Let's go ahead and do the agent creation from the cli
     ```
 
     <div align="center">
-        <img src="../images/sam/sam-builtin-11.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+        <img src="../images/sam/100-sam-builtin-11.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
     </div>
 
     > **HINT:** If the workflow panel is not visible, just click on the network image !at the bottom of the chat panel (left)
 
 
     <div align="center">
-        <img src="../images/sam/sam-builtin-12.png" alt="Solace Agent Mesh Built-in Tools" width="30%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+        <img src="../images/sam/100-sam-builtin-12.png" alt="Solace Agent Mesh Built-in Tools" width="30%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
     </div>
 
 1. Let us issue a query that makes use of the built-in tools.
@@ -122,7 +122,7 @@ Let's go ahead and do the agent creation from the cli
     You will see an HTML report listing agentic capabilities available.
 
     <div align="center">
-        <img src="../images/sam/sam-builtin-13.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+        <img src="../images/sam/100-sam-builtin-13.png" alt="Solace Agent Mesh Built-in Tools" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
     </div>
 ---
 

@@ -72,6 +72,8 @@ In the Solace Agent Mesh Chat console, click the **Agents** tool on the left sid
 
 Click **Click for details** on any agent card to learn more about its configuration and skills.
 
+> **Note:** Please note that the sam_geo_information requires a token from https://geocode.maps.co/join/ otherwise the agent will not work. 
+
 Now, let's interact again with Solace Agent Mesh:
 
 ```
@@ -79,7 +81,7 @@ I'm planning a business trip and need a complete travel briefing. First, detemin
 ```
 
 <div align="center">
-    <img src="../images/sam/sam-info-agents-new.png" alt="Solace Agent Mesh Info Agents" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    <img src="../images/sam/100-sam-info-agents-new.png" alt="Solace Agent Mesh Info Agents" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
 </div>
 
 You can visualize agent interactions (e.g., **Orchestrator ↔ LLM**) by clicking the **network** icon below any chat response.
