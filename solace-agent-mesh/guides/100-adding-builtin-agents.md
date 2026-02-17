@@ -88,8 +88,10 @@ Let's go ahead and do the agent creation from the cli
         ```
 
 1. Start Solace Agent Mesh with the new Agent
-    - Back in the codespace Terminal, kill the add agent instance by running `Ctrl + C`
-    - Issue `sam run`
+    - Issue 
+    ```bash
+    sam run
+    ```
     - Return to the Solace Agent Mesh UI at port 8000 forwarded from your codespace.
     - Review the Agents. In the Solace Agent Mesh browser tab, click on `Agents` to see the newly added agent.
 
@@ -126,4 +128,4 @@ Let's go ahead and do the agent creation from the cli
     </div>
 ---
 
-[Next Section: Adding pre build agents](./200-adding-prebuilt-agents.md)
+[Next Section: Adding pre built agents](./200-adding-prebuilt-agents.md)
