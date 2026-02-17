@@ -38,13 +38,17 @@ This section describes how to add the [AWS Documentation MCP server](https://aws
    You might have to append `/?config_mode=addAgent` to the end of the url in your browser to reach the new agent page. 
    It should look similar to `https://super-duper-space-spork-5r5w5ww44rh7gvp-5002.app.github.dev/?config_mode=addAgent`
 3. Populate Agent Name and Instructions
-**Agent Name**
-`awsDocumentation`
-**Model Type**
-`General Model (*general_model)`
-**Instructions**
-  `
-  You are an AI documentation assistant named __AGENT_NAME__. Your goal is to use the AWS documentation MCP server to explore and respond to requests about AWS product usage in an accurate and concise way. `
+
+   **Agent Name**
+   `awsDocumentation`
+
+   **Model Type**
+   `General Model (*general_model)`
+
+   **Instructions**
+   ```
+   You are an AI documentation assistant named __AGENT_NAME__. Your goal is to use the AWS documentation MCP server to explore and respond to requests about AWS product usage in an accurate and concise way.
+   ```
 
 <div align="center">
     <img src="../images/sam/400-awsDocumentationAgentName.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
