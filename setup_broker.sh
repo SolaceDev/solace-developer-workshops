@@ -31,7 +31,7 @@ else
       --shm-size=2g \
       --env username_admin_globalaccesslevel=admin \
       --env username_admin_password=admin \
-      --name=solace solace/solace-pubsub-standard
+      --name=solace_10.8.1 solace/solace-pubsub-standard:10.8.1
   fi
 
   # Verify Solace container is running
