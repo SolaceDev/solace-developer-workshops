@@ -1,5 +1,18 @@
 # Introduction to FAA Data and Systems
 
+## Table of Contents
+
+- [FDPS (Flight Data Processing System)](#fdps-flight-data-processing-system)
+  - [FDPSFlightPlan — En-Route Flight Plan Messages](#fdpsflightplan--en-route-flight-plan-messages)
+  - [FDPSPosition — En-Route Real-Time Position/Surveillance Updates](#fdpsposition--en-route-real-time-positionsurveillance-updates)
+- [STDDS (Surface Data Distribution System)](#stdds-surface-data-distribution-system)
+  - [STDDSPosition — Surface Movement Event Messages](#stddsposition--surface-movement-event-messages)
+- [NAS Aeronautical References](#nas-aeronautical-references)
+- [CONOPS Data](#conops-data)
+  - [Documents Available](#documents-available)
+  - [What Each CONOPS Covers](#what-each-conops-covers)
+- [Next Steps](#next-steps)
+
 In this workshop, we'll work with two critical FAA data systems:
 
 ---
@@ -310,6 +323,5 @@ The RAG system contains two FAA SWIM Operational Context Documents:
 
 Now that you understand the core concepts of FAA Data you're ready to explore more advanced capabilities and what you can do with Solace Agent Mesh.
 
-In the next section, we'll add natural language querying capabilities to create a more intuitive interface for working with flight data.
-
-[Adding your first agent](./200-DatabaseAgent.md)
+1. [Understanding Solace Agent Mesh](./102-SAMOverview.md)
+1. [Adding your first agent](./200-DatabaseAgent.md)

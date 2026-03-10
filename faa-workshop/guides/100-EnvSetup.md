@@ -5,7 +5,7 @@
 - [1. Installing Solace Agent Mesh](#1-installing-solace-agent-mesh)
 - [2. Configuring Solace Agent Mesh](#2-configuring-solace-agent-mesh)
 - [3. Adding prompts to SAM](#3-adding-prompts-to-sam)
-- [4. Next Step](#3-next-step)
+- [4. Next Step](#4-next-step)
 
 To get started with the Solace Agent Mesh, follow the following steps
 
