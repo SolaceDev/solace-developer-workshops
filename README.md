@@ -1,9 +1,4 @@
 # Solace Workshops
-                                                                Click here to spin up
-                                                                          |
-                                                                          |
-                                                                          |
-                                                                          V
 
 <p align="center">
   <a href="https://github.com/codespaces/new/SolaceDev/solace-developer-workshops?quickstart=1">
