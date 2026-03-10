@@ -48,10 +48,12 @@ After initializing sam, you should now see a
 
 ## 2. Configuring Solace Agent Mesh
 
-1. Open your `.env` file and check the content. Note this is auto generated and we will add our environment variables throughout the workshop here
+1. Populate your .env file with the necessary environment variables into your local directory
+   ```
+    cp ../solution/.env_example .env
+   ```
 1. Populate the following variables
     ```
-    LLM_SERVICE_ENDPOINT="<Insert_LLM_SERVICE_ENDPOINT_here>"
     LLM_SERVICE_API_KEY="<Insert_LLM_SERVICE_API_KEY_here>"
     ```
 
@@ -71,6 +73,10 @@ Now lets pre-populate the solace agent mesh instance with prompts:
 
    ![new terminal](../img/new-terminal.png)
 
+1. Navigate to the workshop dir
+   ```
+   cd faa-workshop/sam/
+   ```
 1. Run the following script
    ```
    python3 util/populate_prompts.py --file util/faa_prompts.json

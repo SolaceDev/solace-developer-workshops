@@ -26,9 +26,11 @@
 
 ## What is Solace Agent Mesh?
 
-Solace Agent Mesh is an open-source, event-driven framework that creates a distributed ecosystem of collaborative AI agents. 
+[Solace Agent Mesh is an open-source](https://github.com/SolaceLabs/solace-agent-mesh), event-driven framework that creates a distributed ecosystem of collaborative AI agents. 
 
-At its core, Agent Mesh addresses a fundamental challenge in AI development: connecting powerful AI models to the data and systems where they provide value. Rather than building monolithic AI applications, Agent Mesh allows you to create specialized agents that each excel at specific tasks and collaborate through standardized communication. These agents could be hosted on whatever runtime environment such as AgentCore, be in any region, use any LLM model such as those that are hosted on Bedrock, and leverage A2A protocol
+At its core, Agent Mesh addresses a fundamental challenge in AI development: connecting powerful AI models to the data and systems where they provide value. Rather than building monolithic AI applications, Agent Mesh allows you to create specialized agents that each excel at specific tasks and collaborate through standardized communication. These agents could be hosted on whatever runtime environment such as AgentCore, be in any region, use any LLM model such as those that are hosted on Bedrock, and leverage A2A protocol. 
+
+👉 [Explore the Solace Agent Mesh documentation](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/getting-started)
 
 **Key Architectural Principles:**
 

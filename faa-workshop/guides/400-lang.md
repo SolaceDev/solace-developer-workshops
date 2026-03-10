@@ -1,9 +1,8 @@
-# Add a external agents
+# Add external agents: Lang Agent
 
 1. Kill the Solace Agent Mesh instance if its already running
     ```
-    CTR + C # On PC
-    CMD + C # on Mac
+    CTR + C
     ```
 
 1. Execute the following from your `sam` dir

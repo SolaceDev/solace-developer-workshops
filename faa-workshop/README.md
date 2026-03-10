@@ -72,7 +72,21 @@ This workshop will start from the [Environment Setup](./guides/100-EnvSetup.md) 
 
 ## Workshop Structure
 
-This workshop is divided into the following  parts:
+This workshop is divided into the following parts:
+
+1. **[Environment Setup](./guides/100-EnvSetup.md)** - Install and configure Solace Agent Mesh, set up your development environment, and add pre-populated prompts to get started with the workshop.
+
+2. **[Introduction to FAA Data and Systems](./guides/101-FaaData.md)** - Learn about the FAA data that you'll work with throughout the workshop.
+
+3. **[Understanding Solace Agent Mesh](./guides/102-SAMOverview.md)** - Explore the core concepts of Solace Agent Mesh including the artifact service, event-driven architecture with pub/sub, and A2A protocol communication.
+
+4. **[Database Agent](./guides/200-DatabaseAgent.md)** - Create your first agent by connecting to the MongoDB instance containing real-time FAA flight data and enabling natural language queries.
+
+5. **[RAG Agent](./guides/300-RAG.md)** - Add a knowledge database agent using Retrieval-Augmented Generation (RAG) to query CONOPS documentation and FAA operational context.
+
+6. **[Lang Agent Integration](./guides/400-lang.md)** - Integrate external Lang agents into your Solace Agent Mesh ecosystem using the integrated proxy
+
+7. **[Event-Driven Gateway](./guides/500-EventTriggered.md)** - Add an Event Mesh Gateway to enable real-time, event-triggered Agentic workflow
 
 ## Support
 
