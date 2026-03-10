@@ -6,6 +6,15 @@
   </a>
 </p>
 
+## Table of Contents
+
+- [Available Workshops](#available-workshops)
+- [Available tools and configurations in this workshop](#available-tools-and-configurations-in-this-workshop)
+- [Solace Broker](#solace-broker)
+  - [1. Local Solace Broker](#1-local-solace-broker)
+  - [2. Solace Cloud](#2-solace-cloud)
+- [Questions?](#questions)
+
 ## To Start a codespace session
 You can either click the "Open in Github Codespaces button above" or:
 
@@ -13,14 +22,18 @@ You can either click the "Open in Github Codespaces button above" or:
 1. Open the Codespaces tab    
 1. Click `Create codespaces on main`      
 
+## Available Workshops
+
+1. [FAA Workshop](./faa-workshop/README.md)
+1. [Solace Agent Mesh Workshop](./solace-agent-mesh/README.md)
+1. [Solace Samples](./samples/README.md)
+1. [Solace Masterclass](./solace-masterclass/)
+
 ## Available tools and configurations in this workshop
 
 1. Local Solace Software Broker 
 1. VSCode Solace extension
 1. Solace TryMe CLI tool `stm`
-1. [Solace Samples](./samples/README.md)
-1. [Solace Agent Mesh Workshop](./solace-agent-mesh/README.md)
-1. [FAA Workshop](./faa-workshop/README.md)
 
 ## Solace Broker
 
