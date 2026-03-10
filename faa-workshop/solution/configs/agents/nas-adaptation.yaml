@@ -1,0 +1,94 @@
+# Plugin Metadata:
+# Name: sam-mongodb
+# Version: 0.1.0
+# Description: A plugin that provides a MongoDB agent to perform complex queries based on natural language.
+# Author: SolaceLabs <solacelabs@solace.com>
+
+log:
+  stdout_log_level: INFO
+  log_file_level: INFO
+  log_file: nas-adaptation.log
+
+# To use the `shared_config.yaml` file, uncomment the following line and remove the `shared_config` section below.
+!include ../shared_config.yaml
+
+apps:
+  - name: nas-adaptation-app
+    app_module: solace_agent_mesh.agent.sac.app
+    broker:
+      <<: *broker_connection
+    app_config:
+      namespace: "${NAMESPACE}"
+      agent_name: "NasAdaptation"
+      display_name: "Aeronautical Reference"
+      supports_streaming: true
+
+      model: *general_model
+      instruction: |
+        You are NAS Adaptation Agent, an expert MongoDB assistant with deep knowledge of FAA NAS adaptation reference data.
+        Your primary goal is to translate user questions into accurate MongoDB aggregation pipelines against the NAS_References database,
+        which contains multiple collections covering aeronautical reference subjects such as named fixes, waypoints, chart mappings,
+        NAVAID relationships, and schema metadata. The set of available collections may grow over time — do not assume a fixed list.
+        Before querying for domain data, probe the database dynamically to confirm which collections exist and use
+        $collStats or a $limit:1 sample to understand each collection's structure before constructing complex pipelines.
+        When asked to query the database, generate the appropriate aggregation pipeline and call the query tool.
+        If the tool returns an error, analyze the error message and the original pipeline, then correct and retry.
+
+      agent_init_function:
+        module: "sam_mongodb.lifecycle"
+        name: "initialize_mongo_agent"
+        config:
+          db_host: "${FLIGHT_DATA_MONGO_HOST}"
+          db_port: ${FLIGHT_DATA_MONGO_PORT}
+          db_user: "${FLIGHT_DATA_MONGO_USER}"
+          db_password: "${FLIGHT_DATA_MONGO_PASSWORD}"
+          db_name: "${NAS_ADAPTATION_MONGO_DB}"
+          database_collection: "${NAS_ADAPTATION_MONGO_COLLECTION}" # Optional: if ommitted, the agent will detect all collections in the database and the LLM will need to specify the collection in the tool call
+          database_purpose: "${NAS_ADAPTATION_DB_PURPOSE}"
+          data_description: "${NAS_ADAPTATION_DB_DESCRIPTION}"
+          auto_detect_schema: ${AUTO_DETECT_SCHEMA, true}
+          max_inline_results: ${MAX_INLINE_RESULTS, 10}
+
+      agent_cleanup_function:
+        module: "sam_mongodb.lifecycle"
+        name: "cleanup_mongo_agent_resources"
+
+      tools:
+        - tool_type: builtin-group
+          group_name: "artifact_management"
+        - tool_type: builtin-group
+          group_name: "data_analysis"
+        - tool_type: python
+          component_module: "sam_mongodb.search_query"
+          function_name: "mongo_query"
+          tool_config:
+            collection: "${NAS_ADAPTATION_MONGO_COLLECTION}" # Optional: if ommitted, the agent will expect the LLM to specify the collection in the tool call
+
+      session_service: 
+        type: "sql"
+        database_url: "${NAS_ADAPTATION_DATABASE_URL, sqlite:///nas_adaptation.db}"
+        default_behavior: "PERSISTENT"
+      artifact_service: *default_artifact_service
+
+      artifact_handling_mode: "embed"
+      enable_embed_resolution: true
+      enable_artifact_content_instruction: true
+
+      agent_card:
+        description: "A MongoDB agent specializing in FAA NAS adaptation reference data, answering questions by dynamically querying available aeronautical reference collections covering subjects such as named fixes, chart mappings, NAVAID relationships, and associated schema metadata."
+        defaultInputModes: ["text"]
+        defaultOutputModes: ["text", "file"]
+        skills:
+          - id: "mongo_query"
+            name: "mongo_query"
+            description: "Answers questions by querying the connected MongoDB database."
+
+      agent_card_publishing:
+        interval_seconds: 30
+
+      agent_discovery:
+        enabled: false
+
+      inter_agent_communication:
+        allow_list: []
+        request_timeout_seconds: 30

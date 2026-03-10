@@ -1,0 +1,194 @@
+# This is a configuration template for the SAM RAG Agent Plugin.
+#
+# Plugin Metadata:
+# Name: sop-rag-agent
+# Version: 0.1.0
+# Description: This plugin allows you to import one RAG agent as action to be used in your SAM project.
+# Author: SolaceLabs <solacelabs@solace.com>
+
+log:
+  stdout_log_level: INFO
+  log_file_level: INFO
+  log_file: sop-rag.log
+
+# To use the `shared_config.yaml` file, uncomment the following line and remove the `shared_config` section below.
+!include ../shared_config.yaml
+
+apps:
+  - name: sop-rag-app
+    app_module: solace_agent_mesh.agent.sac.app
+    broker:
+      <<: *broker_connection
+    app_config:
+      namespace: "${NAMESPACE}" # Your A2A topic namespace
+      agent_name: "SOP"
+      display_name: "Standard Operating Procedures RAG Agent"
+      supports_streaming: true # RAG agent supports streaming responses
+
+      model: *general_model
+      instruction: |
+        You are the Standard Operating Procedures RAG Agent, an expert assistant with access to a RAG database containing FAA Standard Operating Procedures (SOPs) 
+        for SWIM services — specifically SFDPS (en-route flight plan and position data from ERAM) and STDDS SMES (airport surface movement events from ASDE-X/ASSC). 
+        Use these documents to answer questions about data definitions, message types, field meanings, service behavior, system architecture, and operational usage guidance.
+
+        The RAG database also contains FAA aeronautical fix and navaid reference data across three datasets: 
+        FIX_BASE (named waypoints with lat/lon coordinates, ICAO region, ARTCC jurisdiction, fix use code, and chart types), 
+        FIX_NAV (navaid-to-fix relationships including navaid type — VOR, VORTAC, LOC, NDB, TACAN — with bearing and distance), and 
+        FIX_CHRT (fix-to-chart-type associations such as ENROUTE HIGH/LOW, STAR, IAP, and CONTROLLER).
+        When answering questions, retrieve the most relevant content and synthesize accurate responses, citing the source document or dataset.
+
+      # --- Configurable Agent Initialization & Cleanup ---
+      agent_init_function:
+        module: "sam_rag.lifecycle"
+        name: "initialize_rag_agent"
+        config:
+          scanner:
+            batch: true
+            use_memory_storage: true
+            sources:
+              - type: filesystem
+                directories:
+                  - "${DOCUMENTS_PATH}" # Path to documents directory
+                filters:
+                  file_formats:
+                    - ".txt"
+                    - ".pdf"
+                    - ".docx"
+                    - ".md"
+                    - ".html"
+                    - ".csv"
+                    - ".json"
+                  max_file_size: 10240  # in KB (10MB)
+                schedule:
+                  interval: 60 # seconds
+
+          # Text splitter configuration
+          splitter:
+            default:
+              method: TokenTextSplitter
+              params:
+                chunk_size: 8190
+                chunk_overlap: 1000
+            splitters:
+              # Text file configurations
+              text:
+                method: TokenTextSplitter
+                params:
+                  chunk_size: 8190
+                  chunk_overlap: 1000
+              txt:
+                method: TokenTextSplitter
+                params:
+                  chunk_size: 8190
+                  chunk_overlap: 1000
+              # Structured data configurations
+              json:
+                method: RecursiveJSONSplitter
+                params:
+                  chunk_size: 200
+                  chunk_overlap: 200
+              html:
+                method: HTMLSplitter
+                params:
+                  chunk_size: 1000
+                  chunk_overlap: 200
+                  tags_to_extract: ["p", "h1", "h2", "h3", "li"]
+              markdown:
+                method: MarkdownSplitter
+                params:
+                  chunk_size: 1000
+                  chunk_overlap: 200
+                  headers_to_split_on: ["#", "##", "###", "####", "#####", "######"]
+                  strip_headers: false
+              csv:
+                method: CSVSplitter
+                params:
+                  chunk_size: 70 # chunk size in number of rows
+                  include_header: false
+          # Embedding configuration
+
+          embedding:
+            embedder_type: "litellm"
+            embedder_params:
+              model: "${EMBEDDING_MODEL_NAME}"
+              api_key: "${LLM_SERVICE_API_KEY}"
+              api_base: "${LLM_SERVICE_ENDPOINT}"
+            normalize_embeddings: true
+
+          vector_db:
+            db_type: "qdrant"
+            db_params:
+              url: "${QDRANT_URL}"
+              api_key: "${QDRANT_API_KEY}"
+              collection_name: "${QDRANT_COLLECTION}"
+              embedding_dimension: ${QDRANT_EMBEDDING_DIMENSION}
+
+          llm:
+            load_balancer:
+              - model_name: "gpt-4o"
+                litellm_params:
+                  model: ${LLM_SERVICE_GENERAL_MODEL_NAME}
+                  api_key: ${LLM_SERVICE_API_KEY}
+                  api_base: ${LLM_SERVICE_ENDPOINT}
+                  temperature: 0.01
+
+          retrieval:
+            top_k: 5
+
+      agent_cleanup_function:
+        module: "sam_rag.lifecycle"
+        name: "cleanup_rag_agent_resources"
+
+      # --- ADK Tools Configuration ---
+      tools:
+        - tool_type: python
+          component_module: "sam_rag.tools"
+          function_name: "ingest_document"
+          required_scopes: ["rag:ingest:write"]
+
+        - tool_type: python
+          component_module: "sam_rag.tools"
+          function_name: "search_documents"
+          required_scopes: ["rag:search:read"]
+
+
+      session_service: *default_session_service
+      artifact_service: *default_artifact_service
+
+      # Enable built-in artifact tools only for complex outputs
+      enable_builtin_artifact_tools:
+        enabled: true
+        artifact_threshold: 500  # Only create artifacts for responses > 500 chars
+
+      # Agent Card, Discovery, and Inter-Agent Communication
+      agent_card:
+        description: "Specialized Aviation Systems Expert with comprehensive access to FAA SWIM technical documentation, SOPs for SFDPS (en-route flight plan and position data) and STDDS SMES (airport surface movement events), and aeronautical fix/navaid reference data (FIX_BASE, FIX_NAV, FIX_CHRT) — serving as an authoritative source for aviation professionals requiring detailed guidance on FAA NAS data systems, flight operations, and airport surface management."
+        defaultInputModes: ["text", "file"]
+        defaultOutputModes: ["text", "file"]
+        skills:
+          - id: "document_ingestion"
+            name: "Document Ingestion"
+            description: "Ingest documents from various sources into the RAG system."
+            examples:
+              - "Please ingest this document about climate change."
+              - "Add this PDF to the knowledge base."
+          - id: "document_retrieval"
+            name: "Document Retrieval"
+            description: "Provide context about aviation and FAA data. This includes information about enroute flights, the format and structure of the data, and reference materials for FAA NAS systems."
+            examples:
+              - "What is the structure of the FDPSFlightPlan collection in JSON Schema format?"
+              - "Which navaids define the fix SAAME and what are their bearings and distances?"
+              - "What charts does fix AAARG appear on?"
+              - "Which airports are equipped with ASDE-X or ASSC for surface movement tracking?"
+              - "What is the GUFI and how is it used across SFDPS message types?"
+
+      agent_card_publishing:
+        interval_seconds: 30
+
+      agent_discovery:
+        enabled: true
+
+      inter_agent_communication:
+        allow_list: []
+        deny_list: []
+        request_timeout_seconds: 60

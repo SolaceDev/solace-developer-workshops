@@ -1,4 +1,9 @@
 # Solace Workshops
+                                                                Click here to spin up
+                                                                          |
+                                                                          |
+                                                                          |
+                                                                          V
 
 <p align="center">
   <a href="https://github.com/codespaces/new/SolaceDev/solace-developer-workshops?quickstart=1">
@@ -20,6 +25,7 @@ You can either click the "Open in Github Codespaces button above" or:
 1. Solace TryMe CLI tool `stm`
 1. [Solace Samples](./samples/README.md)
 1. [Solace Agent Mesh Workshop](./solace-agent-mesh/README.md)
+1. [FAA Workshop](./faa-workshop/README.md)
 
 ## Solace Broker
 

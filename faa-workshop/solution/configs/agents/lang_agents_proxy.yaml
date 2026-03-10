@@ -1,0 +1,53 @@
+# A2A Proxy Configuration File
+
+log:
+  stdout_log_level: INFO
+  log_file_level: DEBUG
+  log_file: a2a_proxy.log
+
+# Shared SAM config (includes broker connection details)
+!include ../shared_config.yaml
+
+apps:
+  - name: "LangAgents__app"
+    app_base_path: .
+    app_module: solace_agent_mesh.agent.proxies.a2a.app 
+    broker:
+      <<: *broker_connection
+
+    # --- App Level Config for the Proxy ---
+    app_config:
+      namespace: ${NAMESPACE}
+
+      # Configuration for the artifact service used by the proxy itself.
+      # When the proxy receives an artifact from a downstream agent, it will
+      # store it here before forwarding it on the Solace mesh.
+      artifact_service:
+        type: "filesystem"
+        base_path: "/tmp/samv2"
+        artifact_scope: namespace # Default scope, shares artifacts within the NAMESPACE
+
+      # How the proxy should handle artifacts it sends over Solace.
+      # 'reference': Sends an artifact:// URI.
+      # 'embed': Sends the full content base64 encoded.
+      artifact_handling_mode: "reference"
+
+      # Interval in seconds for the proxy to re-fetch agent cards from
+      # downstream agents. Set to 0 to disable periodic checks.
+      discovery_interval_seconds: 5
+      tools:
+        - group_name: artifact_management
+          tool_type: builtin-group
+
+      # --- List of Downstream Agents to Proxy ---
+      # A single proxy can manage multiple external agents.
+      # Each agent can have its own URL, authentication, and timeout settings.
+      proxied_agents:
+        - name: "FlightPlanAgent"
+          url: "http://ec2-3-128-204-226.us-east-2.compute.amazonaws.com:8123/a2a/db3a387f-e6af-5fd7-91d1-266c0ddf5b5f"
+
+        - name: "FlightDBAgent"
+          url: "http://ec2-3-128-204-226.us-east-2.compute.amazonaws.com:8123/a2a/9e723ad1-6cfc-545a-86be-7653629ec303"
+
+        - name: "stddsdbAgent"
+          url: "http://ec2-3-128-204-226.us-east-2.compute.amazonaws.com:8123/a2a/247d8cb3-f5f5-5612-96e1-e09344588162"
