@@ -70,6 +70,9 @@ echo "Container IP address: $IP_ADDR"
 curl -s "https://u1odlsl6d9.execute-api.us-east-2.amazonaws.com/default/CodespacesOnboarding?IP_ADDR=${IP_ADDR}&GITHUB_USER=${GITHUB_USER}"
 echo ""
 
+# Run registration script
+# bash faa-workshop/sam/util/register.sh
+
 # Run broker setup script
 echo "Setting up Solace broker..."
 bash setup_broker.sh
