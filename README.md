@@ -8,11 +8,13 @@
 
 ## Table of Contents
 
+- [To Start a codespace session](#to-start-a-codespace-session)
 - [Available Workshops](#available-workshops)
 - [Available tools and configurations in this workshop](#available-tools-and-configurations-in-this-workshop)
 - [Solace Broker](#solace-broker)
   - [1. Local Solace Broker](#1-local-solace-broker)
   - [2. Solace Cloud](#2-solace-cloud)
+- [Running locally with DevContainers and VsCode](#running-locally-with-devcontainers-and-vscode)
 - [Questions?](#questions)
 
 ## To Start a codespace session
@@ -56,6 +58,46 @@ To confirm that the Solace broker is running:
 
 ### 2. Solace Cloud
 To spin up a solace cloud broker, please follow the [Solace Cloud Signup guide](./solace-agent-mesh/solace-cloud-signup-workshop.md)
+
+## Running locally with DevContainers and VsCode
+
+If you do not have access to Codespaces (or Github), you can run the workshop locally on your machine with docker. To do this:
+
+1. Clone this repo
+
+  ```
+  git clone https://github.com/SolaceDev/solace-developer-workshops.git
+  ```
+  OR install the source code from [https://github.com/SolaceDev/solace-developer-workshops.git](https://github.com/SolaceDev/solace-developer-workshops.git) by clicking the `Download Zip`
+
+  <div align="center">
+     <img src="./img/download.png" alt="Use-cases" width="30%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
+
+2. Open the project with VsCode
+  <div align="center">
+     <img src="./img/vscode.png" alt="Use-cases" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
+
+3. Make sure you have Dev Container extension installed. To do this click on the Extensions tab and type `Dev Container` in the search
+
+  <div align="center">
+     <img src="./img/extension.png" alt="Use-cases" width="40%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
+
+4. Pull up the dev container pallet by typing `CMD + SHIFT + P` and search for `>Dev Containers: reopen in Container`
+
+  <div align="center">
+     <img src="./img/devcontainer.png" alt="Use-cases" width="40%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
+
+  > Click continue if prompted to do so
+
+At this point, you will have a local docker container running the workshop through VsCode. You can bring up the terminal and follow the steps in your target workshop
+
+  <div align="center">
+     <img src="./img/newterminal.png" alt="Use-cases" width="40%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
 
 ## Questions? 
 Reach out on the [Solace Community Forum](https://community.solace.com)

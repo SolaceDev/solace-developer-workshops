@@ -20,11 +20,11 @@
 ## Agentic Use-cases 
 
 <div align="center">
-   <img src="../img/agentic_use_cases.png" alt="Use-cases" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+   <img src="../img/agentic_use_cases.png" alt="Use-cases" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 <div align="center">
-   <img src="../img/agentic_use_cases2.png" alt="Use-cases" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+   <img src="../img/agentic_use_cases2.png" alt="Use-cases" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 
@@ -43,7 +43,7 @@ At its core, Agent Mesh addresses a fundamental challenge in AI development: con
 - **Scalability and Resilience**: The architecture supports horizontal scaling with fault tolerance and guaranteed message delivery
 
 <div align="center">
-   <img src="../img/SAM_arch.png" alt="SAM ARCH" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+   <img src="../img/SAM_arch.png" alt="SAM ARCH" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 ## The Artifact Service
@@ -60,7 +60,7 @@ When agents process tasks, they often generate intermediate or final results: re
 4. **Maintains Versions**: Every update to an artifact creates a new version (v0, v1, v2, etc.), allowing access to historical data
 
 <div align="center">
-   <img src="../img/artifacts.png" alt="Artifacts" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+   <img src="../img/artifacts.png" alt="Artifacts" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 **Example Workflow:**

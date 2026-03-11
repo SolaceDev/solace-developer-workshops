@@ -10,7 +10,7 @@
 The Model Context Protocol (MCP) is an open standard designed to connect Large Language Models (LLMs) to external data sources and tools. An MCP Server acts as a standardized interface or "connector" that exposes specific capabilities such as database access, local file manipulation, or API integrations to an LLM. By providing a uniform way for models to discover and execute tools, MCP eliminates the need to write custom integration code for every new data source.
 
 <div align="center">
-    <img src="../images/sam/400-mcp-a2a.png" alt="MCP/A2A Comparison" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    <img src="../images/sam/400-mcp-a2a.png" alt="MCP/A2A Comparison" width="80%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 ## Why add MCP Servers to Solace Agent Mesh
@@ -51,21 +51,21 @@ This section describes how to add the [AWS Documentation MCP server](https://aws
    ```
 
 <div align="center">
-    <img src="../images/sam/400-awsDocumentationAgentName.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    <img src="../images/sam/400-awsDocumentationAgentName.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 4. **Use Default artifact service**
 5. **Use Reference artifact handling**
 
 <div align="center">
-    <img src="../images/sam/400-referenceArtifactHandling.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    <img src="../images/sam/400-referenceArtifactHandling.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 6. **We have to add our MCP Server invocation options, the tools will be pulled from the MCP Server by the agent.**
 Press 'Add Tool'
 
 <div align="center">
-    <img src="../images/sam/400-selectAdd.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    <img src="../images/sam/400-selectAdd.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 Supply A tool name and Connection Parameters
@@ -86,7 +86,7 @@ Supply Environment Variables then press the green 'Add Tool' button then 'Next'.
 ```
 
 <div align="center">
-    <img src="../images/sam/400-addTools.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    <img src="../images/sam/400-addTools.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 7. **Populate Agent Card and Discovery options. We will use the same Agent Card description as agent description above**
@@ -95,13 +95,13 @@ You are an AI documentation assistant named awsDocumentation. Your goal is to us
 ```
 
 <div align="center">
-    <img src="../images/sam/400-agentCard.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    <img src="../images/sam/400-agentCard.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 8. **Review the Agent configuration then Save Agent & Finish**
 
 <div align="center">
-    <img src="../images/sam/400-save.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    <img src="../images/sam/400-save.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 **[Continue by starting Solace Agent Mesh](#run-solace-agent-mesh-with-the-new-aws-documentation-agent)**
@@ -169,7 +169,7 @@ Look at these sections of the [aws-documentation_agent.yaml](../../sam-bootcamp/
   ```
 
 <div align="center">
-    <img src="../images/sam/400-sam-command-1.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    <img src="../images/sam/400-sam-command-1.png" alt="Broker Details" width="80%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 ---

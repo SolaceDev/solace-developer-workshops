@@ -86,7 +86,7 @@ Now lets pre-populate the solace agent mesh instance with prompts:
 1. open a new terminal
 
    <div align="center">
-      <img src="../img/new-terminal.png" alt="new terminal" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+      <img src="../img/new-terminal.png" alt="new terminal" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
    </div>
 
 1. Navigate to the workshop dir
@@ -103,7 +103,7 @@ Now lets pre-populate the solace agent mesh instance with prompts:
 1. Navigate to the `Prompts` tab from your Solace Agent Mesh and observe the new prompts that got added
 
    <div align="center">
-      <img src="../img/prompts_list.png" alt="Prompts List" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+      <img src="../img/prompts_list.png" alt="Prompts List" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
    </div>
 
 ## 4. Next Step

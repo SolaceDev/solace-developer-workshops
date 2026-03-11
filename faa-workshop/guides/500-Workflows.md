@@ -16,7 +16,7 @@ Workflows in Solace Agent Mesh provide a powerful way to orchestrate multiple ag
 Workflows are particularly valuable when you need predictable execution that follows the same path every time, business processes with compliance or audit requirements, visual representation of agent interactions in the UI, and fine-grained control over error handling and retries. This makes workflows ideal for scenarios where consistency, auditability, and deterministic behavior are critical requirements.
 
 <div align="center">
-   <img src="../img/workflow.png" alt="Proxy Architecture" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+   <img src="../img/workflow.png" alt="Proxy Architecture" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 
