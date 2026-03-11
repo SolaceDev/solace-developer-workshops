@@ -28,14 +28,18 @@ From your terminal:
 ## Explore the agent
 Navigate to your Solace Agent Mesh instance and click on the "Agent Mesh" Tab. Observe the newly created agent
 
-![Flight_data_agent.png](../img/Flight_data_agent.png)
+<div align="center">
+   <img src="../img/Flight_data_agent.png" alt="Flight Data Agent" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
 
 1. Now back to your `Chat` tab, run the following slash command to insert one of the pre-saved prompts
     ```
     /100
     ```
 
-    ![slash_100.png](../img/slash_100.png)
+    <div align="center">
+       <img src="../img/slash_100.png" alt="Slash 100 Command" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    </div>
 
     This will insert the following prompt into your chat window
     ```
@@ -44,15 +48,21 @@ Navigate to your Solace Agent Mesh instance and click on the "Agent Mesh" Tab. O
 
 1. Click on the "View Activity" icon to view the flow of commands in your Agentic system
 
-    ![view_activity.png](../img/view_activity.png)
+    <div align="center">
+       <img src="../img/view_activity.png" alt="View Activity" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    </div>
 
 1. Observe the flow of events in your system
 
-    ![visualizer.png](../img/visualizer.png)
+    <div align="center">
+       <img src="../img/visualizer.png" alt="Visualizer" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    </div>
 
 1. Observe the stored artifacts 
 
-    ![artifacts_100.png](../img/artifacts_100.png)
+    <div align="center">
+       <img src="../img/artifacts_100.png" alt="Artifacts 100" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    </div>
 
 > Note: To learn more about Solace Agent Mesh and how artifacts are handles, refer to the [Solace Agent Mesh Overview](./102-SAMOverview.md) guide
 

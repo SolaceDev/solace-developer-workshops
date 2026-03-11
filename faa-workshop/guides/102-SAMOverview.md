@@ -19,9 +19,13 @@
 
 ## Agentic Use-cases 
 
-![Use-cases](../img/agentic_use_cases.png)
+<div align="center">
+   <img src="../img/agentic_use_cases.png" alt="Use-cases" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
 
-![Use-cases](../img/agentic_use_cases2.png)
+<div align="center">
+   <img src="../img/agentic_use_cases2.png" alt="Use-cases" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
 
 
 ## What is Solace Agent Mesh?
@@ -38,7 +42,9 @@ At its core, Agent Mesh addresses a fundamental challenge in AI development: con
 - **Component Decoupling**: Agents, gateways, and services communicate through standardized messages without needing to know each other's implementation details
 - **Scalability and Resilience**: The architecture supports horizontal scaling with fault tolerance and guaranteed message delivery
 
-![SAM ARCH](../img/SAM_arch.png)
+<div align="center">
+   <img src="../img/SAM_arch.png" alt="SAM ARCH" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
 
 ## The Artifact Service
 
@@ -53,7 +59,9 @@ When agents process tasks, they often generate intermediate or final results: re
 3. **Enables Dynamic Resolution**: Other agents or prompts can reference artifacts using these pointers, and Agent Mesh automatically resolves them when needed
 4. **Maintains Versions**: Every update to an artifact creates a new version (v0, v1, v2, etc.), allowing access to historical data
 
-![Artificats](../img/artifacts.png)
+<div align="center">
+   <img src="../img/artifacts.png" alt="Artifacts" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
 
 **Example Workflow:**
 

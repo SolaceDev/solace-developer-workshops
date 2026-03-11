@@ -6,6 +6,10 @@ Solace Agent Mesh is a framework agnostic agent orchestration layer that can con
 
 Any agent that adheres to the A2A protocol can communicate with all the other components of Solace Agent Mesh. The proxy handles essential functions including authentication management, agent discovery, artifact flow between systems, and task lifecycle management. This architecture allows you to integrate third-party agents, build hybrid cloud solutions, or gradually migrate existing systems while maintaining full interoperability across your agent ecosystem.
 
+<div align="center">
+   <img src="../img/proxy.png" alt="Proxy Architecture" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+</div>
+
 ## Connecting to Remote Lang Agents
 
 In this tutorial, we will be connecting to remote Lang agents hosted somewhere else and exposed as A2A servers. These external agents run on separate infrastructure but will appear and behave like native agents within your mesh once connected through the proxy. The proxy will automatically fetch their capabilities, handle authentication, and ensure seamless communication with all other agents in your Solace Agent Mesh deployment.
@@ -38,7 +42,9 @@ Navigate to your Solace Agent Mesh instance and click on the "Agent Mesh" Tab. O
 
 1. Click on the "View Activity" icon to view the flow of commands in your Agentic system
 
-    ![view_activity.png](../img/view_activity.png)
+    <div align="center">
+       <img src="../img/view_activity.png" alt="View Activity" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+    </div>
 
 1. Observe the flow of events in your system that leverages the newly added remote agent
 
