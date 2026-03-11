@@ -8,6 +8,7 @@
 
 ## Table of Contents
 
+- [Required Resources](#required-resources)
 - [To Start a codespace session](#to-start-a-codespace-session)
 - [Available Workshops](#available-workshops)
 - [Available tools and configurations in this workshop](#available-tools-and-configurations-in-this-workshop)
@@ -16,6 +17,19 @@
   - [2. Solace Cloud](#2-solace-cloud)
 - [Running locally with DevContainers and VsCode](#running-locally-with-devcontainers-and-vscode)
 - [Questions?](#questions)
+
+## Required Resources
+[ ] Access to Github
+[ ] Github Account
+[ ] Github Codespaces access
+[ ] Ability to reach AWS resources over the network (Some enterprises block AWS at a network level). 
+### If you do not have the above - it is possible to run locally with the following
+[ ] Docker or Podman
+[ ] VSCode app
+[ ] DevContainer plugin installed in VSCode
+### If either option above is not available 
+There are other options for running Solace Agent Mesh locally on your machine. We will address these scenarios on an individual basis.  
+
 
 ## To Start a codespace session
 You can either click the "Open in Github Codespaces button above" or:
