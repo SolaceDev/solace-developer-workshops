@@ -34,16 +34,23 @@ After initializing sam, you should now see a
    ```
    .
    ├── configs
-   │   ├── agents
-   │   │   └── main_orchestrator.yaml
-   │   ├── gateways
-   │   │   └── webui.yaml
-   │   ├── logging_config.yaml
-   │   └── shared_config.yaml
+   │   ├── agents
+   │   │   └── main_orchestrator.yaml
+   │   ├── gateways
+   │   │   └── webui.yaml
+   │   ├── logging_config.yaml
+   │   ├── services
+   │   │   └── platform.yaml
+   │   └── shared_config.yaml
    ├── requirements.txt
-   └── src
-      └── __init__.py
-   5 directories, 6 files
+   ├── sop
+   │   ├── SFDPS_Flight_Operational_Context_Document_v1.0_20180828_Final.md
+   │   └── STDDS_SMES_Operational_Context_Document_v1.1_2019_04_25_RevA.md
+   ├── src
+   │   └── __init__.py
+   └── util
+       ├── faa_prompts.json
+       └── populate_prompts.py
    ```
 
 ## 2. Configuring Solace Agent Mesh
@@ -56,6 +63,10 @@ After initializing sam, you should now see a
     ```
     LLM_SERVICE_API_KEY="<Insert_LLM_SERVICE_API_KEY_here>"
     ```
+
+    -  Navigate to the [.env](../sam/.env) file
+    -  Paste your LLM key in place of `<Insert_LLM_SERVICE_API_KEY_here>`
+    -  If you are using another openAI compatible endpoint with your own LLM key you can update the `LLM_SERVICE_ENDPOINT` variable as well
 
     > Note: You will get values to these variables from your instructor in the session
 1. Save the `.env` file
