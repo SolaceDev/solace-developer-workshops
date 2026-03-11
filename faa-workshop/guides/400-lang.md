@@ -1,5 +1,13 @@
 # Add external agents: Lang Agent
 
+## Table of Contents
+
+- [Understanding the Proxy Layer](#understanding-the-proxy-layer)
+- [Connecting to Remote Lang Agents](#connecting-to-remote-lang-agents)
+- [Configure your remote Agent](#configure-your-remote-agent)
+- [Explore the agent](#explore-the-agent)
+- [Next Steps](#next-steps)
+
 ## Understanding the Proxy Layer
 
 Solace Agent Mesh is a framework agnostic agent orchestration layer that can connect to external A2A agents through the proxy layer. The proxy layer acts as a protocol bridge, translating between A2A over Solace event mesh and A2A over HTTPS protocols. This enables agents within the mesh to delegate tasks to external agents and include them in collaborative workflows without requiring the external agents to be modified or redeployed.
@@ -49,4 +57,4 @@ Navigate to your Solace Agent Mesh instance and click on the "Agent Mesh" Tab. O
 1. Observe the flow of events in your system that leverages the newly added remote agent
 
 ## Next Steps
-- [Add an Event Mesh Gateway](./500-EventTriggered.md)
+- [Solace Agent Mesh Workflows](./500-Workflows.md)
