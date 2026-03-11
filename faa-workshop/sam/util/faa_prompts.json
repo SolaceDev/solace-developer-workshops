@@ -26,5 +26,12 @@
     "category": "Analysis",
     "command": "sop_analysis",
     "initial_prompt": "Describe the datapoints in my flights database. Consult the SOP from the RAG agent to use the right FAA terminologies. Generate an html document to summarise the data after you finish."
+  },
+  {
+    "name": "300 - Lang Agents",
+    "description": "Describe the datapoints in the NAS database using FAA terminology as per SOP.",
+    "category": "Analysis",
+    "command": "nas_sop_analysis",
+    "initial_prompt": "Using only the lang agents, query one object from every database and give a brief description of the contents of each collection based on the example object"
   }
 ]

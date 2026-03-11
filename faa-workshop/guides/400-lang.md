@@ -37,13 +37,13 @@ Navigate to your Solace Agent Mesh instance and click on the "Agent Mesh" Tab. O
     ```
     This will insert the following prompt into your chat window
     ```
-    TBD
+    Using only the lang agents, query one object from every database and give a brief description of the contents of each collection based on the example objectTBD
     ```
 
 1. Click on the "View Activity" icon to view the flow of commands in your Agentic system
 
     <div align="center">
-       <img src="../img/view_activity.png" alt="View Activity" width="70%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
+       <img src="../img/view_activity.png" alt="View Activity" width="30%" style="box-shadow: 0 4px 8px rgba(0,0,0,0.2); border-radius: 8px;">
     </div>
 
 1. Observe the flow of events in your system that leverages the newly added remote agent

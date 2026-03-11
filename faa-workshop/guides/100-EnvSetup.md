@@ -59,7 +59,10 @@ After initializing sam, you should now see a
 
     > Note: You will get values to these variables from your instructor in the session
 1. Save the `.env` file
-1. From terminal, run sam `sam run`
+1. From terminal, run solace agent mesh
+   ```
+   sam run
+   ```
 1. Navigate to the Solace Agent Mesh Web Gateway
 1. Run the following prompt
     ```
