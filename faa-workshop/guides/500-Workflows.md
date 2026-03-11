@@ -7,6 +7,7 @@
 - [Use Case: Flight Data Processing Pipeline](#use-case-flight-data-processing-pipeline)
 - [Workflow Configuration Structure](#workflow-configuration-structure)
   - [Key Configuration Sections Explained](#key-configuration-sections-explained)
+- [Create your first workflow](#create-your-first-workflow)
 - [Next Steps](#next-steps)
 
 ## Understanding Workflows
