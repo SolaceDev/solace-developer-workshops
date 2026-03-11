@@ -84,9 +84,11 @@ This workshop is divided into the following parts:
 
 5. **[RAG Agent](./guides/300-RAG.md)** - Add a knowledge database agent using Retrieval-Augmented Generation (RAG) to query CONOPS documentation and FAA operational context.
 
-6. **[Lang Agent Integration](./guides/400-lang.md)** - Integrate external Lang agents into your Solace Agent Mesh ecosystem using the integrated proxy
+6. **[Lang Agent Integration](./guides/400-lang.md)** - Integrate external Lang agents into your Solace Agent Mesh ecosystem through the proxy layer, connecting remote A2A-compliant agents.
 
-7. **[Event-Driven Gateway](./guides/500-EventTriggered.md)** - Add an Event Mesh Gateway to enable real-time, event-triggered Agentic workflow
+7. **[Solace Agent Mesh Workflows](./guides/500-Workflows.md)** - Learn how to orchestrate multiple agents through explicit YAML-based workflows for predictable, auditable execution paths.
+
+8. **[Event-Driven Gateway](./guides/500-EventTriggered.md)** - Add an Event Mesh Gateway to enable real-time, event-triggered Agentic workflow
 
 ## Support
 
