@@ -23,6 +23,7 @@ From your terminal:
     ```
     sam run
     ```
+1. [Optional] Open the [flight-data.yaml](../sam/configs/agents/flight-data.yaml) config file and explore the different sections
 
 ## Explore the agent
 Navigate to your Solace Agent Mesh instance and click on the "Agent Mesh" Tab. Observe the newly created agent
@@ -56,4 +57,4 @@ Navigate to your Solace Agent Mesh instance and click on the "Agent Mesh" Tab. O
 > Note: To learn more about Solace Agent Mesh and how artifacts are handles, refer to the [Solace Agent Mesh Overview](./102-SAMOverview.md) guide
 
 ## Next Steps
-- [Add your CNOPS RAG agent](./300-RAG.md)
+- [Optional] [Add your CNOPS RAG agent](./300-RAG.md)

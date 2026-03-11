@@ -38,7 +38,7 @@ At its core, Agent Mesh addresses a fundamental challenge in AI development: con
 - **Component Decoupling**: Agents, gateways, and services communicate through standardized messages without needing to know each other's implementation details
 - **Scalability and Resilience**: The architecture supports horizontal scaling with fault tolerance and guaranteed message delivery
 
-![SAM ARCH](../img/SAM_arch.jpg)
+![SAM ARCH](../img/SAM_arch.png)
 
 ## The Artifact Service
 
@@ -145,77 +145,6 @@ This pub/sub architecture means:
 - Multiple instances of the same agent can process requests in parallel
 - The system scales horizontally without configuration changes
 - Failed components can be restarted without impacting the mesh
-
----
-
-## Our use-case
-
-In the previous sections, you built a practical FAA flight management system using Agent Mesh. Let's connect what you did to Agent Mesh's architecture:
-
-### 1. Created DocumentDB Agents
-
-You created two specialized agents ([Creating DocumentDB Agents](300-DocumentDB-Agents.md)):
-
-- **FDPS Agent**: Connects to the FDPSPosition collection for enroute flight data
-- **STDDS Agent**: Connects to the STDDSPosition collection for surface movement data
-
-**What Agent Mesh Enabled:**
-- Each agent specializes in its data source
-- Agents run independently and can be scaled separately
-- Both agents automatically discovered by the Web UI Gateway
-- Communication happens asynchronously through the event broker
-
-### 2. Queried with Natural Language
-
-You tested the agents with natural language queries like:
-- "Provide me a summary of flights inbound into LAS"
-- "Provide me a summary of flights on the ground and taxiing in LAS"
-
-**What Agent Mesh Enabled:**
-- Gateway translated your HTTP request to A2A protocol
-- The correct agent was selected based on the query
-- Agent used its MongoDB tools to construct and execute queries
-- Results were returned through streaming status updates
-- **Artifact service** stored any generated data files efficiently
-
-### 3. How the Artifact Service Helped
-
-When agents generated query results:
-
-1. **Storage**: Results stored in artifact service (not embedded in response)
-2. **Reference**: Agent returned artifact references with metadata
-3. **Cost Savings**: Subsequent prompts about the same data only pass references, not full content
-4. **Accuracy**: Actual data retrieved from storage, not LLM memory (preventing hallucination)
-5. **Versioning**: Each query creates a new artifact version you can access
-
-**Example Flow:**
-```
-Prompt: "Get flights to LAS"
-  ↓
-FDPS Agent queries MongoDB → 50 flights found
-  ↓
-Agent creates artifact "las_flights.json" with results
-  ↓
-Artifact stored in service (artifact_id: xyz789)
-  ↓
-Agent returns: "Found 50 flights to LAS (stored as las_flights.json)"
-  ↓
-Follow-up: "Show me only United flights from that list"
-  ↓
-Agent loads artifact xyz789 → filters for United → creates new version
-  ↓
-Cost: Only artifact reference passed to LLM, not 50 flight records
-```
-
-### 4. Event-Driven Benefits
-
-Throughout your interactions:
-- **Asynchronous Processing**: Agents processed queries without blocking
-- **Parallel Operations**: Multiple agents could run simultaneously
-- **Fault Tolerance**: If an agent restarted, the mesh continued functioning
-- **Dynamic Discovery**: New agents appeared automatically in the UI
-- **Cloud Agnostic**: Having a messaging backbone for communication enables cross cloud communication between agents
-- **Cross Region**: Deploying the message broker across different regions enables cross region Agentic workflow
 
 ---
 

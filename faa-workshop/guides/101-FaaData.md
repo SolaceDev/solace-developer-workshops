@@ -30,7 +30,9 @@ There are two core FDPS collections available in this workshop:
 Each document represents a flight plan message (e.g., `AH` = Active/Amended, `FH` = Flight Plan, `HU` = Update) published by SFDPS for a flight operating under IFR or VFR+ rules. These messages capture the full flight plan: route of flight, aircraft equipment, assigned altitude, departure/arrival points, and the flight's Globally Unique Flight Identifier (GUFI).
 
 <details>
+
 <summary>Sample FDPSFlightPlan Document (N29ER, Cessna 172, KELM → N23, ZBW Center)</summary>
+
 ```json
 {
   "_id": "69af058c294e3e050450a0fa",
@@ -111,8 +113,8 @@ Each document represents a flight plan message (e.g., `AH` = Active/Amended, `FH
   }
 }
 ```
-</details>
 
+</details>
 
 ---
 
@@ -121,6 +123,7 @@ Each document represents a flight plan message (e.g., `AH` = Active/Amended, `FH
 Each document represents a real-time surveillance position update (`TH` = Track Hit, `HP` = Handoff/Position) published by SFDPS as an aircraft progresses en route. These messages capture the aircraft's current lat/lon, altitude, speed, velocity vector, and controlling sector — updated approximately every 12 seconds.
 
 <details>
+
 <summary>Sample FDPSPosition Document (FDX1404, Boeing 777F, KMEM → KLAX, ZAB Center)</summary>
 
 ```json
@@ -207,8 +210,8 @@ Each document represents a real-time surveillance position update (`TH` = Track 
   }
 }
 ```
-</details>
 
+</details>
 
 
 > **FDPS Cross-Collection Join:** `FDPSFlightPlan` and `FDPSPosition` records for the same flight share the same `message.flight.gufi.text` UUID, enabling a full picture of a flight's plan + trajectory.
@@ -226,7 +229,9 @@ STDDS data is sourced from the **SWIM STDDS SMES (Surface Movement Event Service
 Each document records a specific surface event for an aircraft at an ASDE-X equipped airport. Unlike the FDPS collections which update continuously, STDDS documents are **event-driven** — a new record is created each time a significant surface state change occurs (e.g., aircraft pushes back from gate, enters a runway, or becomes airborne).
 
 <details>
+
 <summary>Sample STDDSPosition Document (FDX1413, Boeing 777F, KMEM departing for PHNL)</summary>
+
 ```json
 {
   "_id": "69afe6500dd9d77082ab8eb2",
@@ -265,6 +270,7 @@ Each document records a specific surface event for an aircraft at an ASDE-X equi
   }
 }
 ```
+
 </details>
 
 

@@ -52,7 +52,7 @@ After initializing sam, you should now see a
    ```
     cp ../solution/.env_example .env
    ```
-1. Populate the following variables
+1. Configure the following variables in your [.env](../sam/.env)
     ```
     LLM_SERVICE_API_KEY="<Insert_LLM_SERVICE_API_KEY_here>"
     ```
