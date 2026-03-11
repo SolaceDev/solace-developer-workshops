@@ -24,6 +24,8 @@ You can either click the "Open in Github Codespaces button above" or:
 1. Open the Codespaces tab    
 1. Click `Create codespaces on main`      
 
+> Note: if you do not have access to Codespaces, please refer to the [Running locally with DevContainers and VsCode](#running-locally-with-devcontainers-and-vscode) section
+
 ## Available Workshops
 
 1. [FAA Workshop](./faa-workshop/README.md)
