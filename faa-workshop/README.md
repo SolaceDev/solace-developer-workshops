@@ -88,7 +88,7 @@ This workshop is divided into the following parts:
 
 7. **[Solace Agent Mesh Workflows](./guides/500-Workflows.md)** - Learn how to orchestrate multiple agents through explicit YAML-based workflows for predictable, auditable execution paths.
 
-8. **[Event-Driven Gateway](./guides/500-EventTriggered.md)** - Add an Event Mesh Gateway to enable real-time, event-triggered Agentic workflow
+8. **[Event-Driven Gateway](./guides/600-EventTriggered.md)** - Add an Event Mesh Gateway to enable real-time, event-triggered Agentic workflow
 
 ## Support
 
