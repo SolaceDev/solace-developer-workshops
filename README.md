@@ -25,7 +25,7 @@
 - [ ] Ability to reach AWS resources over the network (Some enterprises block AWS at a network level). - Access to https://us-east-2.signin.aws.amazon.com/
 
 > [!NOTE]
-> You do NOT need to have a log in to AWS for this workshop*
+> *You do NOT need to have a log in to AWS for this workshop*
 
 ### If you do not have the above - it is possible to run locally with the following
 - [ ] Docker or Podman
