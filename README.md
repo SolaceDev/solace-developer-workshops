@@ -77,6 +77,7 @@ To spin up a solace cloud broker, please follow the [Solace Cloud Signup guide](
 
 ## Running locally with DevContainers and VsCode
 
+### Setup
 If you do not have access to Codespaces (or Github), you can run the workshop locally on your machine with docker. To do this:
 
 1. Clone this repo
@@ -113,6 +114,19 @@ At this point, you will have a local docker container running the workshop throu
 
   <div align="center">
      <img src="./img/newterminal.png" alt="Use-cases" width="40%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
+
+### Cleanup
+5. To stop your remote session, pull up the remote explorer pallet by typing `CMD + SHIFT + P` and search for `>Remote Explorer: Focus on Dev Containers View`
+
+  <div align="center">
+     <img src="./img/remotexplorer.png" alt="Use-cases" width="40%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
+
+6. Remove the Dev Container
+
+  <div align="center">
+     <img src="./img/removecontainer.png" alt="Use-cases" width="40%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
   </div>
 
 ## Questions? 
