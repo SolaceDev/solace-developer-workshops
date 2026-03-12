@@ -18,11 +18,11 @@
 - [Running locally with DevContainers and VsCode](#running-locally-with-devcontainers-and-vscode)
 - [Questions?](#questions)
 
-## Required Resources
-[ ] Access to Github
-[ ] Github Account
-[ ] Github Codespaces access
-[ ] Ability to reach AWS resources over the network (Some enterprises block AWS at a network level). 
+## Required Resources - Test Access
+[ ] Access to Github - Reach https://github.com/SolaceDev/solace-developer-workshops
+[ ] Github Account - Log in to https://github.com/login
+[ ] Github Codespaces access - Can interact with 'New Codespace' here https://github.com/codespaces
+[ ] Ability to reach AWS resources over the network (Some enterprises block AWS at a network level). - Access to https://us-east-2.signin.aws.amazon.com/ (You do not need to have a log in)
 ### If you do not have the above - it is possible to run locally with the following
 [ ] Docker or Podman
 [ ] VSCode app
