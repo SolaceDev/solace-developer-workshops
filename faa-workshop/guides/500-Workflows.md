@@ -4,9 +4,9 @@
 
 - [Understanding Workflows](#understanding-workflows)
 - [Why Workflows Matter](#why-workflows-matter)
-- [Use Case: Flight Data Processing Pipeline](#use-case-flight-data-processing-pipeline)
-- [Workflow Configuration Structure](#workflow-configuration-structure)
-  - [Key Configuration Sections Explained](#key-configuration-sections-explained)
+- [For example: Flight Data Processing Pipeline](#for-example-flight-data-processing-pipeline)
+  - [Workflow Configuration Structure](#workflow-configuration-structure)
+    - [Key Configuration Sections Explained](#key-configuration-sections-explained)
 - [Create your first workflow](#create-your-first-workflow)
 - [Next Steps](#next-steps)
 
@@ -28,7 +28,9 @@ Workflows bring several important advantages to your agent mesh architecture. Th
 
 Workflows also enable reliability through built-in retry logic, timeout controls, and error handling at both the workflow and individual node levels. You can define exactly how the system should respond when things go wrong, ensuring graceful degradation rather than unexpected failures. Additionally, workflows register themselves as discoverable agents, allowing other agents and the orchestrator to invoke them just like any other agent in your mesh.
 
-## Use Case: Flight Data Processing Pipeline
+To learn more about workflows, check out the [Solace Agent Mesh Workflows](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/components/#workflows) official documentation
+
+## For example: Flight Data Processing Pipeline
 
 Consider a real-world aviation scenario where you need to process flight data through multiple validation and enrichment steps. A workflow can orchestrate the entire pipeline:
 
@@ -39,7 +41,7 @@ Consider a real-world aviation scenario where you need to process flight data th
 
 This sequence must happen in order, with each step depending on the success of the previous one. If validation fails, there is no point in enriching the data. If compliance checks fail, the report must reflect this status. A workflow ensures this exact sequence executes reliably every time.
 
-## Workflow Configuration Structure
+### Workflow Configuration Structure
 
 Workflows are defined using YAML configuration files with several key sections. Here is a simplified example based on the structure used in Solace Agent Mesh:
 
@@ -109,24 +111,24 @@ apps:
           report: "{{generate_report.output.report}}"
 ```
 
-### Key Configuration Sections Explained
+#### Key Configuration Sections Explained
 
-**Workflow Metadata**: The `version` and `description` fields document what the workflow does and help with versioning as your workflows evolve over time.
+- **Workflow Metadata**: The `version` and `description` fields document what the workflow does and help with versioning as your workflows evolve over time.
 
-**Input and Output Schemas**: These define the contract for your workflow using JSON Schema. The `input_schema` specifies what data the workflow expects to receive, while `output_schema` defines what it will return. This validation ensures type safety and clear interfaces.
+- **Input and Output Schemas**: These define the contract for your workflow using JSON Schema. The `input_schema` specifies what data the workflow expects to receive, while `output_schema` defines what it will return. This validation ensures type safety and clear interfaces.
 
-**Nodes Array**: This is the heart of the workflow, defining each step in the process. Each node has:
-- `id`: A unique identifier used to reference this step's output
-- `type`: The node type (agent, switch, map, loop, or workflow)
-- `agent_name`: Which agent to invoke for this step
-- `depends_on`: An optional array specifying which nodes must complete before this one executes
-- `input`: The data to pass to the agent, using template expressions like `{{workflow.input.field}}` or `{{previous_node.output.field}}`
+- **Nodes Array**: This is the heart of the workflow, defining each step in the process. Each node has:
+  - `id`: A unique identifier used to reference this step's output
+  - `type`: The node type (agent, switch, map, loop, or workflow)
+  - `agent_name`: Which agent to invoke for this step
+  - `depends_on`: An optional array specifying which nodes must complete before this one executes
+  - `input`: The data to pass to the agent, using template expressions like `{{workflow.input.field}}` or `{{previous_node.output.field}}`
 
-**Template Expressions**: Workflows use `{{...}}` syntax to reference data. `{{workflow.input.flight_id}}` accesses the initial input, while `{{validate_flight.output}}` retrieves the output from a completed node. This creates a data flow through your workflow.
+- **Template Expressions**: Workflows use `{{...}}` syntax to reference data. `{{workflow.input.flight_id}}` accesses the initial input, while `{{validate_flight.output}}` retrieves the output from a completed node. This creates a data flow through your workflow.
 
-**Output Mapping**: The final section maps node outputs to the workflow's overall output. This allows you to combine results from multiple nodes or extract specific fields from the final step.
+- **Output Mapping**: The final section maps node outputs to the workflow's overall output. This allows you to combine results from multiple nodes or extract specific fields from the final step.
 
-**Timeout Settings**: The `max_workflow_execution_time_seconds` prevents workflows from running indefinitely, while `default_node_timeout_seconds` sets a timeout for each individual step. These can be overridden per-node if needed.
+- **Timeout Settings**: The `max_workflow_execution_time_seconds` prevents workflows from running indefinitely, while `default_node_timeout_seconds` sets a timeout for each individual step. These can be overridden per-node if needed.
 
 ## Create your first workflow
 
