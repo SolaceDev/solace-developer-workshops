@@ -68,8 +68,9 @@ source venv/bin/activate
 
 ### Step 4: Install solace agent mesh and Astral UV
 ```
-pip install solace-agent-mesh==1.16.4 uv
+pip install solace-agent-mesh==1.18.8 uv
 ```
+> Note: We will use uv at a later step in the workshop
 
 ### Step 5: Verify installation
 ```
@@ -77,17 +78,6 @@ uvx -V
 sam -v
 ```
 You should see the installed sam version information.
-
-### Step 6: Verify Solace Broker is up and running
-``` sh
-docker ps | grep solace
-```
-Look for container, image and port information for the Solace broker (auto started during dev container startup)
-<div align="center">
-   <img src="../images/sam/020-sam-solace.png" alt="Initialize Solace Agent Mesh" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
-</div>
-
----
 
 ## 3. Initialize Solace Agent Mesh
 
@@ -186,8 +176,16 @@ Credentials you will need later for Solace Agent Mesh Setup
    <img src="../images/sam/020-sam-init-complete.png" alt="Init Complete" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
-The `sam-bootcamp` folder will have the basic structure created, and you are all set to go.
+The `sam-bootcamp` folder will have the basic structure created, and you are all set to go with the following dirs created.
 
+```
+.
+├── configs
+│   ├── agents
+│   ├── gateways
+│   └── services
+└── src
+```
 <div align="center">
    <img src="../images/sam/020-sam-init-7.png" alt="Sam Initialize - 7" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
@@ -241,9 +239,9 @@ We can pre-populate the solace agent mesh instance with prompts. To do this:
 
    > Note: You can delete all the prompts by executing `python3 util/populate_prompts.py --delete-all`
    
-1. Navigate to the `Prompts` tab from your Solace Agent Mesh and observe the new prompts that got added
-
-1. You can safely kill the new terminal 
+1. You can safely kill the new terminal
+   
+1. From your Solace Agent Mesh Web UI, navigate to the `Prompts` tab from your Solace Agent Mesh and observe the new prompts that got added
 
    <div align="center">
       <img src="../images/sam/020-kill-terminal.png" alt="Solace Agent Mesh Chat" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
