@@ -40,10 +40,17 @@ Solace provides a set of reusable, open-source agents. Solace Agent Mesh makes i
 
 3. Review available agents and their capabilities by clicking **More** on each tile.
 
-4. Add the Solace Community Repo with `+ Add Registry` button. The Core plugins are already present.
+4. Add the Solace Community Repo with `+ Add Registry` button. The core plugins are already present.
    - **SolaceCommunity Repository:**  
-     - URL: `https://github.com/solacecommunity/solace-agent-mesh-plugins`  
-     - Name: `SolaceCommunity`
+     - URL
+       ```
+       https://github.com/solacecommunity/solace-agent-mesh-plugins
+       ```
+       
+     - Name:
+       ```
+       SolaceCommunity
+       ```
 
 5. Click **Refresh** to load all available agents.
 
