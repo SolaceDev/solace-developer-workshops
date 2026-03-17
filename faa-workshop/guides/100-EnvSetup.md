@@ -79,6 +79,11 @@ After initializing sam, you should now see a
     ```
     What are your capabilities?
     ```
+
+   > Note: If you get an issue with your LLM response as follows `{"message":"The model returned the following errors: tool_choice.type: Field required"}` please navigate to the [.env](../sam/.env) file and change the `LLM_SERVICE_PLANNING_MODEL_NAME` and `LLM_SERVICE_GENERAL_MODEL_NAME` to the following
+   ```
+   openai/vertex-claude-4-5-sonnet
+   ```
 ## 3. Adding prompts to SAM
 
 Now lets pre-populate the solace agent mesh instance with prompts:
