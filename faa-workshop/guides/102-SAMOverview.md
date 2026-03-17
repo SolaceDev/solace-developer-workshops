@@ -50,6 +50,76 @@ At its core, Agent Mesh addresses a fundamental challenge in AI development: con
 
 One of the most powerful features of Agent Mesh is its artifact service, which fundamentally changes how agents handle data and files during task execution.
 
+## Challenges with Agentic Systems
+
+Building truly agentic AI systems, especially in enterprise contexts, introduces several non-trivial challenges:
+
+- **Data Silos & Integration Complexity**: AI models are powerful, but their value comes from contextual data spread across disparate systems that must be integrated seamlessly.
+
+- **Real-Time Collaboration**: Agents need to communicate, delegate, and synchronize state in real time. This requires asynchronous communication patterns and message brokering, not simple synchronous HTTP calls.
+
+- **Scalability & Parallelism**: Systems must handle many agents concurrently without bottlenecking, requiring distributed messaging, dynamic orchestration, and horizontal scaling.
+
+- **Fault Tolerance & Resilience**: In distributed agentic systems, failures are inevitable. The architecture must support reliable message delivery, safe retries, and loose coupling so work can continue even when individual agents or services go offline.
+
+- **Observability & Debugging**: As agents operate independently and asynchronously, it becomes difficult to understand system behavior. End-to-end traceability across messages, events, logs, and workflows is required to track requests, diagnose issues, and explain outcomes.
+
+- **Governance & Security**: Fine-grained access control, authentication, and controlled entry points matter, especially when agents access sensitive enterprise data.
+
+- **Context Management**: Agents must maintain and share evolving context across task boundaries and conversation state without inconsistent or stale views.
+
+These challenges are inherent limitations of traditional, tightly coupled systems that rely on synchronous communication and static integration patterns. Event driven architecture provides a clear path forward by enabling real time communication, loose coupling, resilience, and observability required for scalable and reliable agentic systems.
+
+## Why Event-Driven Real-Time Architecture Matters
+
+Traditional AI integration approaches (synchronous REST calls, batch processing, or tightly coupled pipelines) fall short when agents must observe, react to, and collaborate on live signals from enterprises. The following is enabled with adopting an event-driven architecture for your Agentic AI System:
+
+- **Agents need current context**: True agency requires reacting to *what’s happening now*, not stale cached data. Event streams deliver up-to-the-moment facts as they occur.
+
+- **Parallelism and asynchrony**: Agents often work on different parts of a task simultaneously. Event flows support independent concurrency without blocking or locking resources.
+
+- **Fault tolerance**: Real systems are flaky. EDA decouples senders from receivers so work isn’t lost when components restart or fail.
+
+- **Observability and traceability**: Events carry correlation context and status paths that make debugging and tracing workflows more reliable.
+
+- **Integration with live enterprise sources**: Agents can subscribe to real business events from apps, databases, IoT streams, or APIs, turning raw events into intent streams that guide workflows.
+
+To learn more about EDA in Agentic Systems, read more about:
+
+- [Agentic AI In Enterprise Environments](https://solace.com/products/agent-mesh/)
+- [What is Agentic AI](https://solace.com/what-is-agentic-ai/)
+
+## Key Takeaways
+
+1. **Agentic systems work best as distributed systems, not monoliths**
+
+    *Instead of building a single large AI application, Agent Mesh enables teams of specialized agents that collaborate to solve complex problems across data, tools, and systems.*
+
+1. **The real challenge is integration, not model intelligence**
+
+    *AI models are powerful, but their value depends on access to real enterprise data and systems. Agent Mesh focuses on connecting agents to where data and actions actually live. Remember the 80/20 rule: 80% of AI challenges is Data access; the remaining 20% is the AI technology*
+
+1. **Asynchronous, event driven communication is foundational**
+
+    *True agentic behavior requires agents to react to live signals, work in parallel, and operate independently. Event driven architecture enables this through decoupled, real time messaging.*
+
+1. **Loose coupling enables scalability, resilience, and evolution**
+
+    *Agents communicate through standardized messages without knowing each other’s internals, allowing systems to scale horizontally, tolerate failures, and evolve safely over time.*
+
+1. **Real time collaboration requires more than APIs**
+
+    *Synchronous APIs create tight dependencies and bottlenecks. Event streams enable continuous coordination, fault tolerance, and responsive workflows across agents.*
+
+1. **Observability and reliability are first class requirements**
+
+    *Distributed agent systems demand end to end traceability, guaranteed delivery, and resilience to failures to remain understandable and trustworthy in production.*
+
+1. **Event driven architecture is the path forward for agentic AI**
+
+    *By combining standardized agent communication with enterprise grade eventing, Agent Mesh provides the architectural foundation needed for scalable, real time, and production ready agentic systems.*
+
+
 ### How Artifacts Work
 
 When agents process tasks, they often generate intermediate or final results: reports, analysis outputs, processed documents, CSV files, or images. Instead of passing full content back and forth in every message (which would be costly and inefficient), Agent Mesh uses an **artifact service** that:
@@ -112,47 +182,6 @@ Artifacts can be shared across agents and sessions:
 - **Multi-Step Workflows**: Complex workflows can build on previous results
 - **User Access**: Users can download, view, and share generated artifacts
 
----
-
-## Event-Driven Architecture with Pub/Sub
-
-Agent Mesh's event-driven architecture, powered by the Solace Event Broker, is what enables its distributed, scalable, and resilient nature.
-
-### The Solace Event Broker
-
-The Solace Event Broker serves as the **central nervous system** of the agent mesh. It:
-
-- **Routes Messages**: Uses hierarchical topic structures to route messages between components
-- **Decouples Components**: Agents don't need to know about each other's locations or implementations
-- **Ensures Reliability**: Provides guaranteed message delivery and fault tolerance
-- **Enables Scalability**: Supports high-throughput, asynchronous communication patterns
-
-Think of it as a sophisticated message bus where agents publish events and subscribe to topics of interest, enabling flexible, loosely-coupled interactions.
-
-### A2A Protocol Communication
-
-The **Agent-to-Agent (A2A) protocol** is Agent Mesh's standardized communication format. Built on JSON-RPC 2.0, it defines how agents exchange messages for:
-
-- **Task Requests**: Initiating work by sending tasks to specific agents
-- **Status Updates**: Streaming progress updates during task execution
-- **Final Responses**: Returning completed results
-- **Agent Discovery**: Broadcasting capabilities to other agents
-- **Peer Delegation**: Agents delegating subtasks to other specialized agents
-
-**Topic Structure Examples:**
-
-| Purpose | Topic Pattern |
-|---------|---------------|
-| **Agent Discovery** | `{namespace}/a2a/v1/discovery/agentcards` |
-| **Task Requests** | `{namespace}/a2a/v1/agent/request/{agent_name}` |
-| **Status Updates** | `{namespace}/a2a/v1/gateway/status/{gateway_id}/{task_id}` |
-| **Final Responses** | `{namespace}/a2a/v1/gateway/response/{gateway_id}/{task_id}` |
-
-This pub/sub architecture means:
-- Agents can come online/offline dynamically
-- Multiple instances of the same agent can process requests in parallel
-- The system scales horizontally without configuration changes
-- Failed components can be restarted without impacting the mesh
 
 ---
 
