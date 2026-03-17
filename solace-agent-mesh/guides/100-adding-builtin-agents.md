@@ -1,4 +1,4 @@
-# Adding Built-in Agents to Solace Agent Mesh
+# Adding Your First Agent
 
 ## Table of Contents
 - [1. Explore Agents](#1-explore-agents)
