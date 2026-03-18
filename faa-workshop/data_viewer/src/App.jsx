@@ -169,6 +169,7 @@ function App() {
   const [viewMode, setViewMode] = useState('topic'); // 'topic' or 'payload'
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
   const [prettyPrintEnabled, setPrettyPrintEnabled] = useState(new Set()); // Track which messages have pretty-print ENABLED (default is disabled/raw)
+  const [autocompleteSuggestion, setAutocompleteSuggestion] = useState('');
   const solaceClient = useRef(null);
   const customTopicInputRef = useRef(null);
 
@@ -447,6 +448,29 @@ function App() {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleCustomTopicChange = (e) => {
+    const value = e.target.value;
+    setCustomTopic(value);
+    
+    // Auto-suggest logic
+    if (value.toLowerCase() === 'f') {
+      setAutocompleteSuggestion('FDPS/position/');
+    } else if (value.toLowerCase() === 's') {
+      setAutocompleteSuggestion('STDDS/position/');
+    } else {
+      setAutocompleteSuggestion('');
+    }
+  };
+
+  const handleCustomTopicKeyDown = (e) => {
+    // Accept suggestion with Tab or Right Arrow
+    if ((e.key === 'Tab' || e.key === 'ArrowRight') && autocompleteSuggestion) {
+      e.preventDefault();
+      setCustomTopic(autocompleteSuggestion);
+      setAutocompleteSuggestion('');
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Paper elevation={3} sx={{ p: 4, backgroundColor: solaceColors.white }}>
@@ -606,9 +630,10 @@ function App() {
                 inputRef={customTopicInputRef}
                 label="Custom Topic"
                 value={customTopic}
-                onChange={(e) => setCustomTopic(e.target.value)}
+                onChange={handleCustomTopicChange}
+                onKeyDown={handleCustomTopicKeyDown}
                 disabled={!connected}
-                placeholder="Enter custom topic here"
+                placeholder="Type 'f' for FDPS/ or 's' for STDDS/"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     handleCustomTopicSubscribe();
@@ -634,6 +659,25 @@ function App() {
                 }}
               />
               <ColorCodedInput value={customTopic} />
+              {/* Autocomplete suggestion overlay */}
+              {autocompleteSuggestion && (
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: '16.5px',
+                    left: '14px',
+                    pointerEvents: 'none',
+                    fontFamily: 'monospace',
+                    fontSize: '1rem',
+                    whiteSpace: 'pre',
+                    overflow: 'hidden',
+                    lineHeight: '1.4375em',
+                    color: '#999',
+                  }}
+                >
+                  {autocompleteSuggestion}
+                </Box>
+              )}
             </Box>
             <Button
               variant={customTopic && activeTopics.has(customTopic) ? 'contained' : 'outlined'}
