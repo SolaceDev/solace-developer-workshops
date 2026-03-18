@@ -13,6 +13,23 @@
   - [What Each CONOPS Covers](#what-each-conops-covers)
 - [Next Steps](#next-steps)
 
+To view the data in realtime, execute the following
+
+1. open a new terminal
+
+   <div align="center">
+      <img src="../img/new-terminal.png" alt="new terminal" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+   </div>
+
+1. Navigate to the workshop dir
+   ```
+   cd faa-workshop/sam/
+   ```
+1. Run the following script
+  ```
+  ./start_viewer.sh
+  ```
+
 In this workshop, we'll work with two critical FAA data systems:
 
 ---
