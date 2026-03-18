@@ -45,7 +45,7 @@ Navigate to your Solace Agent Mesh instance and click on the "Agent Mesh" Tab. O
     ```
     This will insert the following prompt into your chat window
     ```
-    Using only the lang agents, query one object from every database and give a brief description of the contents of each collection based on the example objectTBD
+    Using only the lang agents, query one object from every database and give a brief description of the contents of each collection based on the example object
     ```
 
 1. Click on the "View Activity" icon to view the flow of commands in your Agentic system
