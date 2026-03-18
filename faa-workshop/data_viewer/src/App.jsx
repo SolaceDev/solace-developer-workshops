@@ -436,14 +436,30 @@ function App() {
                   handleCustomTopicSubscribe();
                 }
               }}
+              sx={{
+                ...(customTopic && activeTopics.has(customTopic) && {
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: solaceColors.greenTint,
+                    '& fieldset': {
+                      borderColor: solaceColors.primary,
+                      borderWidth: 2,
+                    },
+                  },
+                }),
+              }}
             />
             <Button
-              variant="outlined"
+              variant={customTopic && activeTopics.has(customTopic) ? 'contained' : 'outlined'}
               onClick={handleCustomTopicSubscribe}
               disabled={!connected}
-              sx={{ minWidth: 120 }}
+              sx={{
+                minWidth: 140,
+                ...(customTopic && activeTopics.has(customTopic) && {
+                  background: `linear-gradient(135deg, ${solaceColors.primary} 0%, ${solaceColors.tealAccent} 100%)`,
+                }),
+              }}
             >
-              Subscribe
+              {customTopic && activeTopics.has(customTopic) ? 'Unsubscribe' : 'Subscribe'}
             </Button>
           </Stack>
         </Box>
