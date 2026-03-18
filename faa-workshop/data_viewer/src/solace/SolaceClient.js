@@ -3,7 +3,7 @@ import solace from 'solclientjs';
 class SolaceClient {
   constructor() {
     this.session = null;
-    this.subscribed = null;
+    this.subscribed = new Set(); // Track multiple subscriptions
     this.messageCallback = null;
     this.eventCallback = null;
     
@@ -118,9 +118,13 @@ class SolaceClient {
       return;
     }
 
-    // Unsubscribe from previous topic if exists
-    if (this.subscribed !== null) {
-      this.unsubscribe(this.subscribed);
+    // Check if already subscribed to this topic
+    if (this.subscribed.has(topic)) {
+      console.log('Already subscribed to:', topic);
+      if (onSuccess) {
+        onSuccess(topic);
+      }
+      return;
     }
 
     try {
@@ -130,8 +134,9 @@ class SolaceClient {
         topic,
         10000 // timeout
       );
-      this.subscribed = topic;
+      this.subscribed.add(topic);
       console.log('Subscribed to:', topic);
+      console.log('Active subscriptions:', Array.from(this.subscribed));
       if (onSuccess) {
         onSuccess(topic);
       }
@@ -155,10 +160,9 @@ class SolaceClient {
         topic,
         10000
       );
-      if (this.subscribed === topic) {
-        this.subscribed = null;
-      }
+      this.subscribed.delete(topic);
       console.log('Unsubscribed from:', topic);
+      console.log('Active subscriptions:', Array.from(this.subscribed));
     } catch (error) {
       console.error('Error unsubscribing:', error);
     }
@@ -176,8 +180,12 @@ class SolaceClient {
     return this.session !== null;
   }
 
-  getCurrentSubscription() {
-    return this.subscribed;
+  getCurrentSubscriptions() {
+    return Array.from(this.subscribed);
+  }
+
+  isSubscribed(topic) {
+    return this.subscribed.has(topic);
   }
 }
 

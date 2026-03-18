@@ -51,7 +51,7 @@ The application connects to:
 
 ## Pre-configured Topics
 
-1. `FDPS/position>` - All FDPS messages
+1. `FDPS/position/>` - All FDPS messages
 2. `STDDS/position/>` - All STDDS messages
 3. `FDPS/position/*/*/*/*/KIAH/>` - FDPS position data for KIAH airport
 4. `STDDS/position/KIAH/>` - STDDS position data for KIAH airport

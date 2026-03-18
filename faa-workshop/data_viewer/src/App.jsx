@@ -29,13 +29,15 @@ const PREDEFINED_TOPICS = [
   { label: 'STDDS/position/>', value: 'STDDS/position/>' },
   { label: 'FDPS/position/*/*/*/*/KIAH/>', value: 'FDPS/position/*/*/*/*/KIAH/>' },
   { label: 'STDDS/position/KIAH/>', value: 'STDDS/position/KIAH/>' },
+  { label: 'FDPS/position/*/*/*/*/KHOU/>', value: 'FDPS/position/*/*/*/*/KHOU/>' },
+  { label: 'STDDS/position/KHOU/>', value: 'STDDS/position/KHOU/>' },
 ];
 
 function App() {
   const [connected, setConnected] = useState(false);
   const [messages, setMessages] = useState([]);
   const [customTopic, setCustomTopic] = useState('');
-  const [activeTopic, setActiveTopic] = useState(null);
+  const [activeTopics, setActiveTopics] = useState(new Set()); // Track multiple active subscriptions
   const [subscriptionError, setSubscriptionError] = useState(null);
   const [viewMode, setViewMode] = useState('topic'); // 'topic' or 'payload'
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
@@ -205,7 +207,7 @@ function App() {
   const handleDisconnect = () => {
     solaceClient.current.disconnect();
     setConnected(false);
-    setActiveTopic(null);
+    setActiveTopics(new Set());
     setMessages([]);
     setSnackbar({ open: true, message: 'Disconnected from broker', severity: 'info' });
   };
@@ -216,18 +218,23 @@ function App() {
       return;
     }
 
-    // If clicking the same topic, unsubscribe
-    if (activeTopic === topic) {
+    // If clicking an already active topic, unsubscribe
+    if (activeTopics.has(topic)) {
       solaceClient.current.unsubscribe(topic);
-      setActiveTopic(null);
+      setActiveTopics((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(topic);
+        return newSet;
+      });
       setSnackbar({ open: true, message: `Unsubscribed from ${topic}`, severity: 'info' });
       return;
     }
 
+    // Subscribe to new topic (add to existing subscriptions)
     solaceClient.current.subscribe(
       topic,
       () => {
-        setActiveTopic(topic);
+        setActiveTopics((prev) => new Set(prev).add(topic));
         setSnackbar({ open: true, message: `Subscribed to ${topic}`, severity: 'success' });
       },
       (error) => {
@@ -400,12 +407,12 @@ function App() {
             {PREDEFINED_TOPICS.map((topic) => (
               <Button
                 key={topic.value}
-                variant={activeTopic === topic.value ? 'contained' : 'outlined'}
+                variant={activeTopics.has(topic.value) ? 'contained' : 'outlined'}
                 onClick={() => handleTopicSubscribe(topic.value)}
                 disabled={!connected}
-                sx={{ 
+                sx={{
                   flex: '0 1 auto',
-                  ...(activeTopic === topic.value && {
+                  ...(activeTopics.has(topic.value) && {
                     background: `linear-gradient(135deg, ${solaceColors.primary} 0%, ${solaceColors.tealAccent} 100%)`,
                   }),
                 }}
@@ -593,8 +600,21 @@ function App() {
         <Box sx={{ mt: 2, textAlign: 'center' }}>
           <Typography variant="caption" sx={{ color: solaceColors.secondaryText }}>
             Status: {connected ? '🟢 Connected' : '🔴 Disconnected'}
-            {activeTopic && ` | Active Topic: ${activeTopic}`}
+            {activeTopics.size > 0 && ` | Active Subscriptions: ${activeTopics.size}`}
           </Typography>
+          {activeTopics.size > 0 && (
+            <Typography
+              variant="caption"
+              sx={{
+                color: solaceColors.secondaryText,
+                display: 'block',
+                mt: 0.5,
+                fontSize: '0.7rem'
+              }}
+            >
+              {Array.from(activeTopics).join(', ')}
+            </Typography>
+          )}
         </Box>
       </Paper>
 
