@@ -23,12 +23,12 @@ To view the data in realtime, execute the following
 
 1. Navigate to the workshop dir
    ```
-   cd faa-workshop/sam/
+   cd faa-workshop
    ```
 1. Run the following script
-  ```
-  ./start_viewer.sh
-  ```
+    ```
+    ./start_viewer.sh
+    ```
 
 In this workshop, we'll work with two critical FAA data systems:
 
