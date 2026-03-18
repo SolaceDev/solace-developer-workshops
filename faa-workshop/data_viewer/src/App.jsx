@@ -12,6 +12,7 @@ import {
   Divider,
   Alert,
   Snackbar,
+  IconButton,
 } from '@mui/material';
 import SolaceClient from './solace/SolaceClient';
 import { solaceColors } from './theme';
@@ -38,6 +39,7 @@ function App() {
   const [subscriptionError, setSubscriptionError] = useState(null);
   const [viewMode, setViewMode] = useState('topic'); // 'topic' or 'payload'
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
+  const [prettyPrintEnabled, setPrettyPrintEnabled] = useState(new Set()); // Track which messages have pretty-print ENABLED (default is disabled/raw)
   const solaceClient = useRef(null);
 
   useEffect(() => {
@@ -73,24 +75,70 @@ function App() {
             payload = String(binaryAttachment);
           }
           
-          // Clean up payload - find the first '{' character for JSON
+          // Clean up payload - extract valid JSON
           const jsonStart = payload.indexOf('{');
-          if (jsonStart > 0) {
-            console.log('📦 Removing', jsonStart, 'header bytes before JSON');
-            payload = payload.substring(jsonStart);
+          if (jsonStart >= 0) {
+            if (jsonStart > 0) {
+              console.log('📦 Removing', jsonStart, 'header bytes before JSON');
+              payload = payload.substring(jsonStart);
+            }
+            
+            // Try to find the end of the JSON object by parsing
+            try {
+              // Parse to validate and find the actual JSON end
+              const parsed = JSON.parse(payload);
+              // Re-stringify to get clean JSON without trailing data
+              payload = JSON.stringify(parsed);
+              console.log('📦 Extracted clean JSON, length:', payload.length);
+            } catch (e) {
+              // If parsing fails, try to manually find the matching closing brace
+              let braceCount = 0;
+              let inString = false;
+              let escape = false;
+              let jsonEnd = -1;
+              
+              for (let i = 0; i < payload.length; i++) {
+                const char = payload[i];
+                
+                if (escape) {
+                  escape = false;
+                  continue;
+                }
+                
+                if (char === '\\') {
+                  escape = true;
+                  continue;
+                }
+                
+                if (char === '"' && !escape) {
+                  inString = !inString;
+                  continue;
+                }
+                
+                if (!inString) {
+                  if (char === '{') {
+                    braceCount++;
+                  } else if (char === '}') {
+                    braceCount--;
+                    if (braceCount === 0) {
+                      jsonEnd = i + 1;
+                      break;
+                    }
+                  }
+                }
+              }
+              
+              if (jsonEnd > 0) {
+                payload = payload.substring(0, jsonEnd);
+                console.log('📦 Manually extracted JSON, length:', payload.length);
+              }
+            }
           }
           
-          // Try to parse and format as JSON if it's JSON
-          try {
-            const jsonObj = JSON.parse(payload);
-            payload = JSON.stringify(jsonObj, null, 2);
-            console.log('📦 Formatted JSON payload:', payload.substring(0, 100));
-          } catch (e) {
-            // Not JSON, keep as-is
-            console.log('📦 Text payload:', payload.substring(0, 100));
-          }
+          console.log('📦 Final payload:', payload.substring(0, 100));
         } else if (message.getSdtContainer()) {
-          payload = JSON.stringify(message.getSdtContainer(), null, 2);
+          // Store raw JSON string - don't format here
+          payload = JSON.stringify(message.getSdtContainer());
           console.log('📦 SDT payload:', payload.substring(0, 100));
         } else {
           console.log('⚠️ No payload found in message');
@@ -194,7 +242,53 @@ function App() {
 
   const handleClearMessages = () => {
     setMessages([]);
+    setPrettyPrintEnabled(new Set());
     setSnackbar({ open: true, message: 'Messages cleared', severity: 'info' });
+  };
+
+  const togglePrettyPrint = (messageId) => {
+    console.log('🎯 Toggle clicked for message:', messageId);
+    console.log('📋 Current prettyPrintEnabled:', prettyPrintEnabled);
+    
+    setPrettyPrintEnabled((prev) => {
+      const newSet = new Set(prev);
+      const isEnabled = newSet.has(messageId);
+      
+      if (isEnabled) {
+        newSet.delete(messageId);
+        console.log('❌ Disabling pretty-print for:', messageId);
+      } else {
+        newSet.add(messageId);
+        console.log('✅ Enabling pretty-print for:', messageId);
+      }
+      
+      console.log('📋 New prettyPrintEnabled:', newSet);
+      return newSet;
+    });
+  };
+
+  const formatPayload = (payload, messageId) => {
+    const isEnabled = prettyPrintEnabled.has(messageId);
+    console.log(`🎨 Formatting payload for ${messageId}, pretty-print enabled: ${isEnabled}`);
+    console.log(`📄 Payload preview:`, payload?.substring(0, 100));
+    
+    // If not enabled, return raw payload (default)
+    if (!isEnabled) {
+      console.log('📦 Returning raw payload (pretty-print disabled)');
+      return payload;
+    }
+
+    // Try to pretty-print JSON when enabled
+    try {
+      const jsonObj = JSON.parse(payload);
+      const formatted = JSON.stringify(jsonObj, null, 2);
+      console.log('✨ Returning formatted payload, length:', formatted.length);
+      return formatted;
+    } catch (e) {
+      // Not valid JSON, return as-is
+      console.log('⚠️ Not valid JSON, returning as-is. Error:', e.message);
+      return payload;
+    }
   };
 
   const handleCustomTopicSubscribe = () => {
@@ -421,12 +515,49 @@ function App() {
                       borderLeft: `4px solid ${solaceColors.primary}`,
                     }}
                   >
-                    <Typography
-                      variant="caption"
-                      sx={{ color: solaceColors.lightGrey, display: 'block', mb: 0.5 }}
-                    >
-                      {msg.timestamp}
-                    </Typography>
+                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
+                      <Typography
+                        variant="caption"
+                        sx={{ color: solaceColors.lightGrey, display: 'block', mb: 0.5 }}
+                      >
+                        {msg.timestamp}
+                      </Typography>
+                      {viewMode === 'payload' && (
+                        <IconButton
+                          size="small"
+                          onClick={() => togglePrettyPrint(msg.id)}
+                          sx={{
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold',
+                            fontFamily: 'monospace',
+                            color: prettyPrintEnabled.has(msg.id)
+                              ? solaceColors.primary
+                              : solaceColors.lightGrey,
+                            backgroundColor: prettyPrintEnabled.has(msg.id)
+                              ? solaceColors.greenTint
+                              : 'transparent',
+                            border: `1px solid ${
+                              prettyPrintEnabled.has(msg.id)
+                                ? solaceColors.primary
+                                : solaceColors.diagramBorders
+                            }`,
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            transition: 'all 0.2s',
+                            '&:hover': {
+                              backgroundColor: prettyPrintEnabled.has(msg.id)
+                                ? solaceColors.primary
+                                : solaceColors.patternLines,
+                              color: prettyPrintEnabled.has(msg.id)
+                                ? solaceColors.white
+                                : solaceColors.primaryDarkText,
+                            },
+                          }}
+                        >
+                          {'{}'}
+                        </IconButton>
+                      )}
+                    </Stack>
                     {viewMode === 'topic' ? (
                       <Typography
                         variant="body2"
@@ -444,13 +575,11 @@ function App() {
                         sx={{
                           fontFamily: 'monospace',
                           color: solaceColors.primaryDarkText,
-                          wordBreak: 'break-all',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
+                          wordBreak: 'break-word',
+                          whiteSpace: 'pre-wrap',
                         }}
                       >
-                        {msg.payload || 'No payload'}
+                        {formatPayload(msg.payload, msg.id) || 'No payload'}
                       </Typography>
                     )}
                   </Paper>
