@@ -33,8 +33,135 @@ const PREDEFINED_TOPICS = [
   { label: 'STDDS/position/KHOU/>', value: 'STDDS/position/KHOU/>' },
 ];
 
+// Define topic level schemas with colors for dynamic variables
+const TOPIC_SCHEMAS = {
+  FDPS: {
+    levels: [
+      { name: 'FDPS', color: '#000000' },           // Level 0 - static
+      { name: 'position', color: '#000000' },       // Level 1 - static
+      { name: 'FLIGHT_ID', color: '#dc2626' },      // Level 2 - red
+      { name: 'STATUS', color: '#2563eb' },         // Level 3 - blue
+      { name: 'CALLSIGN', color: '#16a34a' },       // Level 4 - green
+      { name: 'ORIGIN', color: '#9333ea' },         // Level 5 - purple
+      { name: 'DESTINATION', color: '#ea580c' },    // Level 6 - orange
+      { name: 'LATITUDE', color: '#0891b2' },       // Level 7 - cyan
+      { name: 'LONGITUDE', color: '#db2777' },      // Level 8 - pink
+      { name: 'GROUND_SPEED', color: '#ca8a04' },   // Level 9 - yellow
+      { name: 'ALTITUDE', color: '#65a30d' },       // Level 10 - lime
+      { name: 'HEADING', color: '#7c3aed' },        // Level 11 - violet
+    ]
+  },
+  STDDS: {
+    levels: [
+      { name: 'STDDS', color: '#000000' },          // Level 0 - static
+      { name: 'position', color: '#000000' },       // Level 1 - static
+      { name: 'AIRPORT_CODE', color: '#dc2626' },   // Level 2 - red
+      { name: 'FLIGHT_ID', color: '#2563eb' },      // Level 3 - blue
+    ]
+  }
+};
+
+// Get color for a specific level in a topic
+const getTopicLevelColor = (topic, levelIndex) => {
+  const parts = topic.split('/');
+  const rootLevel = parts[0];
+  const schema = TOPIC_SCHEMAS[rootLevel];
+  
+  if (!schema || levelIndex >= schema.levels.length) {
+    return '#000000'; // Default to black
+  }
+  
+  return schema.levels[levelIndex].color;
+};
+
+// Component to render color-coded topic
+const ColorCodedTopic = ({ topic }) => {
+  const parts = topic.split('/');
+  const rootLevel = parts[0];
+  const schema = TOPIC_SCHEMAS[rootLevel];
+
+  if (!schema) {
+    // No schema, render in black
+    return <span style={{ color: '#000000' }}>{topic}</span>;
+  }
+
+  return (
+    <>
+      {parts.map((part, index) => {
+        const color = schema.levels[index]?.color || '#000000';
+        const isLast = index === parts.length - 1;
+        return (
+          <span key={index}>
+            <span style={{ color }}>{part}</span>
+            {!isLast && <span style={{ color: '#000000' }}>/</span>}
+          </span>
+        );
+      })}
+    </>
+  );
+};
+
+// Component to render color-coded input field overlay
+const ColorCodedInput = ({ value }) => {
+  if (!value) return null;
+  
+  const parts = value.split('/');
+  const rootLevel = parts[0];
+  const schema = TOPIC_SCHEMAS[rootLevel];
+
+  // If no schema, show text in black
+  if (!schema) {
+    return (
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '16.5px',
+          left: '14px',
+          pointerEvents: 'none',
+          fontFamily: 'monospace',
+          fontSize: '1rem',
+          whiteSpace: 'pre',
+          overflow: 'hidden',
+          lineHeight: '1.4375em',
+          color: '#000000',
+        }}
+      >
+        {value}
+      </Box>
+    );
+  }
+
+  return (
+    <Box
+      sx={{
+        position: 'absolute',
+        top: '16.5px',
+        left: '14px',
+        pointerEvents: 'none',
+        fontFamily: 'monospace',
+        fontSize: '1rem',
+        whiteSpace: 'pre',
+        overflow: 'hidden',
+        lineHeight: '1.4375em',
+      }}
+    >
+      {parts.map((part, index) => {
+        const color = schema.levels[index]?.color || '#000000';
+        const isLast = index === parts.length - 1;
+        return (
+          <span key={index}>
+            <span style={{ color }}>{part}</span>
+            {!isLast && <span style={{ color: '#000000' }}>/</span>}
+          </span>
+        );
+      })}
+    </Box>
+  );
+};
+
 function App() {
   const [connected, setConnected] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const [messages, setMessages] = useState([]);
   const [customTopic, setCustomTopic] = useState('');
   const [activeTopics, setActiveTopics] = useState(new Set()); // Track multiple active subscriptions
@@ -43,6 +170,7 @@ function App() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
   const [prettyPrintEnabled, setPrettyPrintEnabled] = useState(new Set()); // Track which messages have pretty-print ENABLED (default is disabled/raw)
   const solaceClient = useRef(null);
+  const customTopicInputRef = useRef(null);
 
   useEffect(() => {
     // Initialize Solace client
@@ -183,6 +311,7 @@ function App() {
   }, []);
 
   const handleConnect = () => {
+    setConnecting(true);
     setSnackbar({ open: true, message: 'Connecting to Solace broker...', severity: 'info' });
     
     solaceClient.current.connect(
@@ -192,13 +321,15 @@ function App() {
       BROKER_CONFIG.password,
       () => {
         setConnected(true);
+        setConnecting(false);
         setSnackbar({ open: true, message: 'Successfully connected!', severity: 'success' });
       },
       (error) => {
-        setSnackbar({ 
-          open: true, 
-          message: `Connection failed: ${error.toString()}`, 
-          severity: 'error' 
+        setConnecting(false);
+        setSnackbar({
+          open: true,
+          message: `Connection failed: ${error.toString()}`,
+          severity: 'error'
         });
       }
     );
@@ -348,23 +479,23 @@ function App() {
           <Stack spacing={0.5}>
             <Typography
               variant="body2"
+              component="div"
               sx={{
                 fontFamily: 'monospace',
-                color: solaceColors.secondaryText,
                 fontSize: '0.75rem',
               }}
             >
-              FDPS/position/{'{FLIGHT_ID}'}/{'{STATUS}'}/{'{CALLSIGN}'}/{'{ORIGIN}'}/{'{DESTINATION}'}/{'{LATITUDE}'}/{'{LONGITUDE}'}/{'{GROUND_SPEED}'}/{'{ALTITUDE}'}/{'{HEADING}'}
+              <ColorCodedTopic topic="FDPS/position/{FLIGHT_ID}/{STATUS}/{CALLSIGN}/{ORIGIN}/{DESTINATION}/{LATITUDE}/{LONGITUDE}/{GROUND_SPEED}/{ALTITUDE}/{HEADING}" />
             </Typography>
             <Typography
               variant="body2"
+              component="div"
               sx={{
                 fontFamily: 'monospace',
-                color: solaceColors.secondaryText,
                 fontSize: '0.75rem',
               }}
             >
-              STDDS/position/{'{AIRPORT_CODE}'}/{'{FLIGHT_ID}'}
+              <ColorCodedTopic topic="STDDS/position/{AIRPORT_CODE}/{FLIGHT_ID}" />
             </Typography>
           </Stack>
         </Paper>
@@ -374,22 +505,55 @@ function App() {
           <Button
             variant="contained"
             size="large"
-            disabled={connected}
+            disabled={connected || connecting}
             onClick={handleConnect}
-            sx={{ minWidth: 200 }}
+            sx={{
+              minWidth: 200,
+              ...(connecting && {
+                position: 'relative',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: -2,
+                  left: -2,
+                  right: -2,
+                  bottom: -2,
+                  background: `linear-gradient(45deg, ${solaceColors.primary}, ${solaceColors.tealAccent}, ${solaceColors.primary})`,
+                  backgroundSize: '200% 200%',
+                  borderRadius: '4px',
+                  zIndex: -1,
+                  animation: 'borderGlow 1.5s ease-in-out infinite',
+                },
+                '@keyframes borderGlow': {
+                  '0%': {
+                    backgroundPosition: '0% 50%',
+                  },
+                  '50%': {
+                    backgroundPosition: '100% 50%',
+                  },
+                  '100%': {
+                    backgroundPosition: '0% 50%',
+                  },
+                },
+              }),
+            }}
           >
-            Connect
+            {connecting ? 'Connecting...' : 'Connect'}
           </Button>
           <Button
             variant="contained"
             size="large"
             disabled={!connected}
             onClick={handleDisconnect}
-            sx={{ 
+            sx={{
               minWidth: 200,
-              background: connected 
-                ? `linear-gradient(135deg, ${solaceColors.darkNavy} 0%, ${solaceColors.darkTealBlue} 100%)`
+              background: connected
+                ? '#ffcdd2'
                 : undefined,
+              color: connected ? '#c62828' : undefined,
+              '&:hover': {
+                background: connected ? '#ef9a9a' : undefined,
+              },
             }}
           >
             Disconnect
@@ -412,42 +576,65 @@ function App() {
                 disabled={!connected}
                 sx={{
                   flex: '0 1 auto',
+                  fontFamily: 'monospace',
+                  textTransform: 'none',
+                  ...(!connected && {
+                    backgroundColor: '#f5f5f5',
+                    '&.Mui-disabled': {
+                      backgroundColor: '#f5f5f5',
+                    },
+                  }),
                   ...(activeTopics.has(topic.value) && {
-                    background: `linear-gradient(135deg, ${solaceColors.primary} 0%, ${solaceColors.tealAccent} 100%)`,
+                    background: '#ffcdd2',
+                    color: '#c62828',
+                    '&:hover': {
+                      background: '#ef9a9a',
+                    },
                   }),
                 }}
               >
-                {topic.label}
+                <ColorCodedTopic topic={topic.label} />
               </Button>
             ))}
           </Stack>
 
           {/* Custom Topic Input */}
           <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-            <TextField
-              fullWidth
-              label="Custom Topic"
-              value={customTopic}
-              onChange={(e) => setCustomTopic(e.target.value)}
-              disabled={!connected}
-              placeholder="Enter custom topic here"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleCustomTopicSubscribe();
-                }
-              }}
-              sx={{
-                ...(customTopic && activeTopics.has(customTopic) && {
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: solaceColors.greenTint,
-                    '& fieldset': {
-                      borderColor: solaceColors.primary,
-                      borderWidth: 2,
+            <Box sx={{ position: 'relative', flex: 1 }}>
+              <TextField
+                fullWidth
+                inputRef={customTopicInputRef}
+                label="Custom Topic"
+                value={customTopic}
+                onChange={(e) => setCustomTopic(e.target.value)}
+                disabled={!connected}
+                placeholder="Enter custom topic here"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleCustomTopicSubscribe();
+                  }
+                }}
+                InputProps={{
+                  style: {
+                    fontFamily: 'monospace',
+                    color: 'transparent',
+                    caretColor: '#000000',
+                  }
+                }}
+                sx={{
+                  ...(customTopic && activeTopics.has(customTopic) && {
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: solaceColors.greenTint,
+                      '& fieldset': {
+                        borderColor: solaceColors.primary,
+                        borderWidth: 2,
+                      },
                     },
-                  },
-                }),
-              }}
-            />
+                  }),
+                }}
+              />
+              <ColorCodedInput value={customTopic} />
+            </Box>
             <Button
               variant={customTopic && activeTopics.has(customTopic) ? 'contained' : 'outlined'}
               onClick={handleCustomTopicSubscribe}
@@ -455,7 +642,11 @@ function App() {
               sx={{
                 minWidth: 140,
                 ...(customTopic && activeTopics.has(customTopic) && {
-                  background: `linear-gradient(135deg, ${solaceColors.primary} 0%, ${solaceColors.tealAccent} 100%)`,
+                  background: '#ffcdd2',
+                  color: '#c62828',
+                  '&:hover': {
+                    background: '#ef9a9a',
+                  },
                 }),
               }}
             >
@@ -584,13 +775,13 @@ function App() {
                     {viewMode === 'topic' ? (
                       <Typography
                         variant="body2"
+                        component="div"
                         sx={{
                           fontFamily: 'monospace',
-                          color: solaceColors.primaryDarkText,
                           wordBreak: 'break-all',
                         }}
                       >
-                        {msg.topic}
+                        <ColorCodedTopic topic={msg.topic} />
                       </Typography>
                     ) : (
                       <Typography

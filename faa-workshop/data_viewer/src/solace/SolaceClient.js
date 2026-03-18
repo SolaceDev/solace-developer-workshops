@@ -6,6 +6,7 @@ class SolaceClient {
     this.subscribed = new Set(); // Track multiple subscriptions
     this.messageCallback = null;
     this.eventCallback = null;
+    this.pendingSubscriptions = new Map(); // Track pending subscriptions with their callbacks
     
     // Initialize the Solace library
     const factoryProps = new solace.SolclientFactoryProperties();
@@ -76,14 +77,39 @@ class SolaceClient {
       });
 
       this.session.on(solace.SessionEventCode.SUBSCRIPTION_OK, (sessionEvent) => {
-        console.log('✅ Subscription confirmed:', sessionEvent.correlationKey);
+        const topic = sessionEvent.correlationKey;
+        console.log('✅ Subscription confirmed:', topic);
+        
+        // Add to subscribed set
+        this.subscribed.add(topic);
+        
+        // Call pending success callback if exists
+        if (this.pendingSubscriptions.has(topic)) {
+          const { onSuccess } = this.pendingSubscriptions.get(topic);
+          if (onSuccess) {
+            onSuccess(topic);
+          }
+          this.pendingSubscriptions.delete(topic);
+        }
+        
         if (this.eventCallback) {
           this.eventCallback('subscription_ok', sessionEvent);
         }
       });
 
       this.session.on(solace.SessionEventCode.SUBSCRIPTION_ERROR, (sessionEvent) => {
+        const topic = sessionEvent.correlationKey;
         console.error('❌ Subscription error:', sessionEvent);
+        
+        // Call pending failure callback if exists
+        if (this.pendingSubscriptions.has(topic)) {
+          const { onFailure } = this.pendingSubscriptions.get(topic);
+          if (onFailure) {
+            onFailure(sessionEvent);
+          }
+          this.pendingSubscriptions.delete(topic);
+        }
+        
         if (this.eventCallback) {
           this.eventCallback('subscription_error', sessionEvent);
         }
@@ -128,20 +154,19 @@ class SolaceClient {
     }
 
     try {
+      // Store callbacks for when subscription is confirmed
+      this.pendingSubscriptions.set(topic, { onSuccess, onFailure });
+      
       this.session.subscribe(
         solace.SolclientFactory.createTopicDestination(topic),
         true, // request confirmation
         topic,
         10000 // timeout
       );
-      this.subscribed.add(topic);
-      console.log('Subscribed to:', topic);
-      console.log('Active subscriptions:', Array.from(this.subscribed));
-      if (onSuccess) {
-        onSuccess(topic);
-      }
+      console.log('Subscription request sent for:', topic);
     } catch (error) {
       console.error('Error subscribing:', error);
+      this.pendingSubscriptions.delete(topic);
       if (onFailure) {
         onFailure(error);
       }
