@@ -32,6 +32,6 @@
     "description": "Describe the datapoints in the flights database using FAA terminology as per SOP.",
     "category": "Analysis",
     "command": "sop_analysis",
-    "initial_prompt": "Describe the datapoints in my flights database. Consult the SOP from the RAG agent to use the right FAA terminologies. Generate an html document to summarise the data after you finish."
+    "initial_prompt": "Describe the datapoints in my flights database. Query one object from every collection and consult the SOP from the RAG agent to use the right FAA terminologies. You dont need to be too descriptive, just general understanding using FAA terminology. Generate an html document to summarise the data after you finish."
   }
 ]
