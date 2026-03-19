@@ -72,6 +72,9 @@ Execute further by running the remaining `1xx` slash commands
 ```
 /102
 ```
+```
+Generate an html report analyzing IAH for the next 10 minutes. Include incoming flights and surface level data
+```
 
 ## Next Steps
 - [Optional] [Add your CNOPS RAG agent](./300-RAG.md)

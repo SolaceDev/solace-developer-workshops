@@ -28,7 +28,7 @@
     "initial_prompt": "I am Delta Airlines, I know that there will be a rate reduction in 4 hours at RBV where it can only handle 6 per hours. That flow constraint is expected to last for 2 hours. Tell me the flights (based on flight plans) that will be affected and propose new flight plans for my review. Generate an html document with all this details"
   },
   {
-    "name": "102 - Datapoint Description",
+    "name": "103 - Datapoint Description",
     "description": "Describe the datapoints in the flights database using FAA terminology as per SOP.",
     "category": "Analysis",
     "command": "sop_analysis",
