@@ -63,7 +63,7 @@ An A2A proxy acts as a bridge between Solace Agent Mesh and external agent frame
           proxied_agents:
             # Example 1: A simple agent without authentication
             - name: "Calculator" # The name this agent will have on the Solace mesh
-              url: "http://ec2-52-91-25-150.compute-1.amazonaws.com:9000" # The real HTTP endpoint of the agent
+              url: "http://ec2-18-190-240-68.us-east-2.compute.amazonaws.com:9000" # The real HTTP endpoint of the agent
               task_headers:
               - name: "Authorization"
                 value: "Bearer march_workshop"
@@ -113,12 +113,12 @@ Note the newly created [a2a_proxy.yaml](../../sam-bootcamp/configs/agents/a2a_pr
       proxied_agents:
         # Example 1: A simple agent without authentication
         - name: "Calculator" # The name this agent will have on the Solace mesh
-          url: "http://ec2-52-91-25-150.compute-1.amazonaws.com:9000" # The real HTTP endpoint of the agent
+          url: "http://ec2-18-190-240-68.us-east-2.compute.amazonaws.com:9000" # The real HTTP endpoint of the agent
           task_headers:
           - name: "Authorization"
             value: "Bearer march_workshop"  
         - name: "Factor" # The name this agent will have on the Solace mesh
-          url: "http://ec2-52-91-25-150.compute-1.amazonaws.com:9001" # The real HTTP endpoint of the agent
+          url: "http://ec2-18-190-240-68.us-east-2.compute.amazonaws.com:9001" # The real HTTP endpoint of the agent
           task_headers:
             - name: "Authorization"
               value: "Bearer march_workshop"   
