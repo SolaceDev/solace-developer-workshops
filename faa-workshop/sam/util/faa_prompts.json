@@ -14,6 +14,13 @@
     "initial_prompt": "Query one example object from every collection in the aeronautical database and give a brief description of the contents of each collection based on the example object."
   },
   {
+    "name": "102 - IAH Analysis",
+    "description": "Analyze IAH airport",
+    "category": "Analysis",
+    "command": "iah",
+    "initial_prompt": "Generate an html report analyzing IAH for the next 10 minutes. Include incoming flights and surface level data"
+  },
+  {
     "name": "200 - Comprehensive Analysis",
     "description": "Analyze the impact of upcoming flow constraints on flight plans and propose adjustments.",
     "category": "Query",

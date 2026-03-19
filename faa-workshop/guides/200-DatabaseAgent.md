@@ -66,5 +66,12 @@ Navigate to your Solace Agent Mesh instance and click on the "Agent Mesh" Tab. O
 
 > Note: To learn more about Solace Agent Mesh and how artifacts are handles, refer to the [Solace Agent Mesh Overview](./102-SAMOverview.md) guide
 
+## Further prompts
+
+Execute further by running the remaining `1xx` slash commands
+```
+/102
+```
+
 ## Next Steps
 - [Optional] [Add your CNOPS RAG agent](./300-RAG.md)
