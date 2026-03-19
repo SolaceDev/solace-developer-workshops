@@ -33,5 +33,12 @@
     "category": "Analysis",
     "command": "sop_analysis",
     "initial_prompt": "Describe the datapoints in my flights database. Query one object from every collection and consult the SOP from the RAG agent to use the right FAA terminologies. You dont need to be too descriptive, just general understanding using FAA terminology. Generate an html document to summarise the data after you finish."
+  },
+  {
+    "name": "300 - Lang Agents",
+    "description": "Get objects using lang agents",
+    "category": "Proxy",
+    "command": "lang",
+    "initial_prompt": "Using only the lang agents, query one object from every database and give a brief description of the contents of each collection based on the example object"
   }
 ]
