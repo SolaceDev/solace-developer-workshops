@@ -7,6 +7,7 @@ class SolaceClient {
     this.messageCallback = null;
     this.eventCallback = null;
     this.pendingSubscriptions = new Map(); // Track pending subscriptions with their callbacks
+    this.pendingUnsubscriptions = new Set(); // Track topics being unsubscribed
     
     // Initialize the Solace library
     const factoryProps = new solace.SolclientFactoryProperties();
@@ -80,16 +81,23 @@ class SolaceClient {
         const topic = sessionEvent.correlationKey;
         console.log('✅ Subscription confirmed:', topic);
         
-        // Add to subscribed set
-        this.subscribed.add(topic);
-        
-        // Call pending success callback if exists
-        if (this.pendingSubscriptions.has(topic)) {
-          const { onSuccess } = this.pendingSubscriptions.get(topic);
-          if (onSuccess) {
-            onSuccess(topic);
+        // Check if this is an unsubscribe confirmation
+        if (this.pendingUnsubscriptions.has(topic)) {
+          console.log('✅ Unsubscription confirmed:', topic);
+          this.pendingUnsubscriptions.delete(topic);
+          // Don't add to subscribed set - this was an unsubscribe
+        } else {
+          // This is a subscribe confirmation - add to subscribed set
+          this.subscribed.add(topic);
+          
+          // Call pending success callback if exists
+          if (this.pendingSubscriptions.has(topic)) {
+            const { onSuccess } = this.pendingSubscriptions.get(topic);
+            if (onSuccess) {
+              onSuccess(topic);
+            }
+            this.pendingSubscriptions.delete(topic);
           }
-          this.pendingSubscriptions.delete(topic);
         }
         
         if (this.eventCallback) {
@@ -179,17 +187,23 @@ class SolaceClient {
     }
 
     try {
+      // Mark as pending unsubscription
+      this.pendingUnsubscriptions.add(topic);
+      
       this.session.unsubscribe(
         solace.SolclientFactory.createTopicDestination(topic),
         true,
         topic,
         10000
       );
+      
+      // Remove from subscribed set immediately
       this.subscribed.delete(topic);
-      console.log('Unsubscribed from:', topic);
+      console.log('Unsubscribe request sent for:', topic);
       console.log('Active subscriptions:', Array.from(this.subscribed));
     } catch (error) {
       console.error('Error unsubscribing:', error);
+      this.pendingUnsubscriptions.delete(topic);
     }
   }
 

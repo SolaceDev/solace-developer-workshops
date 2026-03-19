@@ -13,6 +13,7 @@
   - [What Each CONOPS Covers](#what-each-conops-covers)
 - [Next Steps](#next-steps)
 
+## Tap into the realtime data
 To view the data in realtime, execute the following
 
 1. open a new terminal
@@ -30,9 +31,19 @@ To view the data in realtime, execute the following
     ./start_viewer.sh
     ```
 
-In this workshop, we'll work with two critical FAA data systems:
+### Topic Hierarchy
 
----
+Events are published to the event mesh on the following topic hierarchy:
+
+```
+FDPS/position/{FLIGHT_ID}/{STATUS}/{CALLSIGN}/{ORIGIN}/{DESTINATION}/{LATITUDE}/{LONGITUDE}/{GROUND_SPEED}/{ALTITUDE}/{HEADING}
+```
+```
+FDPS/flightPlan/{FLIGHT_ID}/{STATUS}/{DEPARTURE_AIRPORT}/{ARRIVAL_AIRPORT}
+```
+```
+STDDS/position/{AIRPORT_CODE}/{FLIGHT_ID}
+```
 
 ## FDPS (Flight Data Processing System)
 

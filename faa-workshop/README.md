@@ -38,12 +38,14 @@ You will be using the ⭐️ [Solace Agent Mesh](https://github.com/SolaceLabs/s
 - To make this data AI-ready, we're capturing a 10-minute historical window in a time series database (e.g. MongoDB). Don't worry, we've already set this up in your workshop environment!
 
 ### Topic Structure
-The FAA stream is being published on the following topic hierarchy
+The FAA stream is being published on the following topic hierarchies
 
 ```
 FDPS/position/{FLIGHT_ID}/{STATUS}/{CALLSIGN}/{ORIGIN}/{DESTINATION}/{LATITUDE}/{LONGITUDE}/{GROUND_SPEED}/{ALTITUDE}/{HEADING}
 ```
-And
+```
+FDPS/flightPlan/{FLIGHT_ID}/{STATUS}/{DEPARTURE_AIRPORT}/{ARRIVAL_AIRPORT}
+```
 ```
 STDDS/position/{AIRPORT_CODE}/{FLIGHT_ID}
 ```
