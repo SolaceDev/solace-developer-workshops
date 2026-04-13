@@ -1,5 +1,5 @@
 # Adding agents with the GUI
-Follow this guide to learn how to add agents using the SAM gui
+Follow this guide to learn how to add agents using the Solace Agent Mesh GUI
 
 1. **Access the Add Agent GUI**
 
