@@ -1,7 +1,7 @@
 {
   "name": "Solace Developer Workshop",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-  "updateContentCommand": "/bin/bash ${containerWorkspaceFolder}/util/tracker_extension.sh",
+  "onCreateCommand": "/bin/bash ${containerWorkspaceFolder}/util/tracker_extension.sh",
   "waitFor": "onCreateCommand",
   "postCreateCommand": "/bin/bash .devcontainer/configureEnv.sh",
   "hostRequirements": {
