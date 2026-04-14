@@ -119,4 +119,4 @@ You will see an HTML report listing agentic capabilities available.
 
 ---
 
-[Next Section: Adding pre build agents](./200-adding-prebuilt-agents.md)
+**Section complete!** Close this file and return to the Workshop Tracker to continue.

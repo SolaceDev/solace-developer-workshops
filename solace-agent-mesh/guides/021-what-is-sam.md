@@ -112,4 +112,4 @@ To learn more about EDA in Agentic Systems, read more about:
 
 Now lets get back to the hands-on!
 ---
-[Next Section: Adding Built-in Agents](./100-adding-builtin-agents.md)
+**Section complete!** Close this file and return to the Workshop Tracker to continue.
