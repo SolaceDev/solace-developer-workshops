@@ -65,7 +65,9 @@ node --version
 npm --version
 
 # Run registration script
-bash faa-workshop/sam/util/register.sh
+bash util/register.sh
+# Install tracker extension
+bash util/tracker_extension.sh
 
 # Run broker setup script
 echo "Setting up Solace broker..."
