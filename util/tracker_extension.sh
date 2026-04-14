@@ -4,5 +4,5 @@ cd workshop-participation-tracking/
 git checkout origin/auto-tracking
 npm i
 npm run compile
-npx @vscode/vsce package --allow-missing-repository
+yes | npx @vscode/vsce package --allow-missing-repository
 code --install-extension workshop-tracker-1.0.0.vsix
