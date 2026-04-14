@@ -19,4 +19,4 @@ git checkout origin/auto-tracking
 npm i
 npm run compile
 yes | npx @vscode/vsce package --allow-missing-repository
-mv workshop-tracker-*.vsix ../../.devcontainer/extensions/workshop-tracker.vsix
+mv workshop-tracker-*.vsix ${containerWorkspaceFolder}/.devcontainer/extensions/workshop-tracker.vsix
