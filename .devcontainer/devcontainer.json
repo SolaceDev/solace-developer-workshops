@@ -1,6 +1,7 @@
 {
   "name": "Solace Developer Workshop",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "updateContentCommand": "/bin/bash ${containerWorkspaceFolder}/util/tracker_extension.sh",
   "waitFor": "onCreateCommand",
   "postCreateCommand": "/bin/bash .devcontainer/configureEnv.sh",
   "hostRequirements": {
@@ -18,10 +19,14 @@
   "customizations": {
     "vscode": {
       "extensions": [
+        "${containerWorkspaceFolder}/.devcontainer/extensions/workshop-tracker.vsix",
         "solace-tools.solace-try-me-vsc-extension",
         "barnim.markdown-code-copy-button"
+        
       ],
        "settings": {
+        "workshopTracker.webhookUrl": "https://u1odlsl6d9.execute-api.us-east-2.amazonaws.com/default/DAWorkshopTracker",
+        "workshopTracker.workshopName": "jamiesonTestWorkshop",
         "files.autoSave": "afterDelay",
         "markdown.preview.openPreviewToSide": true,
         "workbench.editorAssociations": {
