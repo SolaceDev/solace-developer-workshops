@@ -130,4 +130,4 @@ Now you can add your existing A2A agents to Solace Agent Mesh using the followin
 > 💡 **Tip:** You can deploy your custom a2a agents on any platform you would like and use them with Solace Agent Mesh
 
 --- 
-[Next Section: MCP Server](./400-mcp-server-agents.md)
+**Section complete!** Close this file and return to the Workshop Tracker to continue.

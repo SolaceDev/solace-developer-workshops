@@ -36,7 +36,7 @@ Agent Mesh is an event-driven, distributed, and decoupled agentic AI framework b
 - **Standardized A2A Protocol**: Agents use A2A protocol to discover peers, delegate tasks, return results, and update status *all via hierarchical topic structures!*
 
 <div align="center">
-    <img src="../images/sam/021-samarch.jpg" alt="Sam Architecture" width="80%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+    <img src="../images/sam/021-samarch.jpg" alt="Solace Agent Mesh Architecture" width="80%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     <p style="margin-top: 10px; font-style: italic; color: #666;">Solace Agent Mesh Architecture: Event-driven AI agents collaborating through the Event Mesh. Components include Gateways, Connectors, Agents, AI Services, Visualizer, and Enterprise ecosystem tools</p>
 </div>
 
@@ -112,4 +112,4 @@ To learn more about EDA in Agentic Systems, read more about:
 
 Now lets get back to the hands-on!
 ---
-[Next Section: Adding Built-in Agents](./100-adding-builtin-agents.md)
+**Section complete!** Close this file and return to the Workshop Tracker to continue.

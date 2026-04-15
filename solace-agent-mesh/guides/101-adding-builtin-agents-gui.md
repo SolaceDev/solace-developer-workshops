@@ -1,5 +1,5 @@
 # Adding agents with the GUI
-Follow this guide to learn how to add agents using the SAM gui
+Follow this guide to learn how to add agents using the Solace Agent Mesh GUI
 
 1. **Access the Add Agent GUI**
 
@@ -119,4 +119,4 @@ You will see an HTML report listing agentic capabilities available.
 
 ---
 
-[Next Section: Adding pre build agents](./200-adding-prebuilt-agents.md)
+**Section complete!** Close this file and return to the Workshop Tracker to continue.

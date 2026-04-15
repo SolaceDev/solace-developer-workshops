@@ -249,4 +249,4 @@ We can pre-populate the solace agent mesh instance with prompts. To do this:
 
 
 ---
-[Next Section: What is Solace Agent Mesh](./021-what-is-sam.md)
+**Section complete!** Close this file and return to the Workshop Tracker to continue.

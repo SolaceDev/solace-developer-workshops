@@ -1,0 +1,50 @@
+[
+  {
+    "id": "s1",
+    "title": "Solace Agent Mesh Setup",
+    "description": "Setup Solace Agent Mesh in your environment",
+    "triggerFile": "solace-agent-mesh/guides/020-solace-agent-mesh-setup.md"
+  },
+  {
+    "id": "s2",
+    "title": "What is Solace Agent Mesh",
+    "description": "Learn the background of Solace Agent Mesh",
+    "triggerFile": "solace-agent-mesh/guides/021-what-is-sam.md"
+  },
+  {
+    "id": "s3",
+    "title": "Adding Built in Agents",
+    "description": "Use the SAM CLI to add built-in agents to your mesh",
+    "triggerFile": "solace-agent-mesh/guides/100-adding-builtin-agents.md"
+  },
+  {
+    "id": "s4",
+    "title": "Adding Built in Agents with GUI",
+    "description": "Add built in agents to Solace Agent Mesh using the GUI",
+    "triggerFile": "solace-agent-mesh/guides/101-adding-builtin-agents-gui.md"
+  },
+  {
+    "id": "s5",
+    "title": "Adding Prebuilt Agents",
+    "description": "Add prebuilt agents to Solace Agent Mesh",
+    "triggerFile": "solace-agent-mesh/guides/200-adding-prebuilt-agents.md"
+  },
+  {
+    "id": "s6",
+    "title": "A2A Proxy Agents",
+    "description": "Adding A2A agents to Solace Agent Mesh via A2A proxy",
+    "triggerFile": "solace-agent-mesh/guides/300-a2a-proxy-agents.md"
+  },
+  {
+    "id": "s7",
+    "title": "MCP Server Agents",
+    "description": "Adding MCP Servers to Solace Agent Mesh",
+    "triggerFile": "solace-agent-mesh/guides/400-mcp-server-agents.md"
+  },
+  {
+    "id": "s8",
+    "title": "Cleanup",
+    "description": "Destroy your Solace Agent Mesh Setup",
+    "triggerFile": "solace-agent-mesh/guides/998-cleanup.md"
+  }
+]

@@ -95,4 +95,4 @@ You can visualize agent interactions (e.g., **Orchestrator ↔ LLM**) by clickin
 
 ---
 
-[Next Section: Configure A2A Proxy](./300-a2a-proxy-agents.md)
+**Section complete!** Close this file and return to the Workshop Tracker to continue.
