@@ -41,12 +41,12 @@ apps:
       proxied_agents:
         # Example 1: A simple agent without authentication
         - name: "Calculator" # The name this agent will have on the Solace mesh
-          url: "http://ec2-18-190-240-68.us-east-2.compute.amazonaws.com:9000" # The real HTTP endpoint of the agent
+          url: "http://ec2-18-217-152-147.us-east-2.compute.amazonaws.com:9000" # The real HTTP endpoint of the agent
           task_headers:
           - name: "Authorization"
-            value: "Bearer march_workshop"  
-        - name: "Factor" # The name this agent will have on the Solace mesh
-          url: "http://ec2-18-190-240-68.us-east-2.compute.amazonaws.com:9001" # The real HTTP endpoint of the agent
+            value: "Bearer aprilworkshop"  
+        - name: "CurrentTime" # The name this agent will have on the Solace mesh
+          url: "http://ec2-18-188-196-71.us-east-2.compute.amazonaws.com:9001" # The real HTTP endpoint of the agent
           task_headers:
             - name: "Authorization"
-              value: "Bearer march_workshop"  
+              value: "Bearer aprilworkshop"  

@@ -165,7 +165,7 @@ Look at these sections of the [aws-documentation_agent.yaml](../../sam-bootcamp/
   ```
   We can string together multiple agents with a prompt such as 
   ```
-  How can I access a server running on port 9000 in an ec2 instance from my IP address? Also list the factors of my IP address if it was a decimal number not an IP address.
+  How can I access a server running on port 9000 in an ec2 instance from my IP address? Based on my IP what is the current time at my computers location?
   ```
 
 <div align="center">

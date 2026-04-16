@@ -63,10 +63,10 @@ An A2A proxy acts as a bridge between Solace Agent Mesh and external agent frame
           proxied_agents:
             # Example 1: A simple agent without authentication
             - name: "Calculator" # The name this agent will have on the Solace mesh
-              url: "http://ec2-18-190-240-68.us-east-2.compute.amazonaws.com:9000" # The real HTTP endpoint of the agent
+              url: "http://ec2-18-217-152-147.us-east-2.compute.amazonaws.com:9000" # The real HTTP endpoint of the agent
               task_headers:
               - name: "Authorization"
-                value: "Bearer march_workshop"
+                value: "Bearer aprilworkshop"
       ```
     > Note: Here we are using a password as a bearer token passed in on a custom header.  
     > When using your agents on platforms like AWS Agent Core you will likely need to supply [OAUTH credentials to authenticate](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/components/proxies#oauth-20-client-credentials)
@@ -113,15 +113,15 @@ Note the newly created [a2a_proxy.yaml](../../sam-bootcamp/configs/agents/a2a_pr
       proxied_agents:
         # Example 1: A simple agent without authentication
         - name: "Calculator" # The name this agent will have on the Solace mesh
-          url: "http://ec2-18-190-240-68.us-east-2.compute.amazonaws.com:9000" # The real HTTP endpoint of the agent
+          url: "http://ec2-18-217-152-147.us-east-2.compute.amazonaws.com:9000" # The real HTTP endpoint of the agent
           task_headers:
           - name: "Authorization"
-            value: "Bearer march_workshop"  
-        - name: "Factor" # The name this agent will have on the Solace mesh
-          url: "http://ec2-18-190-240-68.us-east-2.compute.amazonaws.com:9001" # The real HTTP endpoint of the agent
+            value: "Bearer aprilworkshop"  
+        - name: "CurrentTime" # The name this agent will have on the Solace mesh
+          url: "http://ec2-18-188-196-71.us-east-2.compute.amazonaws.com:9001" # The real HTTP endpoint of the agent
           task_headers:
             - name: "Authorization"
-              value: "Bearer march_workshop"   
+              value: "Bearer aprilworkshop"   
   ```
 
 Now you can add your existing A2A agents to Solace Agent Mesh using the following configuration. You can also build new agents on whatever platform you would like and use them in your existing AI workflows, seamlessly with Solace Agent Mesh.
