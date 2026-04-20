@@ -26,7 +26,7 @@
       ],
        "settings": {
         "workshopTracker.webhookUrl": "https://u1odlsl6d9.execute-api.us-east-2.amazonaws.com/default/DAWorkshopTracker",
-        "workshopTracker.workshopName": "jamiesonTestWorkshop",
+        "workshopTracker.workshopName": "aprilSAMWorkshop2026",
         "files.autoSave": "afterDelay",
         "markdown.preview.openPreviewToSide": true,
         "workbench.editorAssociations": {
