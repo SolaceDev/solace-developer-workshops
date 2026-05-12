@@ -34,7 +34,7 @@
 
 At its core, Agent Mesh addresses a fundamental challenge in AI development: connecting powerful AI models to the data and systems where they provide value. Rather than building monolithic AI applications, Agent Mesh allows you to create specialized agents that each excel at specific tasks and collaborate through standardized communication. These agents could be hosted on whatever runtime environment such as AgentCore, be in any region, use any LLM model such as those that are hosted on Bedrock, and leverage A2A protocol. 
 
-👉 [Explore the Solace Agent Mesh documentation](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/getting-started)
+👉 [Explore the Solace Agent Mesh documentation](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/overview)
 
 **Key Architectural Principles:**
 
