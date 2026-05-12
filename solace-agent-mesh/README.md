@@ -9,7 +9,7 @@ Welcome to the **Solace Agent Mesh** workshop! This repository contains comprehe
 ## Resources
 
 - [Solace Agent Mesh Githiub Repository](https://github.com/solacelabs/solace-agent-mesh)
-- [Solace Agent Mesh Docs](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/getting-started/introduction/)
+- [Solace Agent Mesh Docs](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/overview/introduction/)
 - [Solace Agent Mesh Core Plugins](https://github.com/SolaceLabs/solace-agent-mesh-core-plugins)
 - [Solace Agent Mesh Community Plugins](https://github.com/solacecommunity/solace-agent-mesh-plugins/)
 
