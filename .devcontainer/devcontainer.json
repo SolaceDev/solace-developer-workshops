@@ -4,12 +4,19 @@
   "onCreateCommand": "/bin/bash ${containerWorkspaceFolder}/util/tracker_extension.sh",
   "waitFor": "onCreateCommand",
   "postCreateCommand": "/bin/bash .devcontainer/configureEnv.sh",
-  "postAttachCommand": "sam run --embedded configs",
-  "forwardPorts": [8800],
+  "postAttachCommand": {
+    "server": "sam run --embedded configs",
+    "browser": "until curl -s http://localhost:8800 > /dev/null 2>&1; do sleep 1; done && code --open-url http://localhost:8800"
+  },
+  "forwardPorts": [8800, 8080],
   "portsAttributes": {
     "8800": {
       "label": "Solace Agent Mesh",
       "onAutoForward": "openPreview"
+    },
+    "8080": {
+      "label": "Solace Broker Manager",
+      "onAutoForward": "notify"
     }
   },
   "hostRequirements": {
