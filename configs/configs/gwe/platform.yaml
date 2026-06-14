@@ -1,0 +1,73 @@
+# Trust manager — mirrors configs/gwe/gwe.yaml / str.yaml so the platform
+# participates in the signing-key card exchange. Without this block
+# LoadTrustConfig falls back to DefaultConfig{Enabled:false} and the platform
+# cannot verify gateway-minted JWTs ("unknown issuer: <gateway>"), 401-ing every
+# /api/v1/platform/* call whenever TRUST_MANAGER_ENABLED=true elsewhere.
+trust_manager:
+  enabled: ${TRUST_MANAGER_ENABLED, false}
+  card_publish_interval_seconds: ${TRUST_CARD_PUBLISH_INTERVAL, 10}
+  card_expiration_days: 7
+  verification_mode: "strict"
+  clock_skew_tolerance_seconds: 300
+  jwt_default_ttl_seconds: 3600
+  jwt_max_ttl_seconds: 86400
+  startup_wait_timeout_seconds: ${TRUST_STARTUP_WAIT_TIMEOUT, 10}
+  fail_on_timeout: false
+
+apps:
+  - name: platform_service_app
+    broker:
+      dev_mode: ${SOLACE_DEV_MODE, false}
+      broker_url: ${SOLACE_BROKER_URL, ws://localhost:8008}
+      broker_username: ${SOLACE_BROKER_USERNAME, default}
+      broker_password: ${SOLACE_BROKER_PASSWORD, default}
+      broker_vpn: ${SOLACE_BROKER_VPN, default}
+      temporary_queue: ${USE_TEMPORARY_QUEUES, true}
+    app_config:
+      component_type: platform
+      namespace: ${NAMESPACE, solace-agent-mesh}
+      database_url: ${PLATFORM_DATABASE_URL}
+      resource_store:
+        type: ${OBJECT_STORAGE_TYPE, filesystem}
+        bucket_name: ${CONNECTOR_SPEC_BUCKET_NAME}
+        endpoint_url: ${S3_ENDPOINT_URL}
+        base_path: ${SAM_DATA_DIR, ./sam-data}
+      str_store:
+        type: ${OBJECT_STORAGE_TYPE, filesystem}
+        bucket_name: ${STR_BUCKET_NAME}
+        endpoint_url: ${S3_ENDPOINT_URL}
+        base_path: ${SAM_DATA_DIR, ./sam-data}
+      fastapi_host: ${PLATFORM_API_HOST, 0.0.0.0}
+      fastapi_port: ${PLATFORM_API_PORT, 8001}
+      frontend_use_authorization: ${FRONTEND_USE_AUTHORIZATION, false}
+      # Default true: seeds the built-in Orchestrator on a first-run (empty) DB.
+      # Config-defined deployments (e.g. RC) set false so the Orchestrator is
+      # created purely via `sam config apply`. Env-driven so local-cluster users
+      # can opt out without editing this file.
+      seed_builtin_agents: ${SEED_BUILTIN_AGENTS, true}
+      external_auth_service_url: ${EXTERNAL_AUTH_SERVICE_URL}
+      external_auth_provider: ${EXTERNAL_AUTH_PROVIDER, azure}
+      max_message_size_bytes: ${MAX_MESSAGE_SIZE_BYTES, 10000000}
+      cors_allowed_origins:
+        - "${FRONTEND_SERVER_URL}"
+        - "http://localhost:3000"
+        - "http://127.0.0.1:3000"
+        - "http://localhost:8800"
+      cors_allowed_origin_regex: ${CORS_ALLOWED_ORIGIN_REGEX}
+
+      # RBAC authority lives in the platform service under DATAGO-123202.
+      # Gateways with type: default_rbac call this service over the broker
+      # at token-mint time and bake the returned scopes into the JWT, so
+      # this is the single source of truth for role definitions, user
+      # assignments, and default roles.
+      authorization_service:
+        # Shares AUTHORIZATION_TYPE with the gateway's nested block in
+        # configs/gwe/gwe.yaml — under default_rbac the gateway
+        # calls this service, so the two must track each other. Splitting
+        # them across separate env vars only ever produced the
+        # "gateway boots, every request denied" failure mode.
+        type: ${AUTHORIZATION_TYPE, none}
+        role_to_scope_definitions_path: ${ROLE_DEFINITIONS_PATH, config/auth/role-to-scope-definitions.yaml}
+        user_to_role_assignments_path: ${USER_ROLES_PATH, config/auth/user-to-role-assignments.yaml}
+        default_roles:
+          - "sam_user"

@@ -1,0 +1,169 @@
+!include auth/oidc_providers.yaml
+
+trust_manager:
+  enabled: ${TRUST_MANAGER_ENABLED, false}
+  card_publish_interval_seconds: ${TRUST_CARD_PUBLISH_INTERVAL, 10}
+  card_expiration_days: 7
+  verification_mode: "strict"
+  clock_skew_tolerance_seconds: 300
+  jwt_default_ttl_seconds: 3600
+  jwt_max_ttl_seconds: 86400
+  startup_wait_timeout_seconds: ${TRUST_STARTUP_WAIT_TIMEOUT, 10}
+  fail_on_timeout: false
+
+agent_identity:
+  key_mode: auto
+
+apps:
+  - name: a2a_webui_backend_app
+    broker:
+      dev_mode: ${SOLACE_DEV_MODE, false}
+      broker_url: ${SOLACE_BROKER_URL, ws://localhost:8008}
+      broker_username: ${SOLACE_BROKER_USERNAME, default}
+      broker_password: ${SOLACE_BROKER_PASSWORD, default}
+      broker_vpn: ${SOLACE_BROKER_VPN, default}
+      temporary_queue: ${USE_TEMPORARY_QUEUES, true}
+    app_config:
+      namespace: ${NAMESPACE, solace-agent-mesh}
+      session_secret_key: ${SESSION_SECRET_KEY, please_change_me_in_production}
+
+      model:
+        model: ${LLM_SERVICE_GENERAL_MODEL_NAME, openai/gpt-4o}
+        api_base: ${LLM_SERVICE_ENDPOINT, http://localhost:12345}
+        api_key: ${LLM_SERVICE_API_KEY, dummy}
+
+      gateway_id: ${WEBUI_GATEWAY_ID, webui-gateway}
+      fastapi_host: ${FASTAPI_HOST, 0.0.0.0}
+      fastapi_port: ${FASTAPI_PORT, 8800}
+      fastapi_https_port: ${FASTAPI_HTTPS_PORT}
+      ssl_keyfile: ${SSL_KEYFILE}
+      ssl_certfile: ${SSL_CERTFILE}
+      ssl_keyfile_password: ${SSL_KEYFILE_PASSWORD}
+      cors_allowed_origins:
+        - "${FRONTEND_SERVER_URL}"
+        - "http://localhost:3000"
+        - "http://127.0.0.1:3000"
+      cors_allowed_origin_regex: ${CORS_ALLOWED_ORIGIN_REGEX}
+
+      enable_embed_resolution: ${ENABLE_EMBED_RESOLUTION, true}
+      gateway_artifact_content_limit_bytes: ${GATEWAY_ARTIFACT_LIMIT_BYTES, 10000000}
+
+      system_purpose: >
+        The system is an AI Chatbot with agentic capabilities.
+        It will use the agents available to provide information,
+        reasoning and general assistance for the users in this system.
+        **Always return useful artifacts and files that you create to the user.**
+        Provide a status update before each tool call.
+        Your external name is Agent Mesh.
+
+      response_format: >
+        Responses should be clear, concise, and professionally toned.
+        Format responses to the user in Markdown using appropriate formatting.
+
+      frontend_server_url: ${FRONTEND_SERVER_URL}
+      frontend_welcome_message: ${FRONTEND_WELCOME_MESSAGE, How can I assist you today?}
+      frontend_bot_name: ${FRONTEND_BOT_NAME, Solace Agent Mesh}
+      frontend_collect_feedback: ${FRONTEND_COLLECT_FEEDBACK, true}
+      frontend_auth_login_url: ${EXTERNAL_AUTH_SERVICE_URL}/api/v1/auth/login
+      frontend_use_authorization: ${FRONTEND_USE_AUTHORIZATION, false}
+      frontend_redirect_url: ${FRONTEND_REDIRECT_URL}
+
+      # Split topology: tell the frontend where the separately-hosted platform
+      # service lives so it enables agent/connector management. Empty (default)
+      # = platform mounted behind this gateway, or disabled. The platform must
+      # allow the browser origin in its cors_allowed_origins.
+      platform_service:
+        url: ${PLATFORM_SERVICE_URL, }
+
+      background_tasks:
+        default_timeout_ms: ${BACKGROUND_TASKS_TIMEOUT_MS, 3600000}
+
+      external_auth_callback_uri: ${EXTERNAL_AUTH_CALLBACK, http://localhost:8800/api/v1/auth/callback}
+      external_auth_service_url: ${EXTERNAL_AUTH_SERVICE_URL, http://localhost:8080}
+      external_auth_provider: ${EXTERNAL_AUTH_PROVIDER, azure}
+
+      # Must live inside app_config: the gateway parser receives the per-app
+      # config map (httpsse/adapter.go: auth.CreateProvider(..., core.RawConfig())),
+      # so a top-level block is silently dropped and Type falls back to "deny_all".
+      # Under default_rbac the gateway no longer loads RBAC YAML — it calls the
+      # platform service over the broker at token-mint time and bakes the
+      # returned scopes into the JWT. Per-request validation reads scopes from
+      # the JWT claim, so the hot path makes no platform call.
+      #
+      # role_to_scope_definitions_path / user_to_role_assignments_path /
+      # default_roles / idp_claims_config / user_to_role_provider are configured
+      # on the platform service (see platform.yaml authorization_service:).
+      # Leaving them here is accepted for migration but ignored — a WARN will
+      # fire at startup. They will be removed in a future release.
+      #
+      # Modes:
+      #   none         — login on, RBAC bypass (scopes = ["*"])
+      #   deny_all     — login on, all denies (scopes = [])
+      #   default_rbac — login on, broker call to platform at mint
+      authorization_service:
+        type: ${AUTHORIZATION_TYPE, none}
+
+      artifact_service:
+        type: ${OBJECT_STORAGE_TYPE, filesystem}
+        bucket_name: ${ARTIFACT_BUCKET_NAME}
+        endpoint_url: ${S3_ENDPOINT_URL}
+        base_path: ${SAM_DATA_DIR, ./sam-data}
+
+      volume_service:
+        type: filesystem
+        root: ${SAM_VOLUME_ROOT, /app/data/volumes}
+
+      session_service:
+        type: ${WEB_UI_SESSION_SERVICE_TYPE, sql}
+        database_url: ${WEB_UI_GATEWAY_DATABASE_URL, sqlite:///${SAM_DATA_DIR}/sam.db}
+        default_behavior: "PERSISTENT"
+
+      auto_title_generation:
+        enabled: true
+
+      task_logging:
+        enabled: ${TASK_LOGGING_ENABLED, true}
+        log_status_updates: ${TASK_LOGGING_STATUS_UPDATES, true}
+        log_artifact_events: ${TASK_LOGGING_ARTIFACT_EVENTS, false}
+        log_file_parts: ${TASK_LOGGING_FILE_PARTS, true}
+        max_file_part_size_bytes: ${TASK_LOGGING_MAX_FILE_PART_SIZE, 10240}
+        hybrid_buffer:
+          enabled: ${TASK_LOGGING_HYBRID_BUFFER, true}
+          flush_threshold: ${TASK_LOGGING_FLUSH_THRESHOLD, 10}
+
+      scheduler_service:
+        enabled: true
+
+      # --- Speech Configuration (STT/TTS) ---
+      # Python-shape nested block; unresolved ${VAR} placeholders surface as
+      # "not configured" in /api/v1/speech/config and hide the corresponding
+      # settings-dialog UI. computeSpeechSettings (handle_config.go) picks
+      # the first provider whose credentials are present, in the priority
+      # gemini → azure → polly for TTS and openai → azure for STT.
+      speech:
+        stt:
+          provider: ${STT_PROVIDER, openai}
+          openai:
+            api_key: ${OPENAI_API_KEY}
+            model: whisper-1
+          azure:
+            api_key: ${AZURE_SPEECH_KEY}
+            region: ${AZURE_SPEECH_REGION}
+            language: en-US
+        tts:
+          provider: ${TTS_PROVIDER, gemini}
+          gemini:
+            api_key: ${GEMINI_API_KEY}
+            url: ${GEMINI_TTS_URL, https://generativelanguage.googleapis.com/v1beta}
+            default_voice: Kore
+          azure:
+            api_key: ${AZURE_SPEECH_KEY}
+            region: ${AZURE_SPEECH_REGION}
+            default_voice: "en-US-Andrew:DragonHDLatestNeural"
+          polly:
+            aws_access_key_id: ${AWS_ACCESS_KEY_ID}
+            aws_secret_access_key: ${AWS_SECRET_ACCESS_KEY}
+            region: ${AWS_REGION, us-east-1}
+            default_voice: Joanna
+            engine: neural
+

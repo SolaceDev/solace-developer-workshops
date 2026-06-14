@@ -1,0 +1,45 @@
+trust_manager:
+  enabled: ${TRUST_MANAGER_ENABLED, false}
+  card_publish_interval_seconds: ${TRUST_CARD_PUBLISH_INTERVAL, 10}
+  startup_wait_timeout_seconds: ${TRUST_STARTUP_WAIT_TIMEOUT, 10}
+  fail_on_timeout: false
+
+agent_identity:
+  key_mode: auto
+
+apps:
+  - name: str_builtin_tools
+    broker:
+      dev_mode: ${SOLACE_DEV_MODE, false}
+      broker_url: ${SOLACE_BROKER_URL, ws://localhost:8008}
+      broker_username: ${SOLACE_BROKER_USERNAME, default}
+      broker_password: ${SOLACE_BROKER_PASSWORD, default}
+      broker_vpn: ${SOLACE_BROKER_VPN, default}
+      temporary_queue: ${USE_TEMPORARY_QUEUES, true}
+    app_config:
+      namespace: ${NAMESPACE, solace-agent-mesh}
+      worker_id: builtin-tools-worker
+      skills_dir: ${SAM_SKILLS_DIR, /opt/sam/skills}
+      toolsets_dir: ${SAM_TOOLS_DIR, /opt/sam/tools}
+      sandbox:
+        mode: ${STR_SANDBOX_MODE, direct}
+
+      # LLM client used to proxy subprocess Go-tool callbacks
+      # (samtoolsdk.ToolContext.CallLLM) through the STR's per-invocation
+      # IPC server. Required by skill-bundled tools that perform LLM-driven
+      # work in their own subprocess — e.g. sam-test-harness's
+      # generate_test_plan / generate_recommendations. Without this block,
+      # sandbox.go skips IPC-server creation and CallLLM inside the tool
+      # errors with "no IPC connection to STR".
+      model:
+        model: ${LLM_SERVICE_PLANNING_MODEL_NAME, openai/gpt-4o}
+        api_base: ${LLM_SERVICE_ENDPOINT}
+        api_key: ${LLM_SERVICE_API_KEY}
+
+      artifact_service:
+        type: ${OBJECT_STORAGE_TYPE, filesystem}
+        bucket_name: ${ARTIFACT_BUCKET_NAME}
+        endpoint_url: ${S3_ENDPOINT_URL}
+        base_path: ${SAM_DATA_DIR, ./sam-data}
+
+      volume_root: ${SAM_VOLUME_ROOT, /app/data/volumes}

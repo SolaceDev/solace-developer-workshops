@@ -1,0 +1,8 @@
+# SAM settings
+# See https://solace.dev/sam/settings for options
+onboarded: true
+llm:
+    provider: openai
+    api_key: <INSER_API_KEY_HERE>
+    base_url: https://lite-llm.mymaas.net/
+    default_model: claude-sonnet-4-6
