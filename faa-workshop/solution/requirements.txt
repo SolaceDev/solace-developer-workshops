@@ -1,3 +1,0 @@
-solace-agent-mesh
-git+https://github.com/SolaceLabs/solace-agent-mesh-core-plugins@tamimi/fix-mongo-plugin#subdirectory=sam-mongodb
-git+https://github.com/SolaceLabs/solace-agent-mesh-core-plugins@tamimi/fix-rag-plugin#subdirectory=sam-rag

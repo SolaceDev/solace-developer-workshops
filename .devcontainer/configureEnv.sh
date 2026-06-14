@@ -6,9 +6,6 @@ echo "============================================"
 echo "Starting environment configuration..."
 echo "============================================"
 
-# Update github submodules recursively
-git submodule update --init --recursive
-
 # Download and extract Python 3.12
 sudo apt update
 sudo apt install --reinstall -y software-properties-common python3-apt
@@ -16,47 +13,24 @@ sudo add-apt-repository ppa:deadsnakes/ppa -y
 sudo apt update
 sudo apt install -y python3.12 python3.12-venv
 
-#### Commenting out for temp workshop ####
-
-# # Install STM
-# echo "Installing STM"
-# echo "deb [arch=amd64 trusted=yes] https://raw.githubusercontent.com/SolaceLabs/apt-stm/master stm main" | sudo tee  /etc/apt/sources.list.d/solace-stm-test.list
-# sudo apt-get update
-# sudo apt-get install stm
-
-# # Install Java 17
-# sudo apt install -y openjdk-17-jdk
-# echo "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> ~/.bashrc
-# echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> ~/.bashrc
-# source ~/.bashrc
-
-# # Install Maven
-# sudo apt install maven -y
-
-# # Install latest Go version
-# echo "Installing latest Go version..."
-# # Get the latest version
-# LATEST_GO_VERSION=$(curl -s https://go.dev/VERSION?m=text | head -n 1)
-# echo "Latest Go version: $LATEST_GO_VERSION"
-# wget "https://go.dev/dl/${LATEST_GO_VERSION}.linux-amd64.tar.gz"
-# sudo rm -rf /usr/local/go
-# sudo tar -C /usr/local -xzf "${LATEST_GO_VERSION}.linux-amd64.tar.gz"
-# rm "${LATEST_GO_VERSION}.linux-amd64.tar.gz"
-# echo "export PATH=\$PATH:/usr/local/go/bin" >> ~/.bashrc
-# echo "export GOPATH=\$HOME/go" >> ~/.bashrc
-# echo "export PATH=\$PATH:\$GOPATH/bin" >> ~/.bashrc
-# source ~/.bashrc
-# echo "Go installation complete"
-# go version
-#### Commenting out for temp workshop ####
-
-# # Install Node.js LTS
-# Moved to tracker_extension.sh 
+# Install latest Go version
+echo "Installing latest Go version..."
+# Get the latest version
+LATEST_GO_VERSION=$(curl -s https://go.dev/VERSION?m=text | head -n 1)
+echo "Latest Go version: $LATEST_GO_VERSION"
+wget "https://go.dev/dl/${LATEST_GO_VERSION}.linux-amd64.tar.gz"
+sudo rm -rf /usr/local/go
+sudo tar -C /usr/local -xzf "${LATEST_GO_VERSION}.linux-amd64.tar.gz"
+rm "${LATEST_GO_VERSION}.linux-amd64.tar.gz"
+echo "export PATH=\$PATH:/usr/local/go/bin" >> ~/.bashrc
+echo "export GOPATH=\$HOME/go" >> ~/.bashrc
+echo "export PATH=\$PATH:\$GOPATH/bin" >> ~/.bashrc
+source ~/.bashrc
+echo "Go installation complete"
+go version
 
 # Run registration script
 bash util/register.sh
-# # Install tracker extension
-# bash util/tracker_extension.sh
 
 # Run broker setup script
 echo "Setting up Solace broker..."

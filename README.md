@@ -1,4 +1,4 @@
-# Solace Workshops
+# Solace Agent Mesh Workshop
 
 <p align="center">
   <a href="https://github.com/codespaces/new/SolaceDev/solace-developer-workshops?quickstart=1">
@@ -8,15 +8,19 @@
 
 ## Table of Contents
 
+- [Getting Started](#getting-started)
 - [Required Resources](#required-resources)
 - [To Start a codespace session](#to-start-a-codespace-session)
-- [Available Workshops](#available-workshops)
 - [Available tools and configurations in this workshop](#available-tools-and-configurations-in-this-workshop)
 - [Solace Broker](#solace-broker)
   - [1. Local Solace Broker](#1-local-solace-broker)
   - [2. Solace Cloud](#2-solace-cloud)
 - [Running locally with DevContainers and VsCode](#running-locally-with-devcontainers-and-vscode)
 - [Questions?](#questions)
+
+## Getting Started
+
+New to this workshop? Head over to the [Getting Started guide](./guides/100_Getting_Started.md) for a walkthrough of the environment and first steps.
 
 ## Required Resources - Please verify access before hands-on exercises 
 - [ ] Access to Github - Reach https://github.com/SolaceDev/solace-developer-workshops
@@ -45,18 +49,12 @@ You can either click the "Open in Github Codespaces button above" or:
 > [!NOTE]
 > If you do not have access to Codespaces, please refer to the [Running locally with DevContainers and VsCode](#running-locally-with-devcontainers-and-vscode) section
 
-## Available Workshops
-
-1. [FAA Workshop](./faa-workshop/README.md)
-1. [Solace Agent Mesh Workshop](./solace-agent-mesh/README.md)
-1. [Solace Samples](./samples/README.md)
-1. [Solace Masterclass](./solace-masterclass/)
-
 ## Available tools and configurations in this workshop
 
-1. Local Solace Software Broker 
+1. Local Solace Software Broker
 1. VSCode Solace extension
 1. Solace TryMe CLI tool `stm`
+1. Solace Agent Mesh CLI `sam`
 
 ## Solace Broker
 
@@ -64,13 +62,6 @@ You have two options for using a Solace Broker:
 
 ### 1. Local Solace Broker
 A codespace is initialized by default with a broker.
-
-Alternatively, you can:
-
-1. Run the `setup_broker.sh` script as follows
-   ```
-   ./setup_broker.sh
-   ```
 
 To confirm that the Solace broker is running:
 

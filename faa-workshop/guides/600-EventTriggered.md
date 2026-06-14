@@ -1,1 +1,0 @@
-# Adding Event Mesh Gateway
