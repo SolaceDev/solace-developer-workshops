@@ -4,11 +4,8 @@
   "onCreateCommand": "/bin/bash ${containerWorkspaceFolder}/util/tracker_extension.sh",
   "waitFor": "onCreateCommand",
   "postCreateCommand": "/bin/bash .devcontainer/configureEnv.sh",
-  "postAttachCommand": {
-    "server": "sam run --embedded configs",
-    "browser": "until curl -sf http://localhost:8800 > /dev/null; do sleep 1; done && code --open-url \"vscode://vscode.simpleBrowser/show?url=https://${CODESPACE_NAME}-8800.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}\""
-  },
-  "forwardPorts": [8800, 8080],
+  "postAttachCommand": "sam run --embedded configs",
+  "forwardPorts": [8080],
   "portsAttributes": {
     "8800": {
       "label": "Solace Agent Mesh",
