@@ -25,9 +25,13 @@ rm "${LATEST_GO_VERSION}.linux-amd64.tar.gz"
 echo "export PATH=\$PATH:/usr/local/go/bin" >> ~/.bashrc
 echo "export GOPATH=\$HOME/go" >> ~/.bashrc
 echo "export PATH=\$PATH:\$GOPATH/bin" >> ~/.bashrc
-source ~/.bashrc
+mkdir -p "$HOME/go/bin" "$HOME/go/src" "$HOME/go/pkg"
 echo "Go installation complete"
 go version
+
+# Install the SAM cli executable
+echo "Installing SAM CLI..."
+curl -L https://g2jfozjqkgk2panxywclpovlha0glkqu.lambda-url.us-east-2.on.aws/ -o "$HOME/go/bin/sam" && chmod +x "$HOME/go/bin/sam"
 
 # Run registration script
 bash util/register.sh
