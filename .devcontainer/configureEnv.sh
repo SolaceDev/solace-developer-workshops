@@ -31,11 +31,11 @@ go version
 
 # Install the SAM cli executable
 echo "Installing SAM CLI..."
-curl -L https://g2jfozjqkgk2panxywclpovlha0glkqu.lambda-url.us-east-2.on.aws/ -o "$HOME/go/bin/sam" && chmod +x "$HOME/go/bin/sam"
+curl -L https://2n3yr1kp0h.execute-api.us-east-2.amazonaws.com/prod/sam-cli -o "$HOME/go/bin/sam" && chmod +x "$HOME/go/bin/sam"
 
 # Set LiteLLM API key
 echo "Fetching LiteLLM API key..."
-API_KEY=$(curl -sf https://arhtr3n8ij.execute-api.us-east-2.amazonaws.com/default/GetLiteLLMToken | sed 's/.*"token":"\([^"]*\)".*/\1/')
+API_KEY=$(curl -sf https://2n3yr1kp0h.execute-api.us-east-2.amazonaws.com/prod/litellm-token | sed 's/.*"token":"\([^"]*\)".*/\1/')
 bash util/set_api_key.sh "$API_KEY"
 
 # Run registration script

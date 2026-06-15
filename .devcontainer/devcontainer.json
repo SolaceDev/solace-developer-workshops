@@ -36,8 +36,7 @@
         "barnim.markdown-code-copy-button"
       ],
        "settings": {
-        "workshopTracker.webhookUrl": "https://u1odlsl6d9.execute-api.us-east-2.amazonaws.com/default/DAWorkshopTracker",
-        "workshopTracker.workshopName": "aprilSAMWorkshop2026",
+        "workshopTracker.webhookUrl": "https://2n3yr1kp0h.execute-api.us-east-2.amazonaws.com/prod/track",
         "files.autoSave": "afterDelay",
         "markdown.preview.openPreviewToSide": true,
         "workbench.editorAssociations": {
