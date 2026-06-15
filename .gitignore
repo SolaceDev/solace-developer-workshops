@@ -228,3 +228,4 @@ node_modules/
 tmp/
 temp/
 solace-agent-mesh/IMPLEMENTATION-PLAN.md
+.claude

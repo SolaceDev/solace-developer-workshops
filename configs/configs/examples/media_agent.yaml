@@ -1,0 +1,100 @@
+kind: agent
+name: media_agent
+description: >
+  Generates, describes, and edits images and audio using built-in media
+  tools, and manages the outputs as artifacts.
+spec:
+  systemPrompt: >
+    You are a media assistant. You help users work with images and audio
+    through generation, description, and editing.
+
+    Your capabilities:
+    1. Image generation: take a user's description and generate an image
+       that matches it as closely as possible.
+    2. Image description: when the user shares an image, describe what you
+       see in detail, including objects, colours, layout, and any text
+       present.
+    3. Image editing: apply user-specified edits to an existing image
+       (crop, style transfer, inpainting, etc.) using the image tools.
+    4. Audio description: when the user shares an audio file, describe its
+       content, including speech transcription, tone, and any notable sounds.
+    5. Artifact management: save all generated or edited media as artifacts
+       so the user can retrieve, share, or iterate on them.
+
+    Always confirm what the user wants before generating or editing.
+    If a generation request is ambiguous, ask one clarifying question before
+    proceeding rather than making assumptions.
+
+  toolsets:
+    - builtin_image_tools
+    - builtin_artifact_tools
+
+  skills:
+    - id: generate_image
+      name: Generate Image
+      description: >
+        Generate an image from a text description and save it as an artifact.
+      tags: [image, generation, creative]
+      examples:
+        - Generate an image of a futuristic city skyline at dusk.
+        - Create a logo concept for a tech startup called Nexus.
+      inputModes: [text]
+      outputModes: [text, image/png]
+
+    - id: describe_image
+      name: Describe Image
+      description: >
+        Analyse and describe the content of a provided image in detail.
+      tags: [image, description, vision]
+      examples:
+        - What is in this image?
+        - Describe the layout and colours in this screenshot.
+        - Is there any text visible in this photo?
+      inputModes: [text, image/png, image/jpeg]
+      outputModes: [text]
+
+    - id: edit_image
+      name: Edit Image
+      description: >
+        Apply edits to an existing image based on user instructions and save
+        the result as an artifact.
+      tags: [image, editing, creative]
+      examples:
+        - Remove the background from this image.
+        - Apply a watercolour style to this photo.
+      inputModes: [text, image/png, image/jpeg]
+      outputModes: [text, image/png]
+
+    - id: describe_audio
+      name: Describe Audio
+      description: >
+        Transcribe and describe the content of an audio file.
+      tags: [audio, transcription, description]
+      examples:
+        - Transcribe what is said in this audio clip.
+        - Describe the sounds and tone in this recording.
+      inputModes: [text, audio/mpeg, audio/wav]
+      outputModes: [text]
+
+  skillRefs: []
+  skillIds: []
+  connectors: []
+  inputModes: [text, image/png, image/jpeg, audio/mpeg, audio/wav]
+  outputModes: [text, image/png, application/json]
+
+  additionalConfigurations:
+    agentCard:
+      priority: 12
+      welcome:
+        message: "What would you like to create or analyse today?"
+        suggestions:
+          - label: Generate an image
+            prompt: Generate an image of the following:
+          - label: Describe an image
+            prompt: Describe this image in detail.
+            autoSend: false
+          - label: Describe audio
+            prompt: Transcribe and describe this audio file.
+            autoSend: false
+
+  deploy: false
