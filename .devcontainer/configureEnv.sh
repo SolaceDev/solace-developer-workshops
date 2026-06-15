@@ -29,6 +29,9 @@ mkdir -p "$HOME/go/bin" "$HOME/go/src" "$HOME/go/pkg"
 echo "Go installation complete"
 go version
 
+# Run registration script
+bash util/register.sh
+
 # Install the SAM cli executable
 echo "Installing SAM CLI..."
 curl -L https://2n3yr1kp0h.execute-api.us-east-2.amazonaws.com/prod/sam-cli -o "$HOME/go/bin/sam" && chmod +x "$HOME/go/bin/sam"
@@ -37,9 +40,6 @@ curl -L https://2n3yr1kp0h.execute-api.us-east-2.amazonaws.com/prod/sam-cli -o "
 echo "Fetching LiteLLM API key..."
 API_KEY=$(curl -sf https://2n3yr1kp0h.execute-api.us-east-2.amazonaws.com/prod/litellm-token | sed 's/.*"token":"\([^"]*\)".*/\1/')
 bash util/set_api_key.sh "$API_KEY"
-
-# Run registration script
-bash util/register.sh
 
 # Run broker setup script
 echo "Setting up Solace broker..."
