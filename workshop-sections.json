@@ -22,11 +22,5 @@
     "title": "Stage 2: Onboarding",
     "description": "Provision agent access to databases, APIs, MCP servers, and event sources",
     "triggerFile": "guides/300_Onboarding.md"
-  },
-  {
-    "id": "s5",
-    "title": "Solace Agent Mesh Workflows",
-    "description": "Pull configuration from a remote Solace Agent Mesh instance and author declarative workflows",
-    "triggerFile": "guides/301_config_pull.md"
   }
 ]
