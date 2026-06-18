@@ -1,4 +1,4 @@
-<svg width="620" height="260" viewBox="0 0 620 260" xmlns="http://www.w3.org/2000/svg">
+<svg width="2304" height="1300" viewBox="0 0 2304 1300" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="greenGrad" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#ABFF88"/>
@@ -6,48 +6,51 @@
     </linearGradient>
   </defs>
 
-  <rect width="620" height="260" fill="#062038"/>
-  <rect y="0" width="620" height="3" fill="url(#greenGrad)"/>
-  <rect y="257" width="620" height="3" fill="url(#greenGrad)"/>
+  <rect width="2304" height="1300" fill="#062038"/>
+  <rect y="0" width="2304" height="10" fill="url(#greenGrad)"/>
+  <rect y="1290" width="2304" height="10" fill="url(#greenGrad)"/>
 
   <!-- Overline + title -->
-  <text x="20" y="25"
+  <text x="120" y="70"
         font-family="'Space Mono', 'Cascadia Mono', monospace"
-        font-size="9" fill="#00C895" letter-spacing="2">WORKSHOP OUTCOMES</text>
-  <text x="20" y="48"
+        font-size="22" fill="#00C895" letter-spacing="3.5">WORKSHOP OUTCOMES</text>
+  <text x="120" y="155"
         font-family="'Figtree', 'Segoe UI', sans-serif"
-        font-size="15" font-weight="700" fill="#FFFFFF">By the end of this workshop you will be able to:</text>
+        font-size="62" font-weight="700" fill="#FFFFFF">By the end of this workshop you will be able to:</text>
 
-  <line x1="20" y1="58" x2="600" y2="58" stroke="#0D3A5C" stroke-width="1"/>
+  <line x1="120" y1="188" x2="2184" y2="188" stroke="#0D3A5C" stroke-width="1.5"/>
+
+  <!--
+    5 outcomes, each split across 2 lines, spaced 196px apart.
+    Rect: x=120, y=item_y, w=26, h=26, rx=4
+    Line 1: x=170, y=item_y+30,  font=42
+    Line 2: x=170, y=item_y+88,  font=42
+    Items at y=216, 412, 608, 804, 1000
+  -->
 
   <!-- Outcome 1 -->
-  <rect x="20" y="67" width="11" height="11" rx="2" fill="#00C895"/>
-  <text x="41" y="77"
-        font-family="'Figtree', sans-serif"
-        font-size="12" fill="#FFFFFF">Explain the ADLC and map each stage to concrete Agent Mesh capabilities</text>
+  <rect x="120" y="216" width="26" height="26" rx="4" fill="#00C895"/>
+  <text x="170" y="246" font-family="'Figtree', sans-serif" font-size="42" fill="#FFFFFF">Explain the ADLC and map each stage</text>
+  <text x="170" y="304" font-family="'Figtree', sans-serif" font-size="42" fill="#FFFFFF">to concrete Agent Mesh capabilities</text>
 
   <!-- Outcome 2 -->
-  <rect x="20" y="96" width="11" height="11" rx="2" fill="#00C895"/>
-  <text x="41" y="106"
-        font-family="'Figtree', sans-serif"
-        font-size="12" fill="#FFFFFF">Stand up a local Agent Mesh environment and apply declarative configuration</text>
+  <rect x="120" y="412" width="26" height="26" rx="4" fill="#00C895"/>
+  <text x="170" y="442" font-family="'Figtree', sans-serif" font-size="42" fill="#FFFFFF">Stand up a local Agent Mesh environment</text>
+  <text x="170" y="500" font-family="'Figtree', sans-serif" font-size="42" fill="#FFFFFF">and apply declarative configuration</text>
 
   <!-- Outcome 3 -->
-  <rect x="20" y="125" width="11" height="11" rx="2" fill="#00C895"/>
-  <text x="41" y="135"
-        font-family="'Figtree', sans-serif"
-        font-size="12" fill="#FFFFFF">Define an agent, assign it tools, and connect it to an external system</text>
+  <rect x="120" y="608" width="26" height="26" rx="4" fill="#00C895"/>
+  <text x="170" y="638" font-family="'Figtree', sans-serif" font-size="42" fill="#FFFFFF">Define an agent, assign it tools,</text>
+  <text x="170" y="696" font-family="'Figtree', sans-serif" font-size="42" fill="#FFFFFF">and connect it to an external system</text>
 
   <!-- Outcome 4 -->
-  <rect x="20" y="154" width="11" height="11" rx="2" fill="#00C895"/>
-  <text x="41" y="164"
-        font-family="'Figtree', sans-serif"
-        font-size="12" fill="#FFFFFF">Evaluate agent behavior using structured evaluation methods</text>
+  <rect x="120" y="804" width="26" height="26" rx="4" fill="#00C895"/>
+  <text x="170" y="834" font-family="'Figtree', sans-serif" font-size="42" fill="#FFFFFF">Evaluate agent behavior using</text>
+  <text x="170" y="892" font-family="'Figtree', sans-serif" font-size="42" fill="#FFFFFF">structured evaluation methods</text>
 
   <!-- Outcome 5 -->
-  <rect x="20" y="183" width="11" height="11" rx="2" fill="#00C895"/>
-  <text x="41" y="193"
-        font-family="'Figtree', sans-serif"
-        font-size="12" fill="#FFFFFF">Understand operational and governance concerns at production scale</text>
+  <rect x="120" y="1000" width="26" height="26" rx="4" fill="#00C895"/>
+  <text x="170" y="1030" font-family="'Figtree', sans-serif" font-size="42" fill="#FFFFFF">Understand operational and governance</text>
+  <text x="170" y="1088" font-family="'Figtree', sans-serif" font-size="42" fill="#FFFFFF">concerns at production scale</text>
 
 </svg>
