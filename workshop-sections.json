@@ -7,14 +7,8 @@
   },
   {
     "id": "s2",
-    "title": "ADLC Background",
-    "description": "Learn the Agent Development Lifecycle framework and how Solace positions it",
-    "triggerFile": "guides/101_ADLC.md"
-  },
-  {
-    "id": "s2b",
     "title": "What is Solace Agent Mesh",
     "description": "Understand what Solace Agent Mesh is, the challenges it addresses, and why an event-driven architecture on a proven message broker is the foundation for enterprise-grade agentic deployments",
-    "triggerFile": "guides/102_Solace_Agent_Mesh.md"
+    "triggerFile": "guides/101_Solace_Agent_Mesh.md"
   }
 ]

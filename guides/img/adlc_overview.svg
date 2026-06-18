@@ -26,9 +26,6 @@
         font-family="'Figtree', 'Segoe UI', sans-serif"
         font-size="26" fill="#C2F7FF" opacity="0.7">Six-stage framework for designing, building, deploying, and governing AI agents at enterprise scale</text>
   <line x1="120" y1="178" x2="2184" y2="178" stroke="#0D3A5C" stroke-width="1.5"/>
-  <text x="120" y="206"
-        font-family="'Space Mono', monospace"
-        font-size="17" fill="#00C895" letter-spacing="4">THE SIX STAGES</text>
 
   <!--
     Stage cards: 2 cols × 3 rows

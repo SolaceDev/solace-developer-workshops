@@ -13,10 +13,10 @@
   <!-- Title + subtitle -->
   <text x="120" y="162"
         font-family="'Figtree', 'Segoe UI', sans-serif"
-        font-size="90" font-weight="700" fill="#FFFFFF">Enterprise Agent Runtime</text>
+        font-size="90" font-weight="700" fill="#FFFFFF">Solace Agent Mesh</text>
   <text x="120" y="232"
         font-family="'Figtree', 'Segoe UI', sans-serif"
-        font-size="34" fill="#C2F7FF" opacity="0.65">Go-based infrastructure layer that powers every ADLC stage</text>
+        font-size="34" fill="#C2F7FF" opacity="0.65">Agent Development and Runtime Platform</text>
 
   <line x1="120" y1="268" x2="2184" y2="268" stroke="#0D3A5C" stroke-width="1.5"/>
 
@@ -48,25 +48,6 @@
   <text x="1310" y="627" font-family="'Figtree', sans-serif" font-size="34" fill="#C2F7FF" opacity="0.65">Connect agents to external systems</text>
 
   <line x1="120" y1="730" x2="2184" y2="730" stroke="#0D3A5C" stroke-width="1.5"/>
-
-  <!-- Technology tags  (h=48, rx=24, font=26) -->
-  <rect x="120" y="784" width="88" height="48" rx="24" fill="#00C895" fill-opacity="0.1" stroke="#00C895" stroke-width="0.8"/>
-  <text x="164" y="815" font-family="'Space Mono', monospace" font-size="26" fill="#00C895" text-anchor="middle">Go</text>
-
-  <rect x="224" y="784" width="204" height="48" rx="24" fill="#00C895" fill-opacity="0.1" stroke="#00C895" stroke-width="0.8"/>
-  <text x="326" y="815" font-family="'Space Mono', monospace" font-size="26" fill="#00C895" text-anchor="middle">Event-driven</text>
-
-  <rect x="444" y="784" width="192" height="48" rx="24" fill="#00C895" fill-opacity="0.1" stroke="#00C895" stroke-width="0.8"/>
-  <text x="540" y="815" font-family="'Space Mono', monospace" font-size="26" fill="#00C895" text-anchor="middle">Enterprise</text>
-
-  <rect x="652" y="784" width="208" height="48" rx="24" fill="#00C895" fill-opacity="0.1" stroke="#00C895" stroke-width="0.8"/>
-  <text x="756" y="815" font-family="'Space Mono', monospace" font-size="26" fill="#00C895" text-anchor="middle">Declarative</text>
-
-  <rect x="876" y="784" width="116" height="48" rx="24" fill="#00C895" fill-opacity="0.1" stroke="#00C895" stroke-width="0.8"/>
-  <text x="934" y="815" font-family="'Space Mono', monospace" font-size="26" fill="#00C895" text-anchor="middle">YAML</text>
-
-  <rect x="1008" y="784" width="164" height="48" rx="24" fill="#00C895" fill-opacity="0.1" stroke="#00C895" stroke-width="0.8"/>
-  <text x="1090" y="815" font-family="'Space Mono', monospace" font-size="26" fill="#00C895" text-anchor="middle">Gateway</text>
 
   <!-- Summary -->
   <text x="120" y="938"

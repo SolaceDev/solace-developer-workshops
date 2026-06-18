@@ -28,14 +28,6 @@ Alongside the ADLC methodology, you will work with Solace Agent Mesh directly. A
 
 ![Workshop Outcomes](./img/workshop_outcomes.svg)
 
-By the end of this workshop you will be able to:
-
-- Explain the ADLC and map each stage to concrete Agent Mesh capabilities
-- Stand up a local Agent Mesh environment and apply declarative configuration
-- Define an agent, assign it tools, and connect it to an external system
-- Evaluate agent behavior using structured evaluation methods
-- Understand the operational and governance concerns that arise at production scale
-
 ---
 
 ## Understanding the ADLC
@@ -59,7 +51,19 @@ The six stages of the ADLC are:
 
 Each stage of the ADLC maps directly to a set of Agent Mesh features. The workshop guides that follow this document each cover one stage in depth.
 
-For more detail on the ADLC framework, its origins, and how Solace has positioned it, read the [ADLC Background](./101_ADLC.md) document before proceeding.
+## Why do we need an ADLC
+
+Good engineering requires a repeatable process. Agents introduce a new class of software that existing lifecycles do not cover.
+
+The software industry has adapted its methodology each time a new paradigm required it:
+
+- **SDLC** (early 1980s) — structured the process for deterministic, rule-based software
+- **API Development Lifecycle** (Mulesoft, ~2013) — addressed the unique challenges of building integration-first software
+- **ADLC** (2025/2026) — addresses AI agents, which are fundamentally non-deterministic
+
+Agents behave differently from traditional software. The same input can produce different outputs. Testing a boolean condition is not sufficient. An agent can pass all unit tests and still give a user a wrong answer in production. A new methodology is required to handle this.
+
+The ADLC gives development teams a structured, repeatable, quality-based way to build and operate agents at enterprise scale.
 
 ---
 
