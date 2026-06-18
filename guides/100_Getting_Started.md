@@ -9,24 +9,24 @@ This workshop is designed for developers, architects, and technical practitioner
 ## Table of Contents
 
 - [What This Workshop Covers](#what-this-workshop-covers)
-- [Prerequisites](#prerequisites)
-- [Environment Setup](#environment-setup)
-  - [Install the Agent Mesh CLI](#install-the-sam-cli)
-  - [Install the Agent Mesh Skills](#install-the-sam-skills)
-  - [Start the Agent Mesh Stack](#start-the-sam-stack)
 - [Understanding the ADLC](#understanding-the-adlc)
-- [Workshop Structure](#workshop-structure)
-- [Next Steps](#next-steps)
+- [Prompts](#prompts)
 
 ---
 
 ## What This Workshop Covers
 
+![ADLC Overview](./img/adlc_overview.svg)
+
 This workshop guides you through the Agent Development Lifecycle (ADLC): a six-stage framework for designing, building, deploying, and governing AI agents at enterprise scale using Solace Agent Mesh.
 
 The ADLC is the methodology that underpins everything in this workshop. It defines the repeatable process that engineering teams need to move agents from initial concept to production-grade deployment. Each section of this workshop maps directly to a stage of the ADLC, giving you hands-on experience with the tooling, patterns, and decisions that each stage requires.
 
+![Solace Agent Mesh](./img/sam_overview.svg)
+
 Alongside the ADLC methodology, you will work with Solace Agent Mesh directly. Agent Mesh is a Go-based, event-driven agent runtime built for enterprise scale. It provides the runtime infrastructure, CLI tooling, declarative configuration model, and gateway integrations that the ADLC stages depend on.
+
+![Workshop Outcomes](./img/workshop_outcomes.svg)
 
 By the end of this workshop you will be able to:
 
@@ -39,6 +39,8 @@ By the end of this workshop you will be able to:
 ---
 
 ## Understanding the ADLC
+
+![ADLC](./img/adlc.png)
 
 The Agent Development Lifecycle (ADLC) is the framework this workshop is built around. It provides a structured, repeatable path from agent conception to continuous improvement in production.
 

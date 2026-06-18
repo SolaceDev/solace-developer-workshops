@@ -12,15 +12,9 @@
     "triggerFile": "guides/101_ADLC.md"
   },
   {
-    "id": "s3",
-    "title": "Stage 1: Hiring",
-    "description": "Define agent roles, system prompts, skills, and behavioral guardrails",
-    "triggerFile": "guides/200_Hiring.md"
-  },
-  {
-    "id": "s4",
-    "title": "Stage 2: Onboarding",
-    "description": "Provision agent access to databases, APIs, MCP servers, and event sources",
-    "triggerFile": "guides/300_Onboarding.md"
+    "id": "s2b",
+    "title": "What is Solace Agent Mesh",
+    "description": "Understand what Solace Agent Mesh is, the challenges it addresses, and why an event-driven architecture on a proven message broker is the foundation for enterprise-grade agentic deployments",
+    "triggerFile": "guides/102_Solace_Agent_Mesh.md"
   }
 ]

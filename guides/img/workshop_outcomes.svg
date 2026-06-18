@@ -1,0 +1,53 @@
+<svg width="620" height="260" viewBox="0 0 620 260" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="greenGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ABFF88"/>
+      <stop offset="100%" stop-color="#00C895"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="620" height="260" fill="#062038"/>
+  <rect y="0" width="620" height="3" fill="url(#greenGrad)"/>
+  <rect y="257" width="620" height="3" fill="url(#greenGrad)"/>
+
+  <!-- Overline + title -->
+  <text x="20" y="25"
+        font-family="'Space Mono', 'Cascadia Mono', monospace"
+        font-size="9" fill="#00C895" letter-spacing="2">WORKSHOP OUTCOMES</text>
+  <text x="20" y="48"
+        font-family="'Figtree', 'Segoe UI', sans-serif"
+        font-size="15" font-weight="700" fill="#FFFFFF">By the end of this workshop you will be able to:</text>
+
+  <line x1="20" y1="58" x2="600" y2="58" stroke="#0D3A5C" stroke-width="1"/>
+
+  <!-- Outcome 1 -->
+  <rect x="20" y="67" width="11" height="11" rx="2" fill="#00C895"/>
+  <text x="41" y="77"
+        font-family="'Figtree', sans-serif"
+        font-size="12" fill="#FFFFFF">Explain the ADLC and map each stage to concrete Agent Mesh capabilities</text>
+
+  <!-- Outcome 2 -->
+  <rect x="20" y="96" width="11" height="11" rx="2" fill="#00C895"/>
+  <text x="41" y="106"
+        font-family="'Figtree', sans-serif"
+        font-size="12" fill="#FFFFFF">Stand up a local Agent Mesh environment and apply declarative configuration</text>
+
+  <!-- Outcome 3 -->
+  <rect x="20" y="125" width="11" height="11" rx="2" fill="#00C895"/>
+  <text x="41" y="135"
+        font-family="'Figtree', sans-serif"
+        font-size="12" fill="#FFFFFF">Define an agent, assign it tools, and connect it to an external system</text>
+
+  <!-- Outcome 4 -->
+  <rect x="20" y="154" width="11" height="11" rx="2" fill="#00C895"/>
+  <text x="41" y="164"
+        font-family="'Figtree', sans-serif"
+        font-size="12" fill="#FFFFFF">Evaluate agent behavior using structured evaluation methods</text>
+
+  <!-- Outcome 5 -->
+  <rect x="20" y="183" width="11" height="11" rx="2" fill="#00C895"/>
+  <text x="41" y="193"
+        font-family="'Figtree', sans-serif"
+        font-size="12" fill="#FFFFFF">Understand operational and governance concerns at production scale</text>
+
+</svg>

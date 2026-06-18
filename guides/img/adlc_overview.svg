@@ -1,0 +1,102 @@
+<svg width="620" height="665" viewBox="0 0 620 665" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#03213B"/>
+      <stop offset="100%" stop-color="#021930"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ABFF88"/>
+      <stop offset="100%" stop-color="#00C895"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B3152"/>
+      <stop offset="100%" stop-color="#082542"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="620" height="665" fill="url(#bgGrad)"/>
+  <rect y="0" width="620" height="3" fill="url(#greenGrad)"/>
+  <rect y="662" width="620" height="3" fill="url(#greenGrad)"/>
+
+  <!-- Header -->
+  <text x="50" y="50" font-family="'Figtree', 'Segoe UI', sans-serif" font-size="28" font-weight="700" fill="#FFFFFF">Agent Development Lifecycle<tspan fill="#00C895" font-weight="300"> (ADLC)</tspan></text>
+  <text x="50" y="75" font-family="'Figtree', 'Segoe UI', sans-serif" font-size="12.5" fill="#C2F7FF" opacity="0.7">Six-stage framework for designing, building, deploying,</text>
+  <text x="50" y="91" font-family="'Figtree', 'Segoe UI', sans-serif" font-size="12.5" fill="#C2F7FF" opacity="0.7">and governing AI agents at enterprise scale</text>
+  <line x1="50" y1="106" x2="570" y2="106" stroke="#0D3A5C" stroke-width="1"/>
+  <text x="50" y="123" font-family="'Space Mono', monospace" font-size="9" fill="#00C895" letter-spacing="2.5">THE SIX STAGES</text>
+
+  <!--
+    Stage cards: 2 cols × 3 rows
+    Col 1: x=50   Col 2: x=296   Width: 228   Height: 140
+    Row 1: y=135  Row 2: y=310   Row 3: y=485
+    Row gap: 35px (longer shafts on snake arrows)
+
+    Inside each card (R = row top, C = col x):
+      Accent bar:   x=C,     y=R,     w=3,  h=140
+      Circle:       cx=C+28, cy=R+40, r=15
+      Number text:  x=C+28,  y=R+45  (text-anchor middle)
+      Name text:    x=C+51,  y=R+38
+      Desc line 1:  x=C+8,   y=R+70
+      Desc line 2:  x=C+8,   y=R+84
+      Guide rect:   x=C+8,   y=R+105, w=56, h=16
+      Guide text:   x=C+36,  y=R+116 (text-anchor middle)
+  -->
+
+  <!-- ── STAGE 1: Hiring (Col 1, Row 1 — y=135) ── -->
+  <rect x="50" y="135" width="228" height="140" rx="6" fill="url(#cardGrad)" stroke="#0D3A5C" stroke-width="1"/>
+  <rect x="50" y="135" width="3" height="140" rx="2" fill="#00C895"/>
+  <circle cx="78" cy="175" r="15" fill="#00C895"/>
+  <text x="78" y="180" font-family="'Figtree', sans-serif" font-size="13" font-weight="700" fill="#03213B" text-anchor="middle">1</text>
+  <text x="101" y="173" font-family="'Figtree', sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">Hiring</text>
+  <text x="58" y="210" font-family="'Figtree', sans-serif" font-size="11" fill="#C2F7FF" opacity="0.75">Define the agent's role, scope,</text>
+  <text x="58" y="224" font-family="'Figtree', sans-serif" font-size="11" fill="#C2F7FF" opacity="0.75">and purpose</text>
+
+  <!-- ── STAGE 2: Onboarding (Col 2, Row 1 — y=135) ── -->
+  <rect x="296" y="135" width="228" height="140" rx="6" fill="url(#cardGrad)" stroke="#0D3A5C" stroke-width="1"/>
+  <rect x="296" y="135" width="3" height="140" rx="2" fill="#00C895"/>
+  <circle cx="324" cy="175" r="15" fill="#00C895"/>
+  <text x="324" y="180" font-family="'Figtree', sans-serif" font-size="13" font-weight="700" fill="#03213B" text-anchor="middle">2</text>
+  <text x="347" y="173" font-family="'Figtree', sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">Onboarding</text>
+  <text x="304" y="210" font-family="'Figtree', sans-serif" font-size="11" fill="#C2F7FF" opacity="0.75">Provision access, tools,</text>
+  <text x="304" y="224" font-family="'Figtree', sans-serif" font-size="11" fill="#C2F7FF" opacity="0.75">and operational context</text>
+
+
+  <!-- ── STAGE 3: Coaching (Col 1, Row 2 — y=310) ── -->
+  <rect x="50" y="310" width="228" height="140" rx="6" fill="url(#cardGrad)" stroke="#0D3A5C" stroke-width="1"/>
+  <rect x="50" y="310" width="3" height="140" rx="2" fill="#00C895"/>
+  <circle cx="78" cy="350" r="15" fill="#00C895"/>
+  <text x="78" y="355" font-family="'Figtree', sans-serif" font-size="13" font-weight="700" fill="#03213B" text-anchor="middle">3</text>
+  <text x="101" y="348" font-family="'Figtree', sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">Coaching</text>
+  <text x="58" y="385" font-family="'Figtree', sans-serif" font-size="11" fill="#C2F7FF" opacity="0.75">Validate performance via</text>
+  <text x="58" y="399" font-family="'Figtree', sans-serif" font-size="11" fill="#C2F7FF" opacity="0.75">structured evaluation</text>
+
+  <!-- ── STAGE 4: Supervision (Col 2, Row 2 — y=310) ── -->
+  <rect x="296" y="310" width="228" height="140" rx="6" fill="url(#cardGrad)" stroke="#0D3A5C" stroke-width="1"/>
+  <rect x="296" y="310" width="3" height="140" rx="2" fill="#00C895"/>
+  <circle cx="324" cy="350" r="15" fill="#00C895"/>
+  <text x="324" y="355" font-family="'Figtree', sans-serif" font-size="13" font-weight="700" fill="#03213B" text-anchor="middle">4</text>
+  <text x="347" y="348" font-family="'Figtree', sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">Supervision</text>
+  <text x="304" y="385" font-family="'Figtree', sans-serif" font-size="11" fill="#C2F7FF" opacity="0.75">Maintain human oversight and</text>
+  <text x="304" y="399" font-family="'Figtree', sans-serif" font-size="11" fill="#C2F7FF" opacity="0.75">monitor in production</text>
+
+
+  <!-- ── STAGE 5: Teamwork (Col 1, Row 3 — y=485) ── -->
+  <rect x="50" y="485" width="228" height="140" rx="6" fill="url(#cardGrad)" stroke="#0D3A5C" stroke-width="1"/>
+  <rect x="50" y="485" width="3" height="140" rx="2" fill="#00C895"/>
+  <circle cx="78" cy="525" r="15" fill="#00C895"/>
+  <text x="78" y="530" font-family="'Figtree', sans-serif" font-size="13" font-weight="700" fill="#03213B" text-anchor="middle">5</text>
+  <text x="101" y="523" font-family="'Figtree', sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">Teamwork</text>
+  <text x="58" y="560" font-family="'Figtree', sans-serif" font-size="11" fill="#C2F7FF" opacity="0.75">Integrate into a</text>
+  <text x="58" y="574" font-family="'Figtree', sans-serif" font-size="11" fill="#C2F7FF" opacity="0.75">multi-agent system</text>
+
+  <!-- ── STAGE 6: Improvement (Col 2, Row 3 — y=485) ── -->
+  <rect x="296" y="485" width="228" height="140" rx="6" fill="url(#cardGrad)" stroke="#0D3A5C" stroke-width="1"/>
+  <rect x="296" y="485" width="3" height="140" rx="2" fill="#00C895"/>
+  <circle cx="324" cy="525" r="15" fill="#00C895"/>
+  <text x="324" y="530" font-family="'Figtree', sans-serif" font-size="13" font-weight="700" fill="#03213B" text-anchor="middle">6</text>
+  <text x="347" y="523" font-family="'Figtree', sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">Improvement</text>
+  <text x="304" y="560" font-family="'Figtree', sans-serif" font-size="11" fill="#C2F7FF" opacity="0.75">Close the feedback loop,</text>
+  <text x="304" y="574" font-family="'Figtree', sans-serif" font-size="11" fill="#C2F7FF" opacity="0.75">continuously evolve</text>
+
+
+</svg>

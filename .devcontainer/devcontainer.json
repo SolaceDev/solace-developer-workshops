@@ -5,11 +5,11 @@
   "waitFor": "onCreateCommand",
   "postCreateCommand": "/bin/bash .devcontainer/configureEnv.sh",
   "postAttachCommand": "sam run --embedded configs",
-  "forwardPorts": [8080],
+  "forwardPorts": [8080, 8800],
   "portsAttributes": {
     "8800": {
       "label": "Solace Agent Mesh",
-      "onAutoForward": "openPreview"
+      "onAutoForward": "openBrowser"
     },
     "8080": {
       "label": "Solace Broker Manager",

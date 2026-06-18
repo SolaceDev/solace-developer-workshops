@@ -228,4 +228,8 @@ node_modules/
 tmp/
 temp/
 solace-agent-mesh/IMPLEMENTATION-PLAN.md
-.claude
+.claude/settings.local.json
+.claude/agent-memory/*
+test_deployment/*
+.sam/*
+guides/resources/*
