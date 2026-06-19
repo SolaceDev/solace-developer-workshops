@@ -85,8 +85,29 @@ The ADLC gives development teams a structured, repeatable, quality-based way to 
 
 ## Lets launch Solace Agent Mesh
 
-- Click the Ports tab
-- Click the browser icon next to the Solace Agent Mesh port
+When you launch your github codespace, you might get a new tab with a simple integrated browser into your vscode instance. If the tab launches, make sure to trust the traffic and click `Continue`
+
+  <div align="center">
+     <img src="./img/simple_browser.png" alt="Use-cases" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
+
+If you prefer to open the Solace Agent Mesh client application in a separate browser tab, head on to the Ports tab:
+
+  <div align="center">
+     <img src="./img/port.png" alt="Use-cases" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
+
+Click the browser icon next to the Solace Agent Mesh port
+
+<div align="center">
+     <img src="./img/port_2.png" alt="Use-cases" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
+
+That will open the Solace Agent Mesh client application on a new browser
+
+<div align="center">
+     <img src="./img/sam_client.png" alt="Use-cases" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
 
 ## Resources
 
