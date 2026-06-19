@@ -109,6 +109,10 @@ That will open the Solace Agent Mesh client application on a new browser
      <img src="./img/sam_client.png" alt="Use-cases" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
   </div>
 
+  <div align="center">
+     <img src="./img/intro_agents_sam.png" alt="Use-cases" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
+
 ## Resources
 
 - [Solace Agent Mesh Githiub Repository](https://github.com/solacelabs/solace-agent-mesh)
