@@ -80,12 +80,10 @@
 
   <!-- Box 1: Publisher (x=456) -->
   <rect x="456" y="100" width="80" height="32" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
-  <text x="496" y="116" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Publisher</text>
 
   <!-- Arrow 1: 536 → 560 -->
   <line x1="536" y1="116" x2="560" y2="116" stroke="#093B5F" stroke-width="1"/>
   <polyline points="557,113 560,116 557,119" fill="none" stroke="#093B5F" stroke-width="1"/>
-  <text x="548" y="109" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">publish()</text>
 
   <!-- Box 2: Broker (x=560) -->
   <rect x="560" y="100" width="80" height="32" rx="4" fill="#00C895" stroke="none"/>
@@ -94,7 +92,6 @@
   <!-- Arrow 2: 640 → 664 -->
   <line x1="640" y1="116" x2="664" y2="116" stroke="#093B5F" stroke-width="1"/>
   <polyline points="661,113 664,116 661,119" fill="none" stroke="#093B5F" stroke-width="1"/>
-  <text x="652" y="109" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">deliver</text>
 
   <!-- Box 3: Subscriber (x=664) -->
   <rect x="664" y="100" width="80" height="32" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
@@ -129,7 +126,6 @@
   <text x="492" y="243" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">Broker</text>
   <line x1="524" y1="243" x2="546" y2="243" stroke="#093B5F" stroke-width="1"/>
   <polyline points="543,240 546,243 543,246" fill="none" stroke="#093B5F" stroke-width="1"/>
-  <text x="535" y="236" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">re-delivers</text>
   <rect x="546" y="232" width="80" height="22" rx="4" fill="#FFFFFF" stroke="#00C895" stroke-width="1"/>
   <text x="586" y="243" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Subscriber</text>
   <!-- Check mark -->

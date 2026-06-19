@@ -9,24 +9,38 @@ This workshop is designed for developers, architects, and technical practitioner
 ## Table of Contents
 
 - [What This Workshop Covers](#what-this-workshop-covers)
+- [Takeaways](#takeaways)
 - [Understanding the ADLC](#understanding-the-adlc)
-- [Prompts](#prompts)
+- [Why do we need an ADLC](#why-do-we-need-an-adlc)
+- [Lets launch Solace Agent Mesh](#lets-launch-solace-agent-mesh)
+- [Resources](#resources)
 
 ---
 
 ## What This Workshop Covers
 
-![ADLC Overview](./img/adlc_overview.svg)
-
 This workshop guides you through the Agent Development Lifecycle (ADLC): a six-stage framework for designing, building, deploying, and governing AI agents at enterprise scale using Solace Agent Mesh.
 
-The ADLC is the methodology that underpins everything in this workshop. It defines the repeatable process that engineering teams need to move agents from initial concept to production-grade deployment. Each section of this workshop maps directly to a stage of the ADLC, giving you hands-on experience with the tooling, patterns, and decisions that each stage requires.
+The ADLC is the methodology that underpins everything in this workshop. 
 
-![Solace Agent Mesh](./img/sam_overview.svg)
+Alongside the ADLC methodology, you will work with [Solace Agent Mesh](https://solace.com/lp/agent-mesh) directly. Agent Mesh is a Go-based, event-driven agent runtime built for enterprise scale. It provides:
+1. Event-driven Runtime 
+1. CLI tooling
+1. Declarative configuration model
+1. Entrypoints integrations that the ADLC stages depend on.
 
-Alongside the ADLC methodology, you will work with Solace Agent Mesh directly. Agent Mesh is a Go-based, event-driven agent runtime built for enterprise scale. It provides the runtime infrastructure, CLI tooling, declarative configuration model, and gateway integrations that the ADLC stages depend on.
+![SAM Overview](./img/sam_overview.jpg)
 
-![Workshop Outcomes](./img/workshop_outcomes.svg)
+
+## Takeaways
+
+By the end of this workshop you will be able to:
+
+- Explain the ADLC and map each stage to concrete Agent Mesh capabilities
+- Stand up a local Agent Mesh environment and apply declarative configuration
+- Define an agent, assign it tools, and connect it to an external system
+- Evaluate agent behavior using structured evaluation methods
+- Understand operational and governance concerns at production scale
 
 ---
 
@@ -62,6 +76,8 @@ The software industry has adapted its methodology each time a new paradigm requi
 - **ADLC** (2025/2026) — addresses AI agents, which are fundamentally non-deterministic
 
 Agents behave differently from traditional software. The same input can produce different outputs. Testing a boolean condition is not sufficient. An agent can pass all unit tests and still give a user a wrong answer in production. A new methodology is required to handle this.
+
+![Why the industry needed a new development lifecycle](./img/adlc_evolution.svg)
 
 The ADLC gives development teams a structured, repeatable, quality-based way to build and operate agents at enterprise scale.
 

@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" width="800" height="420">
+
+  <!-- Background -->
+  <rect width="800" height="420" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="400" y="24" font-family="Figtree, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#093B5F" text-anchor="middle">Why the Industry Needed a New Development Lifecycle</text>
+  <text x="400" y="42" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">Each paradigm shift in software required a new methodology to match it</text>
+  <line x1="50" y1="52" x2="750" y2="52" stroke="#EAEAEA" stroke-width="1"/>
+
+  <!-- ===== CARD 1: SDLC (x=20, width=220) ===== -->
+  <rect x="20" y="62" width="220" height="156" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="20" y="62" width="220" height="44" rx="4" fill="#EAEAEA"/>
+  <rect x="20" y="92" width="220" height="14" fill="#EAEAEA"/>
+  <!-- Era pill -->
+  <rect x="28" y="70" width="46" height="16" rx="8" fill="#D6D6D6"/>
+  <text x="51" y="78" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">1980s</text>
+  <!-- Title -->
+  <text x="130" y="92" font-family="Figtree, 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">SDLC</text>
+  <!-- Body -->
+  <text x="30" y="128" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Structured the process for</text>
+  <text x="30" y="142" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">deterministic, rule-based</text>
+  <text x="30" y="156" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">software applications</text>
+  <!-- Type tag -->
+  <rect x="28" y="168" width="110" height="16" rx="8" fill="#F4F4F4" stroke="#D6D6D6" stroke-width="1"/>
+  <text x="83" y="176" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">DETERMINISTIC</text>
+
+  <!-- Arrow 1 (gap: x=240 to x=290) -->
+  <line x1="242" y1="140" x2="284" y2="140" stroke="#093B5F" stroke-width="1.5"/>
+  <polyline points="280,136 284,140 280,144" fill="none" stroke="#093B5F" stroke-width="1.5" stroke-linejoin="round"/>
+  <text x="263" y="132" font-family="Figtree, 'Segoe UI', sans-serif" font-size="7" fill="#093B5F" text-anchor="middle">adapted</text>
+
+  <!-- ===== CARD 2: API Dev Lifecycle (x=290, width=220) ===== -->
+  <rect x="290" y="62" width="220" height="156" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="290" y="62" width="220" height="44" rx="4" fill="#C2F7FF"/>
+  <rect x="290" y="92" width="220" height="14" fill="#C2F7FF"/>
+  <!-- Era pill -->
+  <rect x="298" y="70" width="36" height="16" rx="8" fill="#93E5F5"/>
+  <text x="316" y="78" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">2013</text>
+  <!-- Title -->
+  <text x="400" y="92" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">API Dev Lifecycle</text>
+  <!-- Body -->
+  <text x="300" y="128" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Addressed unique challenges</text>
+  <text x="300" y="142" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">of integration-first software</text>
+  <text x="300" y="156" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Pioneered by Mulesoft</text>
+  <!-- Type tag -->
+  <rect x="298" y="168" width="128" height="16" rx="8" fill="#C2F7FF" stroke="#93E5F5" stroke-width="1"/>
+  <text x="362" y="176" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">INTEGRATION-FIRST</text>
+
+  <!-- Arrow 2 (gap: x=510 to x=560) -->
+  <line x1="512" y1="140" x2="554" y2="140" stroke="#093B5F" stroke-width="1.5"/>
+  <polyline points="550,136 554,140 550,144" fill="none" stroke="#093B5F" stroke-width="1.5" stroke-linejoin="round"/>
+  <text x="533" y="132" font-family="Figtree, 'Segoe UI', sans-serif" font-size="7" fill="#093B5F" text-anchor="middle">adapted</text>
+
+  <!-- ===== CARD 3: ADLC (x=560, width=220) — highlighted ===== -->
+  <rect x="560" y="62" width="220" height="156" rx="4" fill="#FFFFFF" stroke="#00C895" stroke-width="1.5"/>
+  <rect x="560" y="62" width="220" height="44" rx="4" fill="#00C895"/>
+  <rect x="560" y="92" width="220" height="14" fill="#00C895"/>
+  <!-- Era label (white on green) -->
+  <text x="570" y="78" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#FFFFFF" dominant-baseline="middle">2025/2026</text>
+  <!-- Title -->
+  <text x="670" y="92" font-family="Figtree, 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">ADLC</text>
+  <!-- Body -->
+  <text x="570" y="128" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Addresses AI agents, which</text>
+  <text x="570" y="142" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">are fundamentally</text>
+  <text x="570" y="156" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">non-deterministic by design</text>
+  <!-- Type tag -->
+  <rect x="568" y="168" width="130" height="16" rx="8" fill="#C7FFCB" stroke="#00C895" stroke-width="1"/>
+  <text x="633" y="176" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">NON-DETERMINISTIC</text>
+
+  <!-- ===== CONTRAST SECTION (y=228 to y=316) ===== -->
+
+  <!-- Left panel: Traditional Software -->
+  <rect x="20" y="228" width="355" height="88" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="20" y="228" width="355" height="30" rx="4" fill="#EAEAEA"/>
+  <rect x="20" y="244" width="355" height="14" fill="#EAEAEA"/>
+  <text x="197" y="244" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Traditional Software</text>
+  <text x="30" y="274" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Same input always produces the same output</text>
+  <text x="30" y="288" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Boolean condition testing is sufficient</text>
+  <text x="30" y="302" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Unit tests passing = correct production behavior</text>
+
+  <!-- VS badge (centered in the 50px gap between 375 and 425) -->
+  <circle cx="400" cy="272" r="18" fill="#093B5F"/>
+  <text x="400" y="272" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">vs</text>
+
+  <!-- Right panel: AI Agents -->
+  <rect x="425" y="228" width="355" height="88" rx="4" fill="#FFFFFF" stroke="#00C895" stroke-width="1.5"/>
+  <rect x="425" y="228" width="355" height="30" rx="4" fill="#C7FFCB"/>
+  <rect x="425" y="244" width="355" height="14" fill="#C7FFCB"/>
+  <text x="607" y="244" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">AI Agents</text>
+  <!-- Bullet dots -->
+  <circle cx="435" cy="274" r="2" fill="#00C895"/>
+  <circle cx="435" cy="288" r="2" fill="#00C895"/>
+  <circle cx="435" cy="302" r="2" fill="#00C895"/>
+  <text x="442" y="274" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Same input can produce different outputs</text>
+  <text x="442" y="288" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Unit tests can pass; production can still fail</text>
+  <text x="442" y="302" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">A new methodology is required to handle this</text>
+
+  <!-- ===== CALLOUT BAR (y=328 to y=396) ===== -->
+  <rect x="20" y="328" width="760" height="68" rx="4" fill="#00C895"/>
+  <text x="400" y="356" font-family="Figtree, 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">The ADLC gives development teams a structured, repeatable,</text>
+  <text x="400" y="376" font-family="Figtree, 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle">quality-based path to build and operate agents at enterprise scale.</text>
+
+</svg>

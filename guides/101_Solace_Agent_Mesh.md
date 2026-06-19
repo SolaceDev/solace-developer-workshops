@@ -5,6 +5,9 @@
 - [What is Solace Agent Mesh](#what-is-solace-agent-mesh)
 - [General Challenges with Agentic Systems](#general-challenges-with-agentic-systems)
 - [Why Event-Driven Agents on a Proven Message Broker](#why-event-driven-agents-on-a-proven-message-broker)
+  - [The Solace Advantage](#the-solace-advantage)
+  - [The integration gap is the real problem](#the-integration-gap-is-the-real-problem)
+  - [Additive to existing event-driven investments](#additive-to-existing-event-driven-investments)
 
 ---
 
@@ -48,7 +51,7 @@ The hard problems in agentic systems are not model quality. GPT-4, Claude, and G
 ![Operational challenges in agentic systems](./img/operational_challenges.svg)
 
 <details>
-    <summary>More Details on Challenges</summary>
+    <summary>More details on Challenges</summary>
 
     ## State management across turns and restarts
 
@@ -94,13 +97,25 @@ A message broker solves this structurally. The publishing component sends a mess
 
 Solace adds capabilities that matter specifically for distributed agent systems.
 
-**Hierarchical topic routing with wildcards.** Solace topics are structured (`a/b/c`) and support `*` (single level) and `>` (trailing wildcard) subscriptions. Multiple AWE instances subscribe to `{namespace}/a2a/v1/agent/request/myagent` with exclusive queue semantics for load balancing, while a monitoring system subscribes to `{namespace}/a2a/v1/>` to observe all traffic without touching the delivery path. Scaling a component means adding instances and letting the broker distribute load.
-
-**User properties on messages.** Solace messages carry key-value metadata outside the JSON payload. Solace Agent Mesh uses this for routing: `replyTo`, `a2aStatusTopic`, `authToken`, `sessionId`. Infrastructure components can inspect routing metadata without parsing application data, and the JSON-RPC payload stays clean.
-
-**Guaranteed delivery with precise acknowledgment semantics.** The checkpoint system's correctness depends on ACK timing. An AWE acknowledges a request message at the moment it persists a checkpoint to the database, not at task completion. This is only possible because the broker tracks acknowledgment separately from delivery. Another AWE instance can resume the task from the checkpoint without the broker re-delivering the original message.
-
 ![The Solace Advantage for distributed agent systems](./img/solace_advantage.svg)
+
+<details>
+    <summary> Break down the Solace Advantage</summary>
+    
+    ## Hierarchical topic routing with wildcards.
+
+     Solace topics are structured (`a/b/c`) and support `*` (single level) and `>` (trailing wildcard) subscriptions. Multiple AWE instances subscribe to `{namespace}/a2a/v1/agent/request/myagent` with exclusive queue semantics for load balancing, while a monitoring system subscribes to `{namespace}/a2a/v1/>` to observe all traffic without touching the delivery path. Scaling a component means adding instances and letting the broker distribute load.
+    
+    ## User properties on messages.
+
+     Solace messages carry key-value metadata outside the JSON payload. Solace Agent Mesh uses this for routing: `replyTo`, `a2aStatusTopic`, `authToken`, `sessionId`. Infrastructure components can inspect routing metadata without parsing application data, and the JSON-RPC payload stays clean.
+
+    ## Guaranteed delivery with precise acknowledgment semantics.
+    
+     The checkpoint system's correctness depends on ACK timing. An AWE acknowledges a request message at the moment it persists a checkpoint to the database, not at task completion. This is only possible because the broker tracks acknowledgment separately from delivery. Another AWE instance can resume the task from the checkpoint without the broker re-delivering the original message.
+</details>
+
+
 
 ### The integration gap is the real problem
 
