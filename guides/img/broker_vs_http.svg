@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 440" width="800" height="440">
+
+  <!-- Background -->
+  <rect width="800" height="440" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="400" y="26" font-family="Figtree, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#093B5F" text-anchor="middle">Synchronous HTTP vs. Event-Driven Broker</text>
+
+  <!-- ===================== LEFT PANEL ===================== -->
+  <rect x="18" y="36" width="364" height="388" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <!-- Header -->
+  <rect x="18" y="36" width="364" height="30" rx="4" fill="#EAEAEA"/>
+  <rect x="18" y="52" width="364" height="14" fill="#EAEAEA"/>
+  <text x="200" y="51" font-family="Figtree, 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Synchronous HTTP</text>
+
+  <!-- "Connection held open" bracket on the left -->
+  <line x1="50" y1="82" x2="50" y2="270" stroke="#FCA829" stroke-width="1.5"/>
+  <line x1="50" y1="82"  x2="57" y2="82"  stroke="#FCA829" stroke-width="1.5"/>
+  <line x1="50" y1="270" x2="57" y2="270" stroke="#FCA829" stroke-width="1.5"/>
+  <text x="33" y="164" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#FCA829" text-anchor="middle">conn.</text>
+  <text x="33" y="174" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#FCA829" text-anchor="middle">held</text>
+  <text x="33" y="184" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#FCA829" text-anchor="middle">open</text>
+
+  <!-- Box 1: Caller Agent -->
+  <rect x="140" y="82" width="120" height="32" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <text x="200" y="98" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Caller Agent</text>
+
+  <!-- Arrow 1 (Caller → Peer) -->
+  <line x1="200" y1="114" x2="200" y2="158" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="197,155 200,158 203,155" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <!-- Blocking label beside arrow 1 -->
+  <text x="215" y="132" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">HTTP call</text>
+  <rect x="215" y="139" width="52" height="14" rx="7" fill="#FCA829"/>
+  <text x="241" y="146" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">blocks</text>
+
+  <!-- Box 2: Peer Agent -->
+  <rect x="140" y="158" width="120" height="32" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <text x="200" y="174" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Peer Agent</text>
+
+  <!-- Arrow 2 (Peer → Tool) -->
+  <line x1="200" y1="190" x2="200" y2="234" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="197,231 200,234 203,231" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <!-- Blocking label beside arrow 2 -->
+  <text x="215" y="208" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">HTTP call</text>
+  <rect x="215" y="215" width="52" height="14" rx="7" fill="#FCA829"/>
+  <text x="241" y="222" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">blocks</text>
+
+  <!-- Box 3: Tool / API -->
+  <rect x="140" y="234" width="120" height="32" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <text x="200" y="250" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Tool / API</text>
+
+  <!-- Failure indicator below chain -->
+  <line x1="80" y1="286" x2="320" y2="286" stroke="#EAEAEA" stroke-width="1"/>
+  <!-- X badge -->
+  <circle cx="200" cy="304" r="10" fill="#FFFFFF" stroke="#FCA829" stroke-width="1.5"/>
+  <line x1="195" y1="299" x2="205" y2="309" stroke="#FCA829" stroke-width="1.5"/>
+  <line x1="205" y1="299" x2="195" y2="309" stroke="#FCA829" stroke-width="1.5"/>
+  <text x="200" y="322" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#FCA829" text-anchor="middle">Network partition = task lost</text>
+
+  <!-- Problem bullets -->
+  <line x1="28" y1="335" x2="374" y2="335" stroke="#EAEAEA" stroke-width="1"/>
+  <text x="33" y="352" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">× Connection held open for the entire task duration</text>
+  <text x="33" y="367" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">× Either side restarting loses the in-flight task</text>
+  <text x="33" y="382" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">× Retry logic reimplemented in every application layer</text>
+  <text x="33" y="397" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">× Partition anywhere in the chain loses the task</text>
+
+  <!-- ===================== VS BADGE ===================== -->
+  <circle cx="400" cy="230" r="18" fill="#093B5F"/>
+  <text x="400" y="230" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">vs</text>
+
+  <!-- ===================== RIGHT PANEL ===================== -->
+  <rect x="418" y="36" width="364" height="388" rx="4" fill="#FFFFFF" stroke="#00C895" stroke-width="1.5"/>
+  <!-- Header -->
+  <rect x="418" y="36" width="364" height="30" rx="4" fill="#00C895"/>
+  <rect x="418" y="52" width="364" height="14" fill="#00C895"/>
+  <text x="600" y="51" font-family="Figtree, 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">Event-Driven Broker</text>
+
+  <!-- Three horizontal boxes: Publisher → Broker → Subscriber -->
+  <!-- Total width: 3*80 + 2*24 = 288, center=600, start=600-144=456 -->
+
+  <!-- Box 1: Publisher (x=456) -->
+  <rect x="456" y="100" width="80" height="32" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <text x="496" y="116" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Publisher</text>
+
+  <!-- Arrow 1: 536 → 560 -->
+  <line x1="536" y1="116" x2="560" y2="116" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="557,113 560,116 557,119" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <text x="548" y="109" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">publish()</text>
+
+  <!-- Box 2: Broker (x=560) -->
+  <rect x="560" y="100" width="80" height="32" rx="4" fill="#00C895" stroke="none"/>
+  <text x="600" y="116" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">Broker</text>
+
+  <!-- Arrow 2: 640 → 664 -->
+  <line x1="640" y1="116" x2="664" y2="116" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="661,113 664,116 661,119" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <text x="652" y="109" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">deliver</text>
+
+  <!-- Box 3: Subscriber (x=664) -->
+  <rect x="664" y="100" width="80" height="32" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <text x="704" y="116" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Subscriber</text>
+
+  <!-- Role labels below boxes -->
+  <text x="496" y="144" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">fires &amp; moves on</text>
+  <text x="600" y="144" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">stores &amp; routes</text>
+  <text x="704" y="144" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">receives when ready</text>
+
+  <!-- Decoupling callouts (dashed vertical lines from each box) -->
+  <!-- Publisher: free after publish -->
+  <line x1="496" y1="132" x2="496" y2="170" stroke="#00C895" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="496" y="181" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#00C895" text-anchor="middle">free to continue</text>
+
+  <!-- Broker: queued storage -->
+  <rect x="580" y="155" width="40" height="6" rx="2" fill="#C7FFCB" stroke="#00C895" stroke-width="0.8"/>
+  <rect x="580" y="163" width="40" height="6" rx="2" fill="#C7FFCB" stroke="#00C895" stroke-width="0.8"/>
+  <text x="600" y="181" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">queued</text>
+
+  <!-- Subscriber: ACK decoupled -->
+  <line x1="704" y1="132" x2="704" y2="170" stroke="#093B5F" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="704" y="181" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">ACK on receipt</text>
+  <text x="704" y="191" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">not completion</text>
+
+  <!-- Restart resilience callout -->
+  <line x1="428" y1="208" x2="774" y2="208" stroke="#EAEAEA" stroke-width="1"/>
+  <!-- Restart scenario -->
+  <text x="600" y="224" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">Subscriber restarts mid-task:</text>
+  <!-- Mini flow: Broker re-delivers -->
+  <rect x="460" y="232" width="64" height="22" rx="4" fill="#00C895"/>
+  <text x="492" y="243" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">Broker</text>
+  <line x1="524" y1="243" x2="546" y2="243" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="543,240 546,243 543,246" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <text x="535" y="236" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">re-delivers</text>
+  <rect x="546" y="232" width="80" height="22" rx="4" fill="#FFFFFF" stroke="#00C895" stroke-width="1"/>
+  <text x="586" y="243" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Subscriber</text>
+  <!-- Check mark -->
+  <circle cx="645" cy="243" r="9" fill="#C7FFCB" stroke="#00C895" stroke-width="1"/>
+  <polyline points="640,243 644,247 651,238" fill="none" stroke="#00C895" stroke-width="1.5" stroke-linejoin="round"/>
+  <text x="660" y="240" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F">nothing</text>
+  <text x="660" y="250" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F">is lost</text>
+
+  <!-- Benefit bullets -->
+  <line x1="428" y1="270" x2="774" y2="270" stroke="#EAEAEA" stroke-width="1"/>
+  <text x="433" y="287" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">✓ Publisher fires and moves on — no blocking</text>
+  <text x="433" y="302" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">✓ Broker owns delivery guarantee, not application code</text>
+  <text x="433" y="317" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">✓ Either side can restart; broker re-delivers if unacknowledged</text>
+  <text x="433" y="332" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">✓ ACK decoupled from processing — correctness as a broker property</text>
+
+</svg>

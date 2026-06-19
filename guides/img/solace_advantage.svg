@@ -1,0 +1,148 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 390" width="800" height="390">
+
+  <!-- Background -->
+  <rect width="800" height="390" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="400" y="24" font-family="Figtree, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#093B5F" text-anchor="middle">The Solace Advantage for Distributed Agent Systems</text>
+  <line x1="50" y1="34" x2="750" y2="34" stroke="#EAEAEA" stroke-width="1"/>
+
+  <!-- ===== CARD 1: Hierarchical Topic Routing (x=20) ===== -->
+  <rect x="20" y="44" width="238" height="330" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="20" y="44" width="238" height="36" rx="4" fill="#C7FFCB"/>
+  <rect x="20" y="68" width="238" height="12" fill="#C7FFCB"/>
+  <!-- Network icon -->
+  <circle cx="37" cy="62" r="5" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <circle cx="51" cy="56" r="3" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <circle cx="51" cy="68" r="3" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <line x1="42" y1="59" x2="48" y2="57" stroke="#093B5F" stroke-width="0.8"/>
+  <line x1="42" y1="65" x2="48" y2="67" stroke="#093B5F" stroke-width="0.8"/>
+  <text x="139" y="62" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Hierarchical Topic Routing</text>
+
+  <!-- Topic path examples -->
+  <text x="30" y="100" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" font-weight="700" fill="#093B5F">Structured topics with wildcard subscriptions</text>
+  <rect x="28" y="108" width="220" height="18" rx="2" fill="#F4F4F4"/>
+  <text x="138" y="117" font-family="Space Mono, Cascadia Mono, monospace" font-size="8" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">sam/a2a/v1/agent/request/billing</text>
+
+  <!-- AWE instances (exclusive queue) -->
+  <text x="30" y="140" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F">AWE 1, AWE 2, AWE 3 subscribe identically:</text>
+  <rect x="28" y="148" width="220" height="20" rx="3" fill="#FFFFFF" stroke="#00C895" stroke-width="1"/>
+  <text x="138" y="158" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">sam/a2a/v1/agent/request/billing</text>
+  <text x="138" y="178" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">exclusive queue — broker load-balances</text>
+
+  <line x1="30" y1="190" x2="248" y2="190" stroke="#EAEAEA" stroke-width="1"/>
+
+  <!-- Monitoring subscription -->
+  <text x="30" y="206" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F">Monitor subscribes to all traffic with &gt; wildcard:</text>
+  <rect x="28" y="213" width="220" height="20" rx="3" fill="#F4F4F4" stroke="#093B5F" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="138" y="223" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#00C895" text-anchor="middle" dominant-baseline="middle">sam/a2a/v1/&gt;</text>
+  <text x="138" y="244" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">observes all traffic without touching</text>
+  <text x="138" y="256" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">the delivery path</text>
+
+  <line x1="30" y1="268" x2="248" y2="268" stroke="#EAEAEA" stroke-width="1"/>
+
+  <text x="30" y="284" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Scaling means adding instances.</text>
+  <text x="30" y="298" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">The broker distributes load with</text>
+  <text x="30" y="312" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">no application-level changes.</text>
+
+  <!-- ===== CARD 2: User Properties on Messages (x=281) ===== -->
+  <rect x="281" y="44" width="238" height="330" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="281" y="44" width="238" height="36" rx="4" fill="#C2F7FF"/>
+  <rect x="281" y="68" width="238" height="12" fill="#C2F7FF"/>
+  <!-- Envelope icon -->
+  <rect x="295" y="56" width="16" height="12" rx="1" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="295,56 303,63 311,56" fill="none" stroke="#093B5F" stroke-width="1" stroke-linejoin="round"/>
+  <text x="400" y="62" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">User Properties on Messages</text>
+
+  <!-- Message envelope split visualization -->
+  <rect x="289" y="90" width="222" height="130" rx="3" fill="#F4F4F4" stroke="#093B5F" stroke-width="1"/>
+  <!-- Vertical divider -->
+  <line x1="400" y1="90" x2="400" y2="220" stroke="#EAEAEA" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <!-- Left: User Properties label -->
+  <text x="344" y="106" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" font-weight="700" fill="#093B5F" text-anchor="middle">User Properties</text>
+  <text x="293" y="120" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#093B5F">replyTo</text>
+  <text x="293" y="132" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#093B5F">sessionId</text>
+  <text x="293" y="144" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#093B5F">authToken</text>
+  <text x="293" y="156" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#00C895">a2aStatusTopic</text>
+
+  <!-- Right: JSON Payload label -->
+  <text x="456" y="106" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" font-weight="700" fill="#093B5F" text-anchor="middle">JSON Payload</text>
+  <text x="405" y="120" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#093B5F">{ "jsonrpc":</text>
+  <text x="405" y="132" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#093B5F">  "method":</text>
+  <text x="405" y="144" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#093B5F">  "params":</text>
+  <text x="405" y="156" font-family="Space Mono, Cascadia Mono, monospace" font-size="7" fill="#093B5F">  ... }</text>
+
+  <!-- Annotation below envelope -->
+  <text x="400" y="183" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" font-weight="700" fill="#00C895" text-anchor="middle">Routing metadata lives outside the payload</text>
+
+  <text x="291" y="240" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Infrastructure components read routing</text>
+  <text x="291" y="254" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">metadata without parsing application</text>
+  <text x="291" y="268" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">data. The JSON-RPC payload stays</text>
+  <text x="291" y="282" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">clean and application-scoped.</text>
+
+  <!-- ===== CARD 3: Precise ACK Semantics (x=542) ===== -->
+  <rect x="542" y="44" width="238" height="330" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="542" y="44" width="238" height="36" rx="4" fill="#FFF7C2"/>
+  <rect x="542" y="68" width="238" height="12" fill="#FFF7C2"/>
+  <!-- Check icon -->
+  <circle cx="558" cy="62" r="7" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="554,62 557,65 563,58" fill="none" stroke="#093B5F" stroke-width="1.2" stroke-linejoin="round"/>
+  <text x="661" y="62" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Precise ACK Semantics</text>
+
+  <!-- ACK timeline -->
+  <line x1="556" y1="118" x2="766" y2="118" stroke="#EAEAEA" stroke-width="2"/>
+
+  <!-- Step 1: Received -->
+  <circle cx="570" cy="118" r="5" fill="#093B5F"/>
+  <text x="570" y="134" font-family="Figtree, 'Segoe UI', sans-serif" font-size="7" fill="#093B5F" text-anchor="middle">Received</text>
+
+  <!-- Step 2: Process -->
+  <circle cx="630" cy="118" r="5" fill="#EAEAEA" stroke="#093B5F" stroke-width="1"/>
+  <text x="630" y="134" font-family="Figtree, 'Segoe UI', sans-serif" font-size="7" fill="#093B5F" text-anchor="middle">Process</text>
+
+  <!-- Step 3: Checkpoint (highlighted) -->
+  <circle cx="700" cy="118" r="7" fill="#00C895"/>
+  <text x="700" y="134" font-family="Figtree, 'Segoe UI', sans-serif" font-size="7" font-weight="700" fill="#00C895" text-anchor="middle">Checkpoint</text>
+
+  <!-- ACK label pointing up from checkpoint -->
+  <line x1="700" y1="111" x2="700" y2="96" stroke="#00C895" stroke-width="1.5"/>
+  <polyline points="697,99 700,96 703,99" fill="none" stroke="#00C895" stroke-width="1.5"/>
+  <text x="700" y="91" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" font-weight="700" fill="#00C895" text-anchor="middle">ACK sent here</text>
+
+  <!-- Step 4: Complete -->
+  <circle cx="757" cy="118" r="5" fill="#EAEAEA" stroke="#093B5F" stroke-width="1"/>
+  <text x="757" y="134" font-family="Figtree, 'Segoe UI', sans-serif" font-size="7" fill="#093B5F" text-anchor="middle">Complete</text>
+
+  <text x="661" y="156" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#FCA829" text-anchor="middle">ACK is NOT at task completion</text>
+
+  <line x1="552" y1="168" x2="770" y2="168" stroke="#EAEAEA" stroke-width="1"/>
+
+  <!-- Recovery scenario -->
+  <text x="661" y="186" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#093B5F" text-anchor="middle">If the AWE dies after checkpoint:</text>
+
+  <rect x="554" y="198" width="54" height="20" rx="3" fill="#00C895"/>
+  <text x="581" y="208" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">Broker</text>
+
+  <line x1="608" y1="208" x2="624" y2="208" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="621,205 624,208 621,211" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <text x="616" y="202" font-family="Figtree, 'Segoe UI', sans-serif" font-size="7" fill="#093B5F" text-anchor="middle">holds</text>
+
+  <rect x="624" y="198" width="62" height="20" rx="3" fill="#FFFFFF" stroke="#00C895" stroke-width="1"/>
+  <text x="655" y="208" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">New AWE</text>
+
+  <line x1="686" y1="208" x2="702" y2="208" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="699,205 702,208 699,211" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <text x="694" y="202" font-family="Figtree, 'Segoe UI', sans-serif" font-size="7" fill="#093B5F" text-anchor="middle">resume</text>
+
+  <circle cx="716" cy="208" r="8" fill="#C7FFCB" stroke="#00C895" stroke-width="1"/>
+  <polyline points="711,208 715,212 722,202" fill="none" stroke="#00C895" stroke-width="1.5" stroke-linejoin="round"/>
+
+  <line x1="552" y1="232" x2="770" y2="232" stroke="#EAEAEA" stroke-width="1"/>
+
+  <text x="661" y="250" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">The new AWE resumes from the last</text>
+  <text x="661" y="264" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">checkpoint. No task is lost. Delivery</text>
+  <text x="661" y="278" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">correctness is a broker property,</text>
+  <text x="661" y="292" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">not application code.</text>
+
+</svg>

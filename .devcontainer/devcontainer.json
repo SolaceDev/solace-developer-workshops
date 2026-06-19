@@ -10,10 +10,6 @@
     "8800": {
       "label": "Solace Agent Mesh",
       "onAutoForward": "openPreview"
-    },
-    "8080": {
-      "label": "Solace Broker Manager",
-      "onAutoForward": "notify"
     }
   },
   "hostRequirements": {

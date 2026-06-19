@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 470" width="800" height="470">
+
+  <!-- Background -->
+  <rect width="800" height="470" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="400" y="30" font-family="Figtree, 'Segoe UI', sans-serif" font-size="16" font-weight="700" fill="#093B5F" text-anchor="middle">Tool Types &amp; Agent Runtime</text>
+
+  <!-- ===== AGENT Runtime ===== -->
+  <rect x="150" y="48" width="500" height="118" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <!-- Header (rounded top, flat bottom) -->
+  <rect x="150" y="48" width="500" height="30" rx="4" fill="#00C895"/>
+  <rect x="150" y="74" width="500" height="4" fill="#00C895"/>
+  <text x="400" y="63" font-family="Figtree, 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">Agent Runtime</text>
+
+  <!-- Capability pills — row 1 -->
+  <rect x="163" y="91" width="96" height="22" rx="11" fill="#F4F4F4" stroke="#EAEAEA" stroke-width="1"/>
+  <text x="211" y="102" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">LLM Loop</text>
+
+  <rect x="270" y="91" width="158" height="22" rx="11" fill="#F4F4F4" stroke="#EAEAEA" stroke-width="1"/>
+  <text x="349" y="102" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Parallel Tool Dispatch</text>
+
+  <rect x="440" y="91" width="144" height="22" rx="11" fill="#F4F4F4" stroke="#EAEAEA" stroke-width="1"/>
+  <text x="512" y="102" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Context Compaction</text>
+
+  <!-- Capability pills — row 2 -->
+  <rect x="310" y="122" width="156" height="22" rx="11" fill="#F4F4F4" stroke="#EAEAEA" stroke-width="1"/>
+  <text x="388" y="133" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Session Persistence</text>
+
+  <!-- ===== CONNECTOR: Agent Runtime → Bus ===== -->
+  <line x1="400" y1="166" x2="400" y2="211" stroke="#093B5F" stroke-width="1"/>
+
+  <!-- ===== UNIFIED TOOL INTERFACE BUS ===== -->
+  <text x="400" y="204" font-family="'Space Mono', 'Cascadia Mono', monospace" font-size="9" fill="#00C895" text-anchor="middle" letter-spacing="1.2">UNIFIED TOOL INTERFACE</text>
+  <line x1="102" y1="212" x2="698" y2="212" stroke="#093B5F" stroke-width="1"/>
+  <!-- Tick marks at connection points -->
+  <line x1="102" y1="208" x2="102" y2="216" stroke="#093B5F" stroke-width="1"/>
+  <line x1="251" y1="208" x2="251" y2="216" stroke="#093B5F" stroke-width="1"/>
+  <line x1="400" y1="208" x2="400" y2="216" stroke="#093B5F" stroke-width="1"/>
+  <line x1="549" y1="208" x2="549" y2="216" stroke="#093B5F" stroke-width="1"/>
+  <line x1="698" y1="208" x2="698" y2="216" stroke="#093B5F" stroke-width="1"/>
+
+  <!-- ===== CONNECTORS: Bus → Cards ===== -->
+  <line x1="102" y1="216" x2="102" y2="250" stroke="#093B5F" stroke-width="1"/>
+  <line x1="251" y1="216" x2="251" y2="250" stroke="#093B5F" stroke-width="1"/>
+  <line x1="400" y1="216" x2="400" y2="250" stroke="#093B5F" stroke-width="1"/>
+  <line x1="549" y1="216" x2="549" y2="250" stroke="#093B5F" stroke-width="1"/>
+  <line x1="698" y1="216" x2="698" y2="250" stroke="#093B5F" stroke-width="1"/>
+
+  <!-- ===== CARD 1: Built-in Go Functions (x=34, center=102) ===== -->
+  <rect x="34" y="250" width="136" height="120" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="34" y="250" width="136" height="30" rx="4" fill="#C7FFCB"/>
+  <rect x="34" y="276" width="136" height="4" fill="#C7FFCB"/>
+  <!-- Hexagon icon (Go) -->
+  <polygon points="102,256 108,260 108,268 102,272 96,268 96,260" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <text x="102" y="264" font-family="Figtree, 'Segoe UI', sans-serif" font-size="7" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">fn</text>
+  <!-- Card text -->
+  <text x="102" y="299" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle">Built-in</text>
+  <text x="102" y="314" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle">Go Functions</text>
+  <text x="102" y="335" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">In-process</text>
+  <text x="102" y="348" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">execution</text>
+
+  <!-- ===== CARD 2: Python/Go STR Tools (x=183, center=251) ===== -->
+  <rect x="183" y="250" width="136" height="120" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="183" y="250" width="136" height="30" rx="4" fill="#C2F7FF"/>
+  <rect x="183" y="276" width="136" height="4" fill="#C2F7FF"/>
+  <!-- Terminal icon -->
+  <rect x="244" y="257" width="15" height="11" rx="2" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <text x="251.5" y="263.5" font-family="'Space Mono', monospace" font-size="6" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">$_</text>
+  <!-- Card text -->
+  <text x="251" y="299" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle">Python / Go</text>
+  <text x="251" y="314" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle">STR Tools</text>
+  <text x="251" y="335" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">Isolated subprocess</text>
+  <text x="251" y="348" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">over broker</text>
+
+  <!-- ===== CARD 3: MCP Servers (x=332, center=400) — highlighted ===== -->
+  <rect x="332" y="250" width="136" height="120" rx="4" fill="#FFFFFF" stroke="#00C895" stroke-width="1.5"/>
+  <rect x="332" y="250" width="136" height="30" rx="4" fill="#00C895"/>
+  <rect x="332" y="276" width="136" height="4" fill="#00C895"/>
+  <!-- Server stack icon -->
+  <rect x="393" y="257" width="15" height="5" rx="1" fill="none" stroke="#FFFFFF" stroke-width="1"/>
+  <rect x="393" y="264" width="15" height="5" rx="1" fill="none" stroke="#FFFFFF" stroke-width="1"/>
+  <circle cx="396" cy="259.5" r="1.2" fill="#FFFFFF"/>
+  <circle cx="396" cy="266.5" r="1.2" fill="#FFFFFF"/>
+  <!-- Card text -->
+  <text x="400" y="299" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle">MCP</text>
+  <text x="400" y="314" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle">Servers</text>
+  <text x="400" y="335" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">Model Context</text>
+  <text x="400" y="348" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">Protocol servers</text>
+
+  <!-- ===== CARD 4: Peer Agent References (x=481, center=549) ===== -->
+  <rect x="481" y="250" width="136" height="120" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="481" y="250" width="136" height="30" rx="4" fill="#C7FFCB"/>
+  <rect x="481" y="276" width="136" height="4" fill="#C7FFCB"/>
+  <!-- Two overlapping circles (peer agents) -->
+  <circle cx="545" cy="264" r="6" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <circle cx="554" cy="264" r="6" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <!-- Card text -->
+  <text x="549" y="299" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle">Peer Agent</text>
+  <text x="549" y="314" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle">References</text>
+  <text x="549" y="335" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">Inter-agent</text>
+  <text x="549" y="348" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">delegation</text>
+
+  <!-- ===== CARD 5: Remote A2A Proxies (x=630, center=698) ===== -->
+  <rect x="630" y="250" width="136" height="120" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="630" y="250" width="136" height="30" rx="4" fill="#FFF7C2"/>
+  <rect x="630" y="276" width="136" height="4" fill="#FFF7C2"/>
+  <!-- Bidirectional arrows icon -->
+  <line x1="688" y1="261" x2="706" y2="261" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="703,258 706,261 703,264" fill="none" stroke="#093B5F" stroke-width="1" stroke-linejoin="round"/>
+  <line x1="710" y1="267" x2="692" y2="267" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="695,264 692,267 695,270" fill="none" stroke="#093B5F" stroke-width="1" stroke-linejoin="round"/>
+  <!-- Card text -->
+  <text x="698" y="299" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle">Remote A2A</text>
+  <text x="698" y="314" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle">Proxies</text>
+  <text x="698" y="335" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">Cross-boundary</text>
+  <text x="698" y="348" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">agent calls</text>
+
+  <!-- ===== COMPANION CLI ===== -->
+  <!-- Dashed connector from cards area to CLI box -->
+  <line x1="400" y1="370" x2="400" y2="390" stroke="#093B5F" stroke-width="1" stroke-dasharray="4,3"/>
+  <polyline points="397,387 400,390 403,387" fill="none" stroke="#093B5F" stroke-width="1"/>
+
+  <!-- CLI container (dashed border = external / companion) -->
+  <rect x="125" y="390" width="550" height="62" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1" stroke-dasharray="5,3"/>
+  <!-- CLI header -->
+  <rect x="125" y="390" width="550" height="26" rx="4" fill="#093B5F"/>
+  <rect x="125" y="412" width="550" height="4" fill="#093B5F"/>
+  <text x="400" y="403" font-family="Figtree, 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">Companion CLI</text>
+  <!-- CLI capabilities in 3 columns -->
+  <text x="238" y="431" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">Config Scaffolding</text>
+  <text x="400" y="431" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">Push / Pull Config</text>
+  <text x="562" y="431" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">Lifecycle Management</text>
+  <!-- Column dividers -->
+  <line x1="319" y1="420" x2="319" y2="444" stroke="#EAEAEA" stroke-width="1"/>
+  <line x1="481" y1="420" x2="481" y2="444" stroke="#EAEAEA" stroke-width="1"/>
+
+</svg>

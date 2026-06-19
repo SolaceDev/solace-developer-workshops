@@ -12,6 +12,8 @@
 
 Solace Agent Mesh is a Go-based, event-driven agent runtime for building, deploying, and operating AI agents at enterprise scale. It provides the runtime infrastructure, declarative configuration model, and gateway integrations to run agents as always-on workers embedded in your event-driven architecture, not just as conversational endpoints you call on demand.
 
+![runtimes](./img/runtimes.png)
+
 The platform is decomposed into three independently deployable process types:
 
 | Process | Role | Scales with |
@@ -21,6 +23,8 @@ The platform is decomposed into three independently deployable process types:
 | Secure Tool Runtime (STR) | Isolated subprocess execution for tools | Tool invocation throughput |
 
 All three processes communicate through a Solace message broker. No component calls another directly over HTTP or gRPC. The broker is the only coordination fabric enabling horizontal scaling, failure isolation, and event-driven agents possible without application-level coordination code.
+
+![Tool types and agent core](./img/tool_types.svg)
 
 Tools come in the following forms:
 
@@ -34,35 +38,42 @@ Every tool type presents the same interface to the calling agent. The agent core
 
 A companion CLI handles config scaffolding, declarative config push and pull to a running gateway, and lifecycle management across Go and Python agent runtimes running side by side on the same broker.
 
+
 ---
 
 ## General Challenges with Agentic Systems
 
 The hard problems in agentic systems are not model quality. GPT-4, Claude, and Gemini all produce good results on well-scoped tasks. The hard problems are operational, and they appear the moment you move from a demo to a production deployment.
 
-### State management across turns and restarts
+![Operational challenges in agentic systems](./img/operational_challenges.svg)
 
-A useful agent maintains context across many turns, potentially across hours or days. Storing conversation history in process memory works until the process restarts. Storing it in a database requires solving concurrent modification, session lifecycle, and context window management as history grows. Most frameworks give you a list and leave the rest to you.
+<details>
+    <summary>More Details on Challenges</summary>
 
-### Reliable tool execution and recovery
+    ## State management across turns and restarts
 
-Tools fail. External APIs time out, subprocesses crash, and network partitions happen mid-call. An agent that loses its place after a tool failure is not production software. You need checkpointing: a way to record execution state durably so a different process instance can resume where a dead one left off. Without it, every pod restart is a potential task loss.
+    A useful agent maintains context across many turns, potentially across hours or days. Storing conversation history in process memory works until the process restarts. Storing it in a database requires solving concurrent modification, session lifecycle, and context window management as history grows. Most frameworks give you a list and leave the rest to you.
 
-### Distributed agent communication
+    ## Reliable tool execution and recovery
 
-When an agent delegates to another agent, something has to route the request, deliver the response, and handle the case where either agent crashes mid-task. Point-to-point HTTP is fragile: the calling agent blocks waiting for a response, and if either side restarts, the task is lost. This is the common case at scale, not the edge case.
+    Tools fail. External APIs time out, subprocesses crash, and network partitions happen mid-call. An agent that loses its place after a tool failure is not production software. You need checkpointing: a way to record execution state durably so a different process instance can resume where a dead one left off. Without it, every pod restart is a potential task loss.
 
-### Unstructured data and large tool results
+    ## Distributed agent communication
 
-Tool results can be large. Embedding a full PDF, a database query result, or a large CSV in the LLM conversation context is expensive and often impossible within context window limits. You need an artifact pipeline: external storage for large results, references in the conversation, and on-demand content retrieval when the LLM needs specific data.
+    When an agent delegates to another agent, something has to route the request, deliver the response, and handle the case where either agent crashes mid-task. Point-to-point HTTP is fragile: the calling agent blocks waiting for a response, and if either side restarts, the task is lost. This is the common case at scale, not the edge case.
 
-### Access control across the agent call chain
+    ## Unstructured data and large tool results
 
-Enterprise deployments cannot have every agent calling every tool with full permissions. You need per-user, per-agent, per-tool access control that propagates correctly when Agent A delegates to Agent B, which calls Tool C on behalf of User D. Most frameworks have no model for this at all. They assume a single trust boundary and stop there.
+    Tool results can be large. Embedding a full PDF, a database query result, or a large CSV in the LLM conversation context is expensive and often impossible within context window limits. You need an artifact pipeline: external storage for large results, references in the conversation, and on-demand content retrieval when the LLM needs specific data.
 
-### Reactive execution without polling
+    ## Access control across the agent call chain
 
-The highest-value agent use cases are not triggered by human chat messages. They are triggered by events: a new order arrives, a sensor threshold is crossed, a batch job completes, a file lands in an S3 bucket. Building this on top of an HTTP request/response model means building a polling layer, webhook infrastructure, or custom scheduling code that the application now has to maintain. That complexity belongs in the platform, not in application code.
+    Enterprise deployments cannot have every agent calling every tool with full permissions. You need per-user, per-agent, per-tool access control that propagates correctly when Agent A delegates to Agent B, which calls Tool C on behalf of User D. Most frameworks have no model for this at all. They assume a single trust boundary and stop there.
+
+    ## Reactive execution without polling
+
+    The highest-value agent use cases are not triggered by human chat messages. They are triggered by events: a new order arrives, a sensor threshold is crossed, a batch job completes, a file lands in an S3 bucket. Building this on top of an HTTP request/response model means building a polling layer, webhook infrastructure, or custom scheduling code that the application now has to maintain. That complexity belongs in the platform, not in application code.
+</details>
 
 ---
 
@@ -72,9 +83,14 @@ The argument for a dedicated message broker rather than HTTP, WebSockets, or a g
 
 Agents are not stateless services. A single agent task can span multiple LLM turns, multiple tool calls (some of which block for seconds waiting on external APIs), and multiple delegations to peer agents. The execution is non-linear and its duration is unpredictable. Coordinating this with synchronous HTTP means holding connections open for minutes, implementing retry logic at every layer, and accepting that a network partition anywhere in the chain can lose the task.
 
+![Non-linear agent task execution](./img/agent_task_nonlinear.svg)
+
 A message broker solves this structurally. The publishing component sends a message and moves on. The subscribing component receives it when ready. Acknowledgment is decoupled from processing time. Delivery guarantees are a broker property, not application code that every team reimplements differently.
 
-### Why Solace specifically
+![Synchronous HTTP vs Event-Driven Broker](./img/broker_vs_http.svg)
+
+
+### The Solace Advantage
 
 Solace adds capabilities that matter specifically for distributed agent systems.
 
@@ -84,7 +100,7 @@ Solace adds capabilities that matter specifically for distributed agent systems.
 
 **Guaranteed delivery with precise acknowledgment semantics.** The checkpoint system's correctness depends on ACK timing. An AWE acknowledges a request message at the moment it persists a checkpoint to the database, not at task completion. This is only possible because the broker tracks acknowledgment separately from delivery. Another AWE instance can resume the task from the checkpoint without the broker re-delivering the original message.
 
-**Scheduling and event reactivity as first-class capabilities.** Solace Agent Mesh supports scheduled agent tasks (cron-style recurring jobs) and event-triggered execution alongside interactive HTTP requests. An agent can respond to a new customer order event, a completed batch job, or a sensor reading crossing a threshold. The trigger mechanism is a broker message; the agent does not care whether it came from a human or a system.
+![The Solace Advantage for distributed agent systems](./img/solace_advantage.svg)
 
 ### The integration gap is the real problem
 
@@ -92,16 +108,15 @@ From work across enterprise AI deployments, a consistent pattern has emerged: ro
 
 Solace is not a hobbyist project or a cloud-native experiment. It runs in financial trading systems, logistics networks, and IoT infrastructure at organizations where message loss has direct financial or safety consequences. The operational maturity, tuning tooling, and support infrastructure that come with that deployment history matter when you are running agents that coordinate actual business processes.
 
+![Where enterprise AI deployments actually fail](./img/integration_gap.svg)
+
 ### Additive to existing event-driven investments
 
 For enterprises already running Solace for event streaming across microservices, IoT, or financial data pipelines, Solace Agent Mesh is additive. Agents join the existing event fabric as first-class participants. They can subscribe to topics already carrying business events and react to them in real time. The broker investment pays dividends across both the existing architecture and the new agent layer, without any forklift migration.
 
-### Development and production parity
-
-Agent Mesh ships a dev broker (`sam-devbroker`) that runs locally as a lightweight TCP server and implements the same topic routing semantics as production Solace. Tests use an in-memory broker implementation with the same wildcard matching logic compiled from the same topic resolution code. Agent code never changes between environments: only the broker configuration changes.
-
-This parity is not a nice-to-have. The failure mode of a dev/prod environment gap in broker semantics is a category of bugs that surfaces only in production, under load, and during incidents. Eliminating it at the infrastructure level is worth the investment.
-
 ---
 
 The case for event-driven agents on a proven message broker is not that it is the only way to build agents. It is that it is the right primitive for the coordination problem agents actually have: non-linear, long-duration, distributed task execution where any participant can fail at any point and the system must recover without losing work. Message brokers are designed precisely for that problem. Solace has been solving it in production for two decades.
+
+---
+Section complete! Close this file and return to the Workshop Tracker to continue.

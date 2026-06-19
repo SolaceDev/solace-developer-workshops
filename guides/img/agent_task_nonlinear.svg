@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 340" width="800" height="340">
+
+  <!-- Background -->
+  <rect width="800" height="340" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="400" y="22" font-family="Figtree, 'Segoe UI', sans-serif" font-size="14" font-weight="700" fill="#093B5F" text-anchor="middle">A Single Agent Task: Non-Linear by Nature</text>
+  <text x="400" y="40" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">Multiple LLM turns, blocking tool calls, and peer agent delegation. Duration is unpredictable from the start.</text>
+  <line x1="50" y1="50" x2="750" y2="50" stroke="#EAEAEA" stroke-width="1"/>
+
+  <!-- Duration brace above spine -->
+  <line x1="50" y1="67" x2="750" y2="67" stroke="#093B5F" stroke-width="1"/>
+  <line x1="50" y1="67" x2="50" y2="74" stroke="#093B5F" stroke-width="1"/>
+  <line x1="750" y1="67" x2="750" y2="74" stroke="#093B5F" stroke-width="1"/>
+  <text x="400" y="63" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">Minutes to hours, unpredictable at the start</text>
+
+  <!-- Main timeline spine -->
+  <line x1="50" y1="120" x2="748" y2="120" stroke="#EAEAEA" stroke-width="2"/>
+  <polyline points="744,116 748,120 744,124" fill="none" stroke="#EAEAEA" stroke-width="2"/>
+
+  <!-- TASK START -->
+  <circle cx="50" cy="120" r="6" fill="#EAEAEA" stroke="#093B5F" stroke-width="1"/>
+  <text x="50" y="140" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">Start</text>
+
+  <!-- LLM Turn 1: center x=130 -->
+  <rect x="90" y="107" width="80" height="26" rx="4" fill="#C7FFCB" stroke="#093B5F" stroke-width="1"/>
+  <text x="130" y="120" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">LLM Turn 1</text>
+  <!-- Arm to Tool A -->
+  <line x1="130" y1="133" x2="130" y2="152" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="127,149 130,152 133,149" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <!-- Tool A -->
+  <rect x="90" y="152" width="80" height="24" rx="3" fill="#FFFFFF" stroke="#093B5F" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="130" y="164" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Tool A (2s API)</text>
+  <!-- Return dashed to Turn 2 -->
+  <line x1="170" y1="164" x2="250" y2="120" stroke="#EAEAEA" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <!-- LLM Turn 2: center x=290 -->
+  <rect x="250" y="107" width="80" height="26" rx="4" fill="#C7FFCB" stroke="#093B5F" stroke-width="1"/>
+  <text x="290" y="120" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">LLM Turn 2</text>
+  <!-- Left parallel arm: Tool B -->
+  <line x1="272" y1="133" x2="252" y2="152" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="249,149 252,152 255,149" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <rect x="218" y="152" width="68" height="24" rx="3" fill="#FFFFFF" stroke="#093B5F" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="252" y="164" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Tool B (8s)</text>
+  <!-- Right parallel arm: Tool C -->
+  <line x1="308" y1="133" x2="328" y2="152" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="325,149 328,152 331,149" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <rect x="294" y="152" width="68" height="24" rx="3" fill="#FFFFFF" stroke="#093B5F" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="328" y="164" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Tool C (ext.)</text>
+  <!-- parallel label -->
+  <text x="290" y="192" font-family="Figtree, 'Segoe UI', sans-serif" font-size="7" fill="#093B5F" text-anchor="middle" font-style="italic">parallel dispatch</text>
+  <!-- Return dashed to Turn 3 -->
+  <line x1="362" y1="164" x2="422" y2="120" stroke="#EAEAEA" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <!-- LLM Turn 3: center x=462 -->
+  <rect x="422" y="107" width="80" height="26" rx="4" fill="#C7FFCB" stroke="#093B5F" stroke-width="1"/>
+  <text x="462" y="120" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">LLM Turn 3</text>
+  <!-- Peer Agent arm (green) -->
+  <line x1="462" y1="133" x2="462" y2="152" stroke="#00C895" stroke-width="1.5"/>
+  <polyline points="459,149 462,152 465,149" fill="none" stroke="#00C895" stroke-width="1.5"/>
+  <rect x="420" y="152" width="84" height="24" rx="3" fill="#FFFFFF" stroke="#00C895" stroke-width="1.5"/>
+  <text x="462" y="164" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Peer Agent</text>
+  <text x="462" y="192" font-family="Figtree, 'Segoe UI', sans-serif" font-size="7" fill="#00C895" text-anchor="middle">runs its own task</text>
+  <!-- Return dashed to Turn 4 -->
+  <line x1="504" y1="164" x2="582" y2="120" stroke="#EAEAEA" stroke-width="1" stroke-dasharray="3,2"/>
+
+  <!-- LLM Turn 4: center x=622 -->
+  <rect x="582" y="107" width="80" height="26" rx="4" fill="#C7FFCB" stroke="#093B5F" stroke-width="1"/>
+  <text x="622" y="120" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">LLM Turn 4</text>
+
+  <!-- TASK COMPLETE -->
+  <circle cx="748" cy="120" r="7" fill="#00C895"/>
+  <polyline points="743,120 747,124 754,114" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linejoin="round"/>
+  <text x="748" y="140" font-family="Figtree, 'Segoe UI', sans-serif" font-size="8" fill="#093B5F" text-anchor="middle">Complete</text>
+
+  <!-- Bottom separator -->
+  <line x1="50" y1="218" x2="750" y2="218" stroke="#EAEAEA" stroke-width="1"/>
+
+  <!-- Consequence header -->
+  <text x="400" y="238" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#FCA829" text-anchor="middle">Coordinating this with synchronous HTTP means:</text>
+
+  <!-- Three consequence cards -->
+  <rect x="50" y="250" width="210" height="62" rx="3" fill="#F4F4F4" stroke="#EAEAEA" stroke-width="1"/>
+  <text x="155" y="268" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#093B5F" text-anchor="middle">Connections held open</text>
+  <text x="155" y="282" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">for the entire task duration</text>
+  <text x="155" y="296" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">from start to finish</text>
+
+  <rect x="295" y="250" width="210" height="62" rx="3" fill="#F4F4F4" stroke="#EAEAEA" stroke-width="1"/>
+  <text x="400" y="268" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#093B5F" text-anchor="middle">Retry logic reimplemented</text>
+  <text x="400" y="282" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">in every application layer</text>
+  <text x="400" y="296" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">by every team independently</text>
+
+  <rect x="540" y="250" width="210" height="62" rx="3" fill="#F4F4F4" stroke="#EAEAEA" stroke-width="1"/>
+  <text x="645" y="268" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#093B5F" text-anchor="middle">Network partition anywhere</text>
+  <text x="645" y="282" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">in the chain loses the task</text>
+  <text x="645" y="296" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">with no recovery path</text>
+
+</svg>

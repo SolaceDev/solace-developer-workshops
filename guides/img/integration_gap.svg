@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 280" width="800" height="280">
+
+  <!-- Background -->
+  <rect width="800" height="280" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <text x="400" y="24" font-family="Figtree, 'Segoe UI', sans-serif" font-size="15" font-weight="700" fill="#093B5F" text-anchor="middle">Where Enterprise AI Deployments Actually Fail</text>
+  <text x="400" y="42" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">From work across enterprise AI deployments, a consistent pattern has emerged</text>
+  <line x1="50" y1="52" x2="750" y2="52" stroke="#EAEAEA" stroke-width="1"/>
+
+  <!-- Proportional bar -->
+  <!-- Total bar: x=50 to x=750 (width=700), y=66, height=52 -->
+  <!-- 20% zone: width=140 -->
+  <rect x="50" y="66" width="140" height="52" rx="0" fill="#EAEAEA"/>
+  <text x="120" y="96" font-family="Figtree, 'Segoe UI', sans-serif" font-size="22" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">20%</text>
+  <!-- 80% zone: width=560 -->
+  <rect x="190" y="66" width="560" height="52" rx="0" fill="#00C895"/>
+  <text x="470" y="96" font-family="Figtree, 'Segoe UI', sans-serif" font-size="22" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">80%</text>
+  <!-- Bar border -->
+  <rect x="50" y="66" width="700" height="52" rx="3" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <!-- Divider tick -->
+  <line x1="190" y1="62" x2="190" y2="122" stroke="#093B5F" stroke-width="1"/>
+
+  <!-- Column labels below bar -->
+  <text x="120" y="138" font-family="Figtree, 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#093B5F" text-anchor="middle">Model Quality</text>
+  <text x="470" y="138" font-family="Figtree, 'Segoe UI', sans-serif" font-size="12" font-weight="700" fill="#00C895" text-anchor="middle">Integration and Reliability</text>
+
+  <!-- Vertical divider between detail columns -->
+  <line x1="190" y1="148" x2="190" y2="268" stroke="#EAEAEA" stroke-width="1"/>
+
+  <!-- Left column: Model Quality detail (x=50-185) -->
+  <text x="60" y="164" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#093B5F">Largely solved</text>
+  <text x="60" y="180" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">GPT-4, Claude, and Gemini</text>
+  <text x="60" y="194" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">produce good results on</text>
+  <text x="60" y="208" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">well-scoped tasks. The model</text>
+  <text x="60" y="222" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">question is largely answered.</text>
+
+  <!-- Right column: Integration detail (x=200-750) -->
+  <!-- Two sub-columns inside the 80% area -->
+  <!-- Sub-left (x=200-460) -->
+  <text x="204" y="164" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#093B5F">The unsolved problem</text>
+
+  <text x="212" y="182" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Connecting agents to enterprise data</text>
+  <text x="212" y="196" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Delivering results reliably at scale</text>
+  <text x="212" y="210" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Propagating access control per delegation</text>
+  <text x="212" y="224" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Reacting to events without polling</text>
+  <text x="212" y="238" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F">Recovering from mid-task failures</text>
+
+  <!-- Right sub-column callout (x=490-750) -->
+  <rect x="490" y="158" width="250" height="96" rx="4" fill="#F4F4F4" stroke="#EAEAEA" stroke-width="1"/>
+  <text x="615" y="180" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#093B5F" text-anchor="middle">Solace addresses this</text>
+  <text x="615" y="196" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">Running financial trading systems,</text>
+  <text x="615" y="210" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">logistics networks, and IoT at</text>
+  <text x="615" y="224" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">organizations where message loss</text>
+  <text x="615" y="238" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" fill="#093B5F" text-anchor="middle">has direct consequences.</text>
+
+  <!-- Bullet dots for right column list -->
+  <circle cx="205" cy="182" r="2" fill="#00C895"/>
+  <circle cx="205" cy="196" r="2" fill="#00C895"/>
+  <circle cx="205" cy="210" r="2" fill="#00C895"/>
+  <circle cx="205" cy="224" r="2" fill="#00C895"/>
+  <circle cx="205" cy="238" r="2" fill="#00C895"/>
+
+</svg>

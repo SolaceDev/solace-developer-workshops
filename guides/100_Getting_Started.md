@@ -67,21 +67,17 @@ The ADLC gives development teams a structured, repeatable, quality-based way to 
 
 ---
 
-## Prompts
+## Lets launch Solace Agent Mesh
 
-Using the integrated AI-assitant Copilot Run the following prompts
-```
-Using the sam cli, install the ai-assit skills
-```
+- Click the Ports tab
+- Click the browser icon next to the Solace Agent Mesh port
 
-```
-Scaffold a folder structure for solace agent mesh
-```
+## Resources
 
-```
-Create a a manifest file for local development with no auth and sam running on localhost:8800. Also create a .env file to hold any env vars
-```
+- [Solace Agent Mesh Githiub Repository](https://github.com/solacelabs/solace-agent-mesh)
+- [Solace Agent Mesh Docs](https://solacelabs.github.io/solace-agent-mesh/docs/documentation/getting-started/introduction/)
+- [Solace Agent Mesh Core Plugins](https://github.com/SolaceLabs/solace-agent-mesh-core-plugins)
+- [Solace Agent Mesh Community Plugins](https://github.com/solacecommunity/solace-agent-mesh-plugins/)
 
-```
-Pull the configuration
-```
+---
+Section complete! Close this file and return to the Workshop Tracker to continue.

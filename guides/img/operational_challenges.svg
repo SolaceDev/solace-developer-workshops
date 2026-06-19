@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 415" width="800" height="415">
+
+  <!-- Background -->
+  <rect width="800" height="415" fill="#FFFFFF"/>
+
+  <!-- ===== HEADER ===== -->
+  <text x="400" y="24" font-family="Figtree, 'Segoe UI', sans-serif" font-size="16" font-weight="700" fill="#093B5F" text-anchor="middle">Operational Challenges in Agentic Systems</text>
+
+  <!-- Demo → Production callout -->
+  <rect x="257" y="36" width="66" height="24" rx="12" fill="#C7FFCB" stroke="#00C895" stroke-width="1"/>
+  <text x="290" y="48" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Demo</text>
+  <line x1="330" y1="48" x2="452" y2="48" stroke="#093B5F" stroke-width="1"/>
+  <polyline points="448,44 452,48 448,52" fill="none" stroke="#093B5F" stroke-width="1" stroke-linejoin="round"/>
+  <rect x="458" y="36" width="90" height="24" rx="12" fill="#093B5F"/>
+  <text x="503" y="48" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">Production</text>
+
+  <!-- Subtitle + separator -->
+  <text x="400" y="78" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" fill="#093B5F" text-anchor="middle">Not model quality — the hard problems are operational</text>
+  <line x1="50" y1="87" x2="750" y2="87" stroke="#EAEAEA" stroke-width="1"/>
+
+  <!-- ======================================================= -->
+  <!-- CARD LAYOUT: 2 cols × 3 rows, 358×90px, gap=14          -->
+  <!-- Col1 x=30 (icon-cx=48, title-x=66)                      -->
+  <!-- Col2 x=412 (icon-cx=430, title-x=448)                   -->
+  <!-- Row1 y=96  Row2 y=200  Row3 y=304                       -->
+  <!-- Header strip: 36px | Fill-in: y+32,h=4 (no rounding)   -->
+  <!-- Desc line1: y+55  Desc line2: y+70  (centered)          -->
+  <!-- ======================================================= -->
+
+  <!-- ===== CARD 1: State Management (col1 row1) x=30 y=96 ===== -->
+  <rect x="30" y="96" width="358" height="90" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="30" y="96" width="358" height="36" rx="4" fill="#C7FFCB"/>
+  <rect x="30" y="128" width="358" height="4" fill="#C7FFCB"/>
+  <!-- Clock icon (cx=48, cy=114) -->
+  <circle cx="48" cy="114" r="8" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <line x1="48" y1="114" x2="48" y2="107" stroke="#093B5F" stroke-width="1"/>
+  <line x1="48" y1="114" x2="53" y2="117" stroke="#093B5F" stroke-width="1"/>
+  <!-- Header title -->
+  <text x="209" y="114" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">State Management Across Turns</text>
+  <!-- Description (centered, 2 lines = 1 sentence) -->
+  <text x="209" y="155" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">In-process memory fails on restart; durable state storage</text>
+  <text x="209" y="170" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">with session lifecycle management is required.</text>
+
+  <!-- ===== CARD 2: Tool Execution (col2 row1) x=412 y=96 ===== -->
+  <rect x="412" y="96" width="358" height="90" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="412" y="96" width="358" height="36" rx="4" fill="#C2F7FF"/>
+  <rect x="412" y="128" width="358" height="4" fill="#C2F7FF"/>
+  <!-- Warning triangle icon (cx=430, cy=114) -->
+  <polygon points="430,106 422,122 438,122" fill="none" stroke="#093B5F" stroke-width="1" stroke-linejoin="round"/>
+  <text x="430" y="116" font-family="Figtree, 'Segoe UI', sans-serif" font-size="9" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">!</text>
+  <!-- Header title -->
+  <text x="591" y="114" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Reliable Tool Execution &amp; Recovery</text>
+  <!-- Description -->
+  <text x="591" y="155" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">Tools fail mid-task; checkpointing lets a new process instance</text>
+  <text x="591" y="170" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">resume from the last recorded state; nothing is lost.</text>
+
+  <!-- ===== CARD 3: Distributed Comms (col1 row2) x=30 y=200 ===== -->
+  <rect x="30" y="200" width="358" height="90" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="30" y="200" width="358" height="36" rx="4" fill="#FFF7C2"/>
+  <rect x="30" y="232" width="358" height="4" fill="#FFF7C2"/>
+  <!-- Two nodes with broken connection (cx=48, cy=218) -->
+  <circle cx="40" cy="218" r="5" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <circle cx="57" cy="218" r="5" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <line x1="46" y1="218" x2="51" y2="218" stroke="#093B5F" stroke-width="1" stroke-dasharray="2,2"/>
+  <!-- Header title -->
+  <text x="209" y="218" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Distributed Agent Communication</text>
+  <!-- Description -->
+  <text x="209" y="259" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">HTTP blocks and loses tasks when either agent restarts,</text>
+  <text x="209" y="274" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">at scale, this is the common case, not the edge case.</text>
+
+  <!-- ===== CARD 4: Unstructured Data (col2 row2) x=412 y=200 ===== -->
+  <rect x="412" y="200" width="358" height="90" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="412" y="200" width="358" height="36" rx="4" fill="#FFF7C2"/>
+  <rect x="412" y="232" width="358" height="4" fill="#FFF7C2"/>
+  <!-- Document icon (cx=430, cy=218) -->
+  <rect x="422" y="210" width="16" height="18" rx="1" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <line x1="425" y1="215" x2="435" y2="215" stroke="#093B5F" stroke-width="0.8"/>
+  <line x1="425" y1="219" x2="435" y2="219" stroke="#093B5F" stroke-width="0.8"/>
+  <line x1="425" y1="223" x2="433" y2="223" stroke="#093B5F" stroke-width="0.8"/>
+  <!-- Header title -->
+  <text x="591" y="218" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Unstructured Data &amp; Large Results</text>
+  <!-- Description -->
+  <text x="591" y="259" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">Large results can't fit in context; external storage</text>
+  <text x="591" y="274" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">with on-demand retrieval is required.</text>
+
+  <!-- ===== CARD 5: Access Control (col1 row3) x=30 y=304 ===== -->
+  <rect x="30" y="304" width="358" height="90" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="30" y="304" width="358" height="36" rx="4" fill="#C7FFCB"/>
+  <rect x="30" y="336" width="358" height="4" fill="#C7FFCB"/>
+  <!-- Padlock icon (cx=48, cy=322) -->
+  <path d="M42,322 Q42,313 48,313 Q54,313 54,322" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <rect x="41" y="322" width="14" height="10" rx="1" fill="none" stroke="#093B5F" stroke-width="1"/>
+  <circle cx="48" cy="327" r="2" fill="#093B5F"/>
+  <!-- Header title -->
+  <text x="209" y="322" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Access Control Across the Call Chain</text>
+  <!-- Description -->
+  <text x="209" y="363" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">Permissions must propagate per-user, per-agent, per-tool</text>
+  <text x="209" y="378" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">through every delegation; most frameworks don't model this.</text>
+
+  <!-- ===== CARD 6: Reactive Execution (col2 row3) x=412 y=304 ===== -->
+  <rect x="412" y="304" width="358" height="90" rx="4" fill="#FFFFFF" stroke="#093B5F" stroke-width="1"/>
+  <rect x="412" y="304" width="358" height="36" rx="4" fill="#C2F7FF"/>
+  <rect x="412" y="336" width="358" height="4" fill="#C2F7FF"/>
+  <!-- Lightning bolt icon (cx=430, cy=322) -->
+  <polygon points="432,313 424,323 429,323 427,332 436,322 431,322" fill="#093B5F"/>
+  <!-- Header title -->
+  <text x="591" y="322" font-family="Figtree, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#093B5F" text-anchor="middle" dominant-baseline="middle">Reactive Execution Without Polling</text>
+  <!-- Description -->
+  <text x="591" y="363" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">The highest-value triggers are events, not chat messages;</text>
+  <text x="591" y="378" font-family="Figtree, 'Segoe UI', sans-serif" font-size="10" fill="#093B5F" text-anchor="middle">HTTP forces polling complexity that belongs in the platform.</text>
+
+</svg>
