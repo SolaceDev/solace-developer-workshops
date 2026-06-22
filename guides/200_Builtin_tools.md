@@ -1,4 +1,4 @@
-# Stage 1: Hiring: Define the Role
+# Working with Built-in tools: Hiring
 
 <img src="img/hiring.png" alt="Hiring" width="400"/>
 

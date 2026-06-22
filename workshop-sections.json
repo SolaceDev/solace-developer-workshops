@@ -10,5 +10,17 @@
     "title": "What is Solace Agent Mesh",
     "description": "Understand what Solace Agent Mesh is, the challenges it addresses, and why an event-driven architecture on a proven message broker is the foundation for enterprise-grade agentic deployments",
     "triggerFile": "guides/101_Solace_Agent_Mesh.md"
+  },
+  {
+    "id": "s3",
+    "title": "Working with Built-in Tools",
+    "description": "Hire your first set of specialist agents using Solace Agent Mesh built-in tools and explore multi-agent collaboration through the orchestrator",
+    "triggerFile": "guides/200_Builtin_tools.md"
+  },
+  {
+    "id": "s4",
+    "title": "Solace Agent Mesh CLI",
+    "description": "Learn the sam CLI: running components locally, managing authentication, packaging toolsets and skills, and driving declarative configuration changes against a live platform",
+    "triggerFile": "guides/300_sam_cli.md"
   }
 ]
