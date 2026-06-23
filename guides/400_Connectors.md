@@ -60,6 +60,12 @@ Navigate to the [local manifest file](../sample_configuration/manifests/local.ya
     export RETAIL_DB_PASSWORD=postgres
     sam config plan --manifest sample_configuration/manifests/local.yaml
     ```
+
+    > Note: Observe the following in the commandline
+    ```
+        connectors/
+    + retail-postgres      create
+    ```
 1. Execute the following
     ```
     sam config apply --manifest sample_configuration/manifests/local.yaml
