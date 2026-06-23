@@ -79,7 +79,7 @@ Navigate to the [local manifest file](../sample_configuration/manifests/local.ya
 
 Now lets add the agent 
 
-1. In your [local manifest file](sample_configuration/manifests/local.yaml), add the `- retail-analyst` in the list of agents. Your local manifest file should look like this
+1. In your [local manifest file](../sample_configuration/manifests/local.yaml), add the `- retail-analyst` in the list of agents. Your local manifest file should look like this
     ```
     kind: manifest
     name: local
