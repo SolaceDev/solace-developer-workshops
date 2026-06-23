@@ -97,5 +97,7 @@ Create a manifest file for local development with no auth and sam running on loc
 ```
 Pull the configuration. For any references to environment variables, populate the .env file. Use the LLM key located in .sam/settings.yaml
 ```
+
+Please navigate to the new `workshop_infra` dir and observe the new directory structure
 ---
 Section complete! Close this file and return to the Workshop Tracker to continue.

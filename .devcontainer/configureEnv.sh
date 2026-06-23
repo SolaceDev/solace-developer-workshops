@@ -27,7 +27,6 @@ echo "export GOPATH=\$HOME/go" >> ~/.bashrc
 echo "export PATH=\$PATH:\$GOPATH/bin" >> ~/.bashrc
 mkdir -p "$HOME/go/bin" "$HOME/go/src" "$HOME/go/pkg"
 echo "Go installation complete"
-go version
 
 # Run registration script
 bash util/register.sh
