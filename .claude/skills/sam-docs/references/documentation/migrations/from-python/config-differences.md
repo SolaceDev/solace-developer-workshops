@@ -8,4 +8,4 @@ sidebar_position: 13120
 
 *Content forthcoming.*
 
-<!-- WRITER NOTE: Cover: YAML configuration deltas — fields that were renamed, removed, or changed behavior. Key example from archive: app_module becomes app_exec. Source: archive/migrating-from-python-index.md lists the topics; full content needs input from dev team. -->
+<!-- WRITER NOTE: Cover: YAML configuration deltas â€” fields that were renamed, removed, or changed behavior. Key example from archive: app_module becomes app_exec. Source: archive/migrating-from-python-index.md lists the topics; full content needs input from dev team. -->

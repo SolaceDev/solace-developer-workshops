@@ -35,6 +35,6 @@ Solace Agent Mesh is an event-driven runtime for agentic systems. It hosts the a
 
 ## Operate and Maintain
 
-- [Administering Agent Mesh](../administering/index.md)—Authentication, RBAC, observability, upgrades, and troubleshooting.
+- [Administering Solace Agent Mesh](../administering/index.md)—Authentication, RBAC, observability, upgrades, and troubleshooting.
 - [Migrations](../migrations/index.md)—Migrate an existing deployment to Agent Mesh.
 - [Reference](../reference/index.md)—Configuration reference and RBAC scope catalog.

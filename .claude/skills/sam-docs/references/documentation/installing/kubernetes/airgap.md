@@ -30,7 +30,7 @@ This guide covers deploying Agent Mesh in a Kubernetes environment that has no o
 
 *Content forthcoming.*
 
-## Load Images into Your Private Registry
+## Load Images Into Your Private Registry
 
 <!-- WRITER NOTE: Numbered steps with verifiable results. Cover: how to tag and push each image to the private registry, how to verify the images are available in the registry. -->
 

@@ -167,10 +167,10 @@ Connect agents to your Solace event brokers to process real-time events
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
 | `broker_connection_type` | `select` | yes | `default` |  | Select the event broker to use for sourcing events. Choose 'Default' to use the system broker, or 'Custom' to specify a different broker. |
-| `broker_url` | `string` |  |  | matches regex | The host URI of the event broker (e.g., tcps://broker.example.com:55443) |
-| `broker_vpn` | `string` |  |  |  | (no description) |
-| `broker_username` | `string` |  |  |  | (no description) |
-| `broker_password` | `password (secret)` |  |  | secret | Optional. Leave placeholder to keep existing, or clear to remove. |
+| `broker_url` | `string` | yes |  | matches regex | The host URI of the event broker (e.g., tcps://broker.example.com:55443) |
+| `broker_vpn` | `string` | yes |  |  | (no description) |
+| `broker_username` | `string` | yes |  |  | (no description) |
+| `broker_password` | `password (secret)` | yes |  | secret | Required. Enter the broker password explicitly — it is never inherited from the Agent Mesh broker. Leave the placeholder to keep the existing value. |
 | `tls_skip_verify` | `select` |  | `false` |  | Controls whether the broker's TLS certificate is validated. Skip verification is insecure — development and testing only. |
 | `event_rules` | `event_rules` | yes | `[]` | len 0–0 | Define rules that process incoming events from the broker and route them to agents. |
 
@@ -211,9 +211,9 @@ spec:
   deploy: true
   values:
     broker_connection_type: "default"
-    # optional: broker_url: "tcps://broker.example.com:55443"
-    # optional: broker_vpn: "default"
-    # optional: broker_username: "solace-client"
+    broker_url: "tcps://broker.example.com:55443"
+    broker_vpn: "default"
+    broker_username: "solace-client"
     broker_password: ${EXAMPLE_EVENT_MESH_GATEWAY_BROKER_PASSWORD}  # secret — provide via env var
     # optional: tls_skip_verify: "false"
     event_rules:

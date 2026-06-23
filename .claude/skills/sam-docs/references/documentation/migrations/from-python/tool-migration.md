@@ -8,4 +8,4 @@ sidebar_position: 13140
 
 *Content forthcoming.*
 
-<!-- WRITER NOTE: Cover: how to port Python tools to Go. Three paths: (1) use a Go-native built-in tool if one exists; (2) keep as a remote tool in the Secure Tool Runtime (STR) — Python scripts still run in STR; (3) rewrite in Go using samtoolsdk. Source: needs input from dev team. -->
+<!-- WRITER NOTE: Cover: how to port Python tools to Go. Three paths: (1) use a Go-native built-in tool if one exists; (2) keep as a remote tool in the Secure Tool Runtime (STR) â€” Python scripts still run in STR; (3) rewrite in Go using samtoolsdk. Source: needs input from dev team. -->

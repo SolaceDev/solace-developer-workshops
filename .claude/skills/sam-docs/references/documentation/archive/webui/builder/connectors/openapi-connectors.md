@@ -32,7 +32,7 @@ The following sections describe each prerequisite in detail.
 
 You need an OpenAPI specification file in JSON or YAML format that describes the REST API you want to integrate. The connector supports OpenAPI 3.0 and 3.1 only. If you have an older OpenAPI 2.0 (Swagger) specification, convert it using `link to "Swagger Converter"`  or a similar tool.
 
-### API Credentials (if required)
+### API Credentials (If Required)
 
 Depending on the API's authentication requirements, you may need:
 

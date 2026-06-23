@@ -42,7 +42,7 @@ The CLI binary lets you build and run Agent Mesh projects locally. It includes a
 
 <!-- WRITER NOTE: Numbered steps. Cover: scaffold a project directory, set your LLM API key, run the binary in embedded mode (sam-enterprise run --embedded or equivalent). State the result of each step—what appears in the terminal when Agent Mesh is running and ready. -->
 
-1. [Create a project directory and add your configuration files. See [Building Your First Project](../getting-started/build-your-first-project.md) for a complete walkthrough.] The directory contains a `configs/` folder with your YAML files.
+1. Create a project directory and add your configuration files. See [Building Your First Project](../getting-started/build-your-first-project.md) for a complete walkthrough. The directory contains a `configs/` folder with your YAML files.
 
 2. [Export your LLM API key as an environment variable.]
 

@@ -28,5 +28,5 @@ This section covers everything you need to get Agent Mesh running. If you haven'
 ## What's Next
 
 - [Building Your Agent Mesh](../building/index.md)—Create agents, configure gateways, add tools, and package skills.
-- [Administering Agent Mesh](../administering/index.md)—Authentication, RBAC, observability, upgrades, and troubleshooting.
+- [Administering Solace Agent Mesh](../administering/index.md)—Authentication, RBAC, observability, upgrades, and troubleshooting.
 - [Production Readiness Checklist](../administering/production-readiness-checklist.md)—The pre-production gate before you carry live traffic.

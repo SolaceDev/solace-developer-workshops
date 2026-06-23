@@ -8,4 +8,4 @@ sidebar_position: 653
 
 *Content forthcoming.*
 
-<!-- WRITER NOTE: Cover: the Activities page; the three views (step-by-step linear, Gantt timeline, raw event stream); how to trace a task end-to-end; viewing and downloading versioned artifacts; sharing session links. Source: no direct archive equivalent — gather from product team. Target audience: operators and developers debugging live tasks. -->
+<!-- WRITER NOTE: Cover: the Activities page; the three views (step-by-step linear, Gantt timeline, raw event stream); how to trace a task end-to-end; viewing and downloading versioned artifacts; sharing session links. Source: no direct archive equivalent â€” gather from product team. Target audience: operators and developers debugging live tasks. -->

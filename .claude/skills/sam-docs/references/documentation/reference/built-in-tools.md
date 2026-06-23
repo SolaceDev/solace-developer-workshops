@@ -4,7 +4,7 @@ description: The first-class built-in tools the Solace Agent Mesh runtime regist
 sidebar_position: 1050
 ---
 
-# Built-in Tools
+# Built-In Tools
 
 *Content forthcoming.*
 

@@ -110,5 +110,5 @@ This page covers configuration for the CLI binary, Docker, and Kubernetes deploy
 ## Next Steps
 
 - To set up logging and metrics, see [Monitoring Your Deployment](./monitor.md).
-- For the full configuration schema, see [Configuration Schema](../reference/config-schema.md).
+- For the full configuration schema, see [Config Schema](../reference/config-schema.md).
 - For the RBAC scope catalog, see [RBAC Reference](../reference/rbac-reference.md).

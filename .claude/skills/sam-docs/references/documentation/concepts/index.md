@@ -8,4 +8,4 @@ sidebar_position: 0
 
 *Content forthcoming.*
 
-<!-- WRITER NOTE: This section has been redesigned from architecture deep-dives to user-accessible component descriptions. The index should orient ALL audiences (not just developers). Structure: briefly explain what this section covers (understanding the building blocks of Agent Mesh); list all pages with one-line descriptions. The five 'What Is...' pages come first, then the architecture-level pages. Source: archive/concepts/index.md has old structure — do NOT replicate it. -->
+<!-- WRITER NOTE: This section has been redesigned from architecture deep-dives to user-accessible component descriptions. The index should orient ALL audiences (not just developers). Structure: briefly explain what this section covers (understanding the building blocks of Agent Mesh); list all pages with one-line descriptions. The five 'What Is...' pages come first, then the architecture-level pages. Source: archive/concepts/index.md has old structure â€” do NOT replicate it. -->

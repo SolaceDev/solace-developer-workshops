@@ -11,7 +11,7 @@ You've completed one of the on-ramps and Agent Mesh is responding to prompts on 
 - [Building Your Agent Mesh](../building/index.md)—Add more agents, write a workflow, connect an MCP server as a tool, or package a skill. This is where most of the authoring work happens.
 - [Understanding Agent Mesh](../concepts/index.md)—How the runtime is organized, how requests flow through it, and where the trust boundaries are.
 - [Install and Deploy](../installing/index.md)—Move beyond the embedded mode you used in the on-ramp. Covers Docker and Kubernetes deployment options, configuration, and production prerequisites.
-- [Administering Agent Mesh](../administering/index.md)—Observability, RBAC, secret rotation, TLS, upgrades, and troubleshooting for a deployment that's serving real traffic.
+- [Administering Solace Agent Mesh](../administering/index.md)—Observability, RBAC, secret rotation, TLS, upgrades, and troubleshooting for a deployment that's serving real traffic.
 - [Migrations](../migrations/index.md)—If you're bringing an existing deployment across to this version of Agent Mesh, the migration guides cover configuration differences, behavior changes, and porting paths.
 
 ## Configured or Built?

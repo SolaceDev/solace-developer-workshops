@@ -1,10 +1,10 @@
 ---
-title: Migrating from Python
+title: Migrating From Python
 description: A 12-month aid for existing Python SAM users moving to the current Solace Agent Mesh release. Sunset ~2027-05.
 sidebar_position: 0
 ---
 
-# Migrating from Python
+# Migrating From Python
 
 This section exists as a 12-month aid for users already running Python Solace Agent Mesh. Sunset target: **~2027-05**. New users can skip this section entirely.
 

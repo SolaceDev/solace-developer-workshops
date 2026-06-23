@@ -40,6 +40,6 @@ Agent Mesh is designed for:
 
 ## Next Steps
 
-- If you're ready to choose an installation path, see [Choosing Your Path](./choosing-your-path.md).
+- If you're ready to choose an installation path, see [Choosing Your Installation Path](./choosing-your-path.md).
 - If you want to understand the architecture in more depth before you install, see [Understanding Agent Mesh](../concepts/index.md).
 - If you're ready to get something running, see [Building Your First Project](./build-your-first-project.md).

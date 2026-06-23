@@ -41,7 +41,7 @@ You need a running remote MCP server that supports either Server-Sent Events (SS
 
 You need the URL endpoint of the MCP server. The URL is typically an HTTPS URL that implements the Model Context Protocol specification.
 
-### Server Credentials (if required)
+### Server Credentials (If Required)
 
 Depending on the MCP server's authentication requirements, you may need:
 

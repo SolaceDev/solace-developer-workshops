@@ -8,4 +8,4 @@ sidebar_position: 0
 
 *Content forthcoming.*
 
-<!-- WRITER NOTE: This index must present three equal authoring paths: (1) Configuration-based: author agents, gateways, workflows, skills in YAML — see the pages in this section. (2) Pro-code: write custom tools and agents in Python or Go — see Pro-Code subfolder. (3) UI-based: configure through the Builder — see Using the Web UI section. The PM has confirmed these three paths should be presented as equally prominent options. -->
+<!-- WRITER NOTE: This index must present three equal authoring paths: (1) Configuration-based: author agents, gateways, workflows, skills in YAML â€” see the pages in this section. (2) Pro-code: write custom tools and agents in Python or Go â€” see Pro-Code subfolder. (3) UI-based: configure through the Builder â€” see Using the Web UI section. The PM has confirmed these three paths should be presented as equally prominent options. -->
