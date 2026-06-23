@@ -34,7 +34,7 @@ A connector is a named, credentialed binding between an agent and an external sy
 
 ### Declarative Applying
 
-Navigate to [local manifest file](sample_configuration/manifests/local.yaml) in the sample_configuration and observe the configuration 
+Navigate to the [local manifest file](../sample_configuration/manifests/local.yaml) in the sample_configuration and observe the configuration 
 
 1. Change the local manifest file to include a connector by adding `- retail-postgres` under connectors
 
@@ -43,25 +43,31 @@ Navigate to [local manifest file](sample_configuration/manifests/local.yaml) in 
     name: local
     description: Local development environment (no auth)
     target:
-    url: http://localhost:8800
+        url: http://localhost:8800
     resources:
-    models: []
-    agents: []
-    gateways: []
-    workflows: []
-    toolsets: []
-    connectors:
-        - retail-postgres
-    skills: []
+        models: []
+        agents: []
+        gateways: []
+        workflows: []
+        toolsets: []
+        connectors:
+            - retail-postgres
+        skills: []
     ```
 1. Open your integrated terminal in VsCode
 1. Execute a plan for the configuration
     ```
+    export RETAIL_DB_PASSWORD=postgres
     sam config plan --manifest sample_configuration/manifests/local.yaml
+    ```
+
+    > Note: Observe the following in the commandline
+    ```
+        connectors/
+    + retail-postgres      create
     ```
 1. Execute the following
     ```
-    export RETAIL_DB_PASSWORD=postgres
     sam config apply --manifest sample_configuration/manifests/local.yaml
     ```
 1. Observe the new database connector got added
@@ -71,26 +77,25 @@ Navigate to [local manifest file](sample_configuration/manifests/local.yaml) in 
      <img src="./img/sam_connectors.png" alt="Use-cases" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
   </div>
 
-Now lets add the agent 
+### Now lets add the agent 
 
-1. In your [local manifest file](sample_configuration/manifests/local.yaml), add the `- retail-analyst` in the list of agents. Your local manifest file should look like this
+1. In your [local manifest file](../sample_configuration/manifests/local.yaml), add the `- retail-analyst` in the list of agents. Your local manifest file should look like this
     ```
     kind: manifest
     name: local
     description: Local development environment (no auth)
     target:
-    url: http://localhost:8800
+        url: http://localhost:8800
     resources:
-    models: []
-    agents:
-        - retail-analyst
-    gateways: []
-    workflows: []
-    toolsets: []
-    connectors:
-        - retail-postgres
-    skills: []
-
+        models: []
+        agents:
+            - retail-analyst
+        gateways: []
+        workflows: []
+        toolsets: []
+        connectors:
+            - retail-postgres
+        skills: []
     ```
 1. Apply the new configuration
     ```
@@ -106,3 +111,22 @@ Now lets add the agent
     ```
     Query one object from the db
     ```
+---
+
+And that's it! What happened?
+
+You used the `sam` CLI to **declaratively apply** two resources to the running Solace Agent Mesh platform:
+
+1. **A PostgreSQL connector** (`retail-postgres`) — a named, credentialed binding that points to a remote retail database hosted on AWS EC2. The connector holds the connection details (host, port, database name, credentials) and exposes SQL execution as a tool at runtime. No code was written — the entire integration is a single YAML file under `sample_configuration/connectors/`.
+
+2. **A retail analyst agent** (`retail-analyst`) — an LLM-driven agent whose system prompt instructs it to answer business questions by querying the database. The agent is wired to the connector via its `connectors:` field, which tells the platform to surface the connector's SQL tools directly to the agent. When a user asks "how many orders were placed last week?", the agent generates the appropriate SQL and the connector executes it against the remote database.
+
+The `sam config plan` / `apply` workflow is the declarative path: you describe the desired state in YAML, `plan` shows you what will change, and `apply` reconciles the live platform to match. The same files can be version-controlled and promoted across environments (local → staging → production) without touching any application code.
+
+<div align="center">
+     <img src="./img/retail-analyst-config.jpg" alt="Use-cases" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
+
+
+---
+Section complete! Close this file and return to the Workshop Tracker to continue.
