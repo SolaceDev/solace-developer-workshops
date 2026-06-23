@@ -57,11 +57,11 @@ Navigate to the [local manifest file](../sample_configuration/manifests/local.ya
 1. Open your integrated terminal in VsCode
 1. Execute a plan for the configuration
     ```
+    export RETAIL_DB_PASSWORD=postgres
     sam config plan --manifest sample_configuration/manifests/local.yaml
     ```
 1. Execute the following
     ```
-    export RETAIL_DB_PASSWORD=postgres
     sam config apply --manifest sample_configuration/manifests/local.yaml
     ```
 1. Observe the new database connector got added
