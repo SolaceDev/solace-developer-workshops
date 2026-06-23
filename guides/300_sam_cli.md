@@ -99,5 +99,6 @@ Pull the configuration. For any references to environment variables, populate th
 ```
 
 Please navigate to the new `workshop_infra` dir and observe the new directory structure
+
 ---
 Section complete! Close this file and return to the Workshop Tracker to continue.
