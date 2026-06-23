@@ -22,5 +22,11 @@
     "title": "Solace Agent Mesh CLI",
     "description": "Learn the sam CLI: running components locally, managing authentication, packaging toolsets and skills, and driving declarative configuration changes against a live platform",
     "triggerFile": "guides/300_sam_cli.md"
+  },
+  {
+    "id": "s5",
+    "title": "Working with Connectors",
+    "description": "Onboard agents to external systems using connectors — connect to SQL databases, REST APIs, MCP servers, and knowledge bases without writing code",
+    "triggerFile": "guides/400_Connectors.md"
   }
 ]

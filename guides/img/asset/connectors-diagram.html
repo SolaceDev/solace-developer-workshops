@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAM Connectors Diagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green:        #00C895;
+      --deep-blue:    #093B5F;
+      --dark-blue:    #03213B;
+      --spring-green: #C7FFCB;
+      --sky-blue:     #C2F7FF;
+      --yellow:       #FFF7C2;
+      --bg:           #F4F4F4;
+      --white:        #FFFFFF;
+      --gray-card:    #EAEAEA;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      font-family: 'Figtree', 'Segoe UI', sans-serif;
+      color: var(--deep-blue);
+      padding: 52px 40px 64px;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      text-align: center;
+      margin-bottom: 52px;
+    }
+
+    .overline {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      color: var(--deep-blue);
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .main-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--deep-blue);
+      line-height: 1.2;
+    }
+
+    .main-title .accent { color: var(--green); }
+
+    .subtitle {
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--deep-blue);
+      opacity: 0.6;
+      max-width: 540px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.5;
+    }
+
+    /* ── AGENT CARD ── */
+    .agent-wrap {
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .agent-card {
+      background: var(--white);
+      border: 1.5px solid var(--deep-blue);
+      box-shadow: 4px 4px 0 var(--deep-blue);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 20px 24px;
+    }
+
+    .agent-badge {
+      background: var(--green);
+      color: var(--dark-blue);
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 5px 11px;
+      border-radius: 3px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .agent-name {
+      font-weight: 700;
+      font-size: 17px;
+      color: var(--deep-blue);
+    }
+
+    .agent-desc {
+      font-size: 12.5px;
+      color: var(--deep-blue);
+      opacity: 0.6;
+      margin-top: 3px;
+      line-height: 1.45;
+    }
+
+    /* ── CONNECTORS SECTION LABEL ── */
+    .section-label {
+      text-align: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--green);
+      padding: 0 4px;
+    }
+
+    /* ── VERTICAL LINE ── */
+    .v-center { display: flex; justify-content: center; }
+    .v-line   { width: 2px; background: var(--deep-blue); }
+    .v-short  { height: 20px; }
+    .v-med    { height: 28px; }
+
+    /* ── COLUMNS ── */
+    .columns-outer {
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    /* Horizontal spanning line connecting agent drop to all columns */
+    .h-line-track {
+      position: relative;
+      height: 2px;
+    }
+
+    .h-line-track::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 9%;
+      right: 9%;
+      height: 2px;
+      background: var(--deep-blue);
+    }
+
+    /* Shared gap across all rows so columns stay aligned */
+    .row-vlines,
+    .row-conn,
+    .row-sys {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Each v-line cell centers the drop line over its column */
+    .vcell {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* ── CONNECTOR CARD ── */
+    .conn-card {
+      flex: 1;
+      background: var(--spring-green);
+      border: 1.5px solid var(--green);
+      box-shadow: 3px 3px 0 var(--green);
+      border-radius: 6px;
+      padding: 14px 10px 12px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .conn-icon {
+      width: 34px;
+      height: 34px;
+      background: var(--green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 9px;
+    }
+
+    .conn-icon svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .conn-name {
+      font-weight: 700;
+      font-size: 11.5px;
+      color: var(--deep-blue);
+      line-height: 1.35;
+    }
+
+    .conn-sub {
+      font-size: 10px;
+      color: var(--deep-blue);
+      opacity: 0.55;
+      margin-top: 3px;
+      line-height: 1.3;
+    }
+
+    /* ── SYSTEM CARD ── */
+    .sys-card {
+      flex: 1;
+      background: var(--sky-blue);
+      border: 1.5px solid var(--deep-blue);
+      box-shadow: 3px 3px 0 var(--deep-blue);
+      border-radius: 6px;
+      padding: 11px 10px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sys-name {
+      font-weight: 700;
+      font-size: 11.5px;
+      color: var(--deep-blue);
+      line-height: 1.3;
+    }
+
+    .sys-detail {
+      font-size: 10px;
+      color: var(--deep-blue);
+      opacity: 0.6;
+      margin-top: 4px;
+      line-height: 1.35;
+    }
+
+    /* ── LEGEND ── */
+    .legend {
+      display: flex;
+      gap: 28px;
+      justify-content: center;
+      margin-top: 52px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--deep-blue);
+    }
+
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .sw-agent { background: var(--white);        border: 1.5px solid var(--deep-blue); }
+    .sw-conn  { background: var(--spring-green); border: 1.5px solid var(--green);     }
+    .sw-sys   { background: var(--sky-blue);     border: 1.5px solid var(--deep-blue); }
+
+    .legend-line {
+      width: 22px;
+      height: 2px;
+      background: var(--deep-blue);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="main-title">How <span class="accent">Connectors</span> Work with Agents</div>
+    <div class="subtitle">
+      A connector is a named, credentialed binding between an agent and an external system.
+      Each connector exposes itself as a tool the agent's LLM can call with no custom code required.
+    </div>
+  </div>
+
+  <!-- Agent card -->
+  <div class="agent-wrap">
+    <div class="agent-card">
+      <div class="agent-badge">SAM Agent</div>
+      <div>
+        <div class="agent-name">Agent</div>
+        <div class="agent-desc">
+          Uses LLM reasoning to select and invoke connector tools in response to user requests, events, or other agents.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drop from agent -->
+  <div class="v-center"><div class="v-line v-short"></div></div>
+
+  <div class="section-label">Connectors</div>
+
+  <!-- Columns -->
+  <div class="columns-outer">
+
+    <div class="h-line-track"></div>
+
+    <!-- Top vertical drops: h-line to connector cards -->
+    <div class="row-vlines">
+      <div class="vcell"><div class="v-line v-med"></div></div>
+      <div class="vcell"><div class="v-line v-med"></div></div>
+      <div class="vcell"><div class="v-line v-med"></div></div>
+      <div class="vcell"><div class="v-line v-med"></div></div>
+      <div class="vcell"><div class="v-line v-med"></div></div>
+    </div>
+
+    <!-- Connector cards — all same height via flex stretch -->
+    <div class="row-conn">
+
+      <div class="conn-card">
+        <div class="conn-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="12" cy="6" rx="8" ry="3" stroke="#03213B" stroke-width="1.8"/>
+            <path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6" stroke="#03213B" stroke-width="1.8"/>
+            <path d="M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6" stroke="#03213B" stroke-width="1.8"/>
+          </svg>
+        </div>
+        <div class="conn-name">SQL Connector</div>
+        <div class="conn-sub">Natural-language queries</div>
+      </div>
+
+      <div class="conn-card">
+        <div class="conn-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" stroke="#03213B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" stroke="#03213B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="conn-name">OpenAPI Connector</div>
+        <div class="conn-sub">REST API from spec</div>
+      </div>
+
+      <div class="conn-card">
+        <div class="conn-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="12,2 2,7 12,12 22,7" stroke="#03213B" stroke-width="1.8" stroke-linejoin="round"/>
+            <polyline points="2,12 12,17 22,12" stroke="#03213B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <polyline points="2,17 12,22 22,17" stroke="#03213B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="conn-name">MCP Connector</div>
+        <div class="conn-sub">Remote tool exposure</div>
+      </div>
+
+      <div class="conn-card">
+        <div class="conn-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="#03213B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" stroke="#03213B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="9" y1="7" x2="15" y2="7" stroke="#03213B" stroke-width="1.8" stroke-linecap="round"/>
+            <line x1="9" y1="11" x2="13" y2="11" stroke="#03213B" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="conn-name">Knowledge Base Connector</div>
+        <div class="conn-sub">RAG retrieval</div>
+      </div>
+
+      <div class="conn-card">
+        <div class="conn-icon">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 8.5a12 12 0 0120 0" stroke="#03213B" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M5.5 11.8a8 8 0 0113 0" stroke="#03213B" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M9 15a4 4 0 016 0" stroke="#03213B" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="12" cy="18" r="1.5" fill="#03213B"/>
+          </svg>
+        </div>
+        <div class="conn-name">Event Mesh Connector</div>
+        <div class="conn-sub">Publish to topics</div>
+      </div>
+
+    </div><!-- .row-conn -->
+
+    <!-- Middle vertical drops: connector cards to system cards -->
+    <div class="row-vlines">
+      <div class="vcell"><div class="v-line v-med"></div></div>
+      <div class="vcell"><div class="v-line v-med"></div></div>
+      <div class="vcell"><div class="v-line v-med"></div></div>
+      <div class="vcell"><div class="v-line v-med"></div></div>
+      <div class="vcell"><div class="v-line v-med"></div></div>
+    </div>
+
+    <!-- System cards — all same height via flex stretch -->
+    <div class="row-sys">
+
+      <div class="sys-card">
+        <div class="sys-name">Relational Database</div>
+        <div class="sys-detail">PostgreSQL, MySQL, MariaDB, MSSQL, Oracle</div>
+      </div>
+
+      <div class="sys-card">
+        <div class="sys-name">REST API</div>
+        <div class="sys-detail">Any OpenAPI-described service; API key, bearer, or OAuth 2.0</div>
+      </div>
+
+      <div class="sys-card">
+        <div class="sys-name">MCP Server</div>
+        <div class="sys-detail">Tools via SSE or streamable-HTTP transport</div>
+      </div>
+
+      <div class="sys-card">
+        <div class="sys-name">Amazon Bedrock KB</div>
+        <div class="sys-detail">Private document search via vector retrieval</div>
+      </div>
+
+      <div class="sys-card">
+        <div class="sys-name">Solace Broker</div>
+        <div class="sys-detail">Publish messages to Solace event mesh topics</div>
+      </div>
+
+    </div><!-- .row-sys -->
+  </div><!-- .columns-outer -->
+
+
+</body>
+</html>

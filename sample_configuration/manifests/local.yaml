@@ -1,0 +1,13 @@
+kind: manifest
+name: local
+description: Local development environment (no auth)
+target:
+  url: http://localhost:8800
+resources:
+  models: []
+  agents: []
+  gateways: []
+  workflows: []
+  toolsets: []
+  connectors: []
+  skills: []
