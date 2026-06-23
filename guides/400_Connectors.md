@@ -43,16 +43,16 @@ Navigate to the [local manifest file](../sample_configuration/manifests/local.ya
     name: local
     description: Local development environment (no auth)
     target:
-    url: http://localhost:8800
+        url: http://localhost:8800
     resources:
-    models: []
-    agents: []
-    gateways: []
-    workflows: []
-    toolsets: []
-    connectors:
-        - retail-postgres
-    skills: []
+        models: []
+        agents: []
+        gateways: []
+        workflows: []
+        toolsets: []
+        connectors:
+            - retail-postgres
+        skills: []
     ```
 1. Open your integrated terminal in VsCode
 1. Execute a plan for the configuration
@@ -79,17 +79,17 @@ Now lets add the agent
     name: local
     description: Local development environment (no auth)
     target:
-    url: http://localhost:8800
+        url: http://localhost:8800
     resources:
-    models: []
-    agents:
-        - retail-analyst
-    gateways: []
-    workflows: []
-    toolsets: []
-    connectors:
-        - retail-postgres
-    skills: []
+        models: []
+        agents:
+            - retail-analyst
+        gateways: []
+        workflows: []
+        toolsets: []
+        connectors:
+            - retail-postgres
+        skills: []
 
     ```
 1. Apply the new configuration
