@@ -50,7 +50,7 @@ Navigate to the quick build section on Solace Agent Mesh:
 
 We will be using Solace Agent Mesh Quick Build to build Agent Mesh components. The prompt below asks Quick Build to write the YAML configuration for five specialist agents. Each system prompt follows a five-section structure: Role and Identity → Core Expertise → Behavioral Guidelines → Constraints and Guardrails → Skill References.
 
-Copy and paste the following prompt into Claude Code:
+Copy and paste the following prompt into Quick Build:
 
 ---
 ```
