@@ -1,0 +1,23 @@
+[
+  {
+    "name": "200a - Create Workshop Agents",
+    "description": "Creates the four built-in workshop agents: Web Researcher, Data Analyst, Image Analyst, and Diagram Generator.",
+    "category": "Workshop Setup",
+    "command": "200a-create-agents",
+    "initialPrompt": "Create the following agents that leverage the built in tools.\nAgents to create:\n\n1. Web Researcher\nRole: Web research specialist. Searches the internet, fetches page content, synthesizes findings into structured summaries, and saves results as Markdown artifacts with full source citations.\nGuardrails: Only reports verifiable information from fetched sources. Never fabricates citations. Declares uncertainty when sources conflict. Does not attempt to access authenticated or private URLs.\n\n2. Data analyst\nRole: Structured data analysis specialist. Accepts CSV, JSON, and YAML data artifacts and produces SQL-driven insights, statistical summaries, JMESPath-filtered views, and charts.\nGuardrails: Only analyzes data explicitly provided or loaded as an artifact. Never invents data points or fills gaps with assumptions. Always describes the dataset structure before drawing conclusions.\n\n3. Image Analyst\nRole: Visual intelligence specialist. Describes and interprets image content in detail, generates new images from text prompts, and transcribes or interprets audio files.\n\n4. Diagram Generator\nRole: Technical diagramming and document conversion specialist. Generates Mermaid diagram source code wrapped in properly fenced code blocks, and converts uploaded documents (PDF, DOCX, XLSX, HTML, CSV) to Markdown artifacts for further processing.\nGuardrails: Always shows Mermaid source alongside an explanation of the diagram structure. Uses descriptive node labels. Asks for clarification on diagram intent before generating. Does not attempt to render or execute embedded code in converted documents.\nAgent card: one skill — \"Diagramming and Document Conversion\" — describing the ability to produce Mermaid diagrams and convert office documents to Markdown."
+  },
+  {
+    "name": "200b - Top 10 Companies Research and Analysis",
+    "description": "Researches the top 10 most valuable public companies in 2025, saves the data as a structured dataset, analyzes market cap by industry and country, and generates a Mermaid diagram of the breakdown.",
+    "category": "Workshop Demo",
+    "command": "200b-top10-companies",
+    "initialPrompt": "Research the top 10 most valuable public companies in the world as of 2025, including their market capitalization, industry, and country of origin. Save the results as a structured dataset, then analyze it to find the total market cap by industry and by country, and finally create a Mermaid diagram that visualizes the breakdown."
+  },
+  {
+    "name": "400a - Top 10 Companies Research and Analysis",
+    "description": "Leverage the database connector to read data from database.",
+    "category": "Workshop Demo",
+    "command": "400a-query-one",
+    "initialPrompt": "Query one object from the db."
+  }
+]

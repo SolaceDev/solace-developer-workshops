@@ -37,7 +37,7 @@ Alongside the ADLC methodology, you will work with [Solace Agent Mesh](https://s
 By the end of this workshop you will be able to:
 
 - Explain the ADLC and map each stage to concrete Agent Mesh capabilities
-- Stand up a local Agent Mesh environment and apply declarative configuration
+- Stand up an Agent Mesh environment and apply declarative configuration
 - Define an agent, assign it tools, and connect it to an external system
 - Evaluate agent behavior using structured evaluation methods
 - Understand operational and governance concerns at production scale
@@ -50,7 +50,7 @@ By the end of this workshop you will be able to:
 
 The Agent Development Lifecycle (ADLC) is the framework this workshop is built around. It provides a structured, repeatable path from agent conception to continuous improvement in production.
 
-The ADLC exists because agents are fundamentally different from traditional software. They are non-deterministic: the same input does not guarantee the same output. Standard software development methodologies, built for deterministic, rule-based systems, are not sufficient. A new lifecycle is required.
+The ADLC exists because agents are fundamentally different from traditional software. They are probabilistic: the same input does not guarantee the same output. Standard software development methodologies, built for deterministic, rule-based systems, are not sufficient. A new lifecycle is required.
 
 The six stages of the ADLC are:
 
