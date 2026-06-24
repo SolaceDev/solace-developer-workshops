@@ -4,7 +4,7 @@
   "onCreateCommand": "/bin/bash ${containerWorkspaceFolder}/util/tracker_extension.sh",
   "waitFor": "onCreateCommand",
   "postCreateCommand": "/bin/bash -i -c .devcontainer/configureEnv.sh",
-  "postAttachCommand": "/bin/bash util/start.sh",
+  "postAttachCommand": "sam run --embedded configs & /bin/bash util/seed_prompts.sh",
   "forwardPorts": [8080],
   "portsAttributes": {
     "8800": {
@@ -16,9 +16,6 @@
    "cpus": 4,
    "memory": "16gb",
    "storage": "32gb"
-  },
-  "remoteEnv": {
-    "PATH": "/usr/local/go/bin:/home/vscode/go/bin:${containerEnv:PATH}"
   },
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
