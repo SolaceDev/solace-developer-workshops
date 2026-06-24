@@ -13,7 +13,7 @@
 
 ## What is Solace Agent Mesh
 
-Solace Agent Mesh is a Go-based, event-driven agent runtime for building, deploying, and operating AI agents at enterprise scale. It provides the runtime infrastructure, declarative configuration model, and gateway integrations to run agents as always-on workers embedded in your event-driven architecture, not just as conversational endpoints you call on demand.
+Solace Agent Mesh is a Go-based, event-driven agent runtime for building, deploying, and operating AI agents at enterprise scale. It provides the runtime infrastructure, declarative configuration model, and entrypoint integrations to run agents as always-on workers embedded in your event-driven architecture, not just as conversational endpoints you call on demand.
 
 ![runtimes](./img/runtimes.png)
 
@@ -39,7 +39,7 @@ Tools come in the following forms:
 
 Every tool type presents the same interface to the calling agent. The agent core handles the full LLM loop, parallel tool dispatch, context compaction, and session persistence.
 
-A companion CLI handles config scaffolding, declarative config push/pull to a running gateway, and lifecycle management across Go and Python agent runtimes running side by side on the same broker.
+A companion CLI handles config scaffolding, declarative config push/pull to a running WebUI Entrypoint, and lifecycle management across Go and Python agent runtimes running side by side on the same broker.
 
 
 ---
