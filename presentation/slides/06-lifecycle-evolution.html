@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 06 · Lifecycle Evolution</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  .era-card {
+    border-radius: 12px;
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+  }
+  .era-past {
+    background: rgba(180,120,30,0.08);
+    border: 1px solid rgba(252,168,41,0.18);
+  }
+  .era-present {
+    background: rgba(0,200,149,0.12);
+    border: 1px solid var(--green);
+    box-shadow: 0 0 30px rgba(0,200,149,0.1);
+  }
+  .era-year {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .era-past .era-year { color: rgba(255,255,255,0.4); }
+  .era-present .era-year { color: var(--green); }
+  .era-name {
+    font-size: clamp(1.2rem, 2vw, 1.7rem);
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .era-full {
+    font-size: clamp(0.8rem, 1.2vw, 1rem);
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .era-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .era-past .era-tag {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.45);
+  }
+  .era-present .era-tag {
+    background: rgba(0,200,149,0.15);
+    color: var(--green);
+  }
+  .era-desc {
+    font-size: clamp(0.78rem, 1.15vw, 0.95rem);
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .era-present .era-desc { color: rgba(255,255,255,0.7); }
+  .arrow-sep {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 36px;
+    color: rgba(0,200,149,0.4);
+    font-size: 1.5rem;
+  }
+</style>
+</head>
+<body>
+<div class="stage"><div class="slide">
+  <div class="bg-mesh"></div>
+  <div class="glow glow-green" style="top:20%;right:5%;width:25%;height:50%;opacity:0.1;"></div>
+
+  <div class="brand-bar"><span class="overline">Why a New Lifecycle · Evolution</span></div>
+  <div class="slide-num">06 / 14</div>
+
+  <div class="content" style="gap:14px;">
+    <div class="overline reveal" style="margin-bottom:8px;">The Industry Has Done This Before</div>
+    <h2 class="h2 reveal d1" style="font-size:clamp(1.8rem,3.2vw,2.8rem);margin-bottom:20px;">Each new paradigm required a new methodology</h2>
+
+    <div style="display:flex;align-items:stretch;gap:0;" class="reveal d2">
+      <div class="era-card era-past">
+        <div class="era-year">Early 1980s</div>
+        <div class="era-name">SDLC</div>
+        <div class="era-full">Software Development Lifecycle</div>
+        <div class="era-tag">Deterministic</div>
+        <div class="era-desc">Structured process for rule-based software where the same input always produces the same output.</div>
+      </div>
+      <div class="arrow-sep">›</div>
+      <div class="era-card era-past">
+        <div class="era-year">~2013</div>
+        <div class="era-name">API-LC</div>
+        <div class="era-full">API-Led Development Lifecycle</div>
+        <div class="era-tag">Integration-First</div>
+        <div class="era-desc">Mulesoft addressed the unique challenges of building integration-first software and managing API lifecycles across systems.</div>
+      </div>
+      <div class="arrow-sep">›</div>
+      <div class="era-card era-present">
+        <div class="era-year">2025 / 2026</div>
+        <div class="era-name">ADLC</div>
+        <div class="era-full">Agent Development Lifecycle</div>
+        <div class="era-tag">Non-Deterministic</div>
+        <div class="era-desc">AI agents are probabilistic. Standard deterministic methodologies are not sufficient. A new lifecycle is required.</div>
+      </div>
+    </div>
+  </div>
+  <div class="caption reveal d3">Same pattern. New paradigm. New process required.</div>
+</div></div>
+<a class="nav-prev" href="05-why-new-lifecycle.html" title="Previous slide">‹</a>
+<a class="nav-next" href="07-nondeterminism.html" title="Next slide">›</a>
+</body>
+</html>

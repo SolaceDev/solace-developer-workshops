@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 07 · Non-Determinism</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  .compare-col {
+    flex: 1;
+    border-radius: 12px;
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .col-old {
+    background: rgba(252,168,41,0.07);
+    border: 1px solid rgba(252,168,41,0.25);
+  }
+  .col-new {
+    background: rgba(0,200,149,0.07);
+    border: 1px solid rgba(0,200,149,0.25);
+  }
+  .col-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .col-old .col-label { color: var(--orange); }
+  .col-new .col-label { color: var(--green); }
+  .col-title {
+    font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .prop-row {
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .prop-label {
+    font-size: 0.72rem;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .col-old .prop-label { color: rgba(252,168,41,0.6); }
+  .col-new .prop-label { color: rgba(0,200,149,0.6); }
+  .prop-val {
+    font-size: clamp(0.82rem, 1.2vw, 1rem);
+    color: rgba(255,255,255,0.8);
+    line-height: 1.45;
+  }
+</style>
+</head>
+<body>
+<div class="stage"><div class="slide">
+  <div class="bg-mesh"></div>
+  <div class="glow glow-green" style="bottom:10%;right:5%;width:20%;height:40%;opacity:0.1;"></div>
+
+  <div class="brand-bar"><span class="overline">Why a New Lifecycle · The Core Problem</span></div>
+  <div class="slide-num">07 / 14</div>
+
+  <div class="content" style="gap:14px;">
+    <div class="overline reveal" style="margin-bottom:8px;">Traditional Software vs AI Agents</div>
+    <h2 class="h2 reveal d1" style="font-size:clamp(1.7rem,3vw,2.6rem);margin-bottom:18px;">Same input. Different output. Every time.</h2>
+
+    <div style="display:flex;gap:20px;" class="reveal d2">
+      <div class="compare-col col-old">
+        <div class="col-label">Traditional Software</div>
+        <div class="col-title" style="color:var(--orange);">Deterministic</div>
+        <div class="prop-row">
+          <div class="prop-label">Input → Output</div>
+          <div class="prop-val">Same input always produces the same output. Predictable by design.</div>
+        </div>
+        <div class="prop-row">
+          <div class="prop-label">Testing</div>
+          <div class="prop-val">Unit tests verify boolean conditions. Pass = correct.</div>
+        </div>
+        <div class="prop-row">
+          <div class="prop-label">Failure mode</div>
+          <div class="prop-val">Code either works or it crashes. The boundary is clear.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:center;flex-shrink:0;width:32px;color:rgba(255,255,255,0.2);font-size:1.4rem;font-weight:300;">vs</div>
+
+      <div class="compare-col col-new">
+        <div class="col-label">AI Agents</div>
+        <div class="col-title" style="color:var(--green);">Probabilistic</div>
+        <div class="prop-row">
+          <div class="prop-label">Input → Output</div>
+          <div class="prop-val">Same input can produce different outputs. Distribution of answers, not a single value.</div>
+        </div>
+        <div class="prop-row">
+          <div class="prop-label">Testing</div>
+          <div class="prop-val">Unit tests can pass while the agent answers incorrectly in production.</div>
+        </div>
+        <div class="prop-row">
+          <div class="prop-label">Failure mode</div>
+          <div class="prop-val">The agent runs, responds confidently, and may still be wrong. Silent failure.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="caption reveal d3">A new methodology is required to handle this</div>
+</div></div>
+<a class="nav-prev" href="06-lifecycle-evolution.html" title="Previous slide">‹</a>
+<a class="nav-next" href="08-what-is-sam.html" title="Next slide">›</a>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 04 · ADLC Overview</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  .stage-card {
+    background: rgba(9,59,95,0.55);
+    border: 1px solid rgba(0,200,149,0.18);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: default;
+    transition: all 0.2s;
+  }
+  .stage-card:hover {
+    background: rgba(0,200,149,0.13);
+    border-color: var(--green);
+    transform: translateY(-3px);
+  }
+  .stage-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+    opacity: 0.7;
+    margin-bottom: 4px;
+  }
+  .stage-name {
+    font-size: clamp(0.9rem, 1.4vw, 1.15rem);
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+  .stage-desc {
+    font-size: clamp(0.72rem, 1.05vw, 0.9rem);
+    color: var(--muted);
+    line-height: 1.45;
+  }
+</style>
+</head>
+<body>
+<div class="stage"><div class="slide">
+  <div class="bg-mesh"></div>
+  <div class="glow glow-green" style="top:0%;right:5%;width:30%;height:50%;opacity:0.08;"></div>
+
+  <div class="brand-bar"><span class="overline">Workshop Introduction · ADLC</span></div>
+  <div class="slide-num">04 / 14</div>
+
+  <div class="content" style="gap:12px;padding-top:9%;">
+    <div class="overline reveal" style="margin-bottom:8px;">The Agent Development Lifecycle</div>
+    <h2 class="h2 reveal d1" style="font-size:clamp(1.7rem,3vw,2.6rem);margin-bottom:16px;">Six stages from concept to continuous improvement</h2>
+
+    <div style="position:relative;" class="reveal d2">
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;">
+        <div class="stage-card">
+          <div class="stage-num">Stage 01</div>
+          <div class="stage-name">Hiring</div>
+          <div class="stage-desc">Define what the agent does, who it serves, its role</div>
+        </div>
+        <div class="stage-card">
+          <div class="stage-num">Stage 02</div>
+          <div class="stage-name">Onboarding</div>
+          <div class="stage-desc">Give the agent the right access, tools, and context</div>
+        </div>
+        <div class="stage-card">
+          <div class="stage-num">Stage 03</div>
+          <div class="stage-name">Coaching</div>
+          <div class="stage-desc">Validate correct performance through structured evaluation</div>
+        </div>
+        <div class="stage-card">
+          <div class="stage-num">Stage 04</div>
+          <div class="stage-name">Supervision</div>
+          <div class="stage-desc">Maintain human oversight and monitor in production</div>
+        </div>
+        <div class="stage-card">
+          <div class="stage-num">Stage 05</div>
+          <div class="stage-name">Teamwork</div>
+          <div class="stage-desc">Integrate into a multi-agent system</div>
+        </div>
+        <div class="stage-card">
+          <div class="stage-num">Stage 06</div>
+          <div class="stage-name">Improvement</div>
+          <div class="stage-desc">Close the feedback loop and continuously improve</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="caption reveal d3">Each stage maps directly to Solace Agent Mesh capabilities</div>
+</div></div>
+<a class="nav-prev" href="03-takeaways.html" title="Previous slide">‹</a>
+<a class="nav-next" href="05-why-new-lifecycle.html" title="Next slide">›</a>
+</body>
+</html>

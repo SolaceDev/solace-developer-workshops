@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 10 · The Real Challenges</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  .big-num {
+    font-size: clamp(9rem, 22vw, 18rem);
+    font-weight: 800;
+    line-height: 0.9;
+    background: var(--grad-green);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.04em;
+  }
+  .pulse-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(0,200,149,0.2);
+    animation: pulseOut 3s ease-out infinite;
+  }
+  @keyframes pulseOut {
+    0%   { transform: scale(0.85); opacity: 0.5; }
+    100% { transform: scale(1.4);  opacity: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="stage"><div class="slide">
+  <div class="bg-mesh"></div>
+
+  <div class="brand-bar"><span class="overline">The Real Challenges · Enterprise AI</span></div>
+  <div class="slide-num">10 / 14</div>
+
+  <div class="content" style="flex-direction:row;align-items:center;gap:5%;">
+    <div style="position:relative;display:flex;align-items:center;justify-content:center;flex:0 0 42%;">
+      <div class="pulse-ring" style="width:280px;height:280px;animation-delay:0s;"></div>
+      <div class="pulse-ring" style="width:280px;height:280px;animation-delay:1s;"></div>
+      <div class="pulse-ring" style="width:280px;height:280px;animation-delay:2s;"></div>
+      <div style="text-align:center;position:relative;z-index:2;">
+        <div class="big-num reveal">80%</div>
+        <div style="font-family:'Space Mono',monospace;font-size:0.75rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--green);margin-top:8px;">of challenges are integration</div>
+      </div>
+    </div>
+
+    <div style="flex:1;display:flex;flex-direction:column;gap:14px;">
+      <div class="overline reveal" style="margin-bottom:4px;">The Hard Problems</div>
+      <h2 class="h2 reveal d1" style="font-size:clamp(1.8rem,3.2vw,2.8rem);">The hard problems are no longer about model quality.</h2>
+      <p class="lead reveal d2" style="font-size:clamp(0.9rem,1.4vw,1.15rem);">
+        GPT-4, Claude, Gemini: all produce good results on well-scoped tasks. The model question is largely solved.
+      </p>
+      <div style="background:rgba(0,200,149,0.08);border:1px solid rgba(0,200,149,0.2);border-radius:10px;padding:18px 22px;" class="reveal d3">
+        <div style="font-family:'Space Mono',monospace;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green);margin-bottom:10px;">The real split</div>
+        <div style="font-size:clamp(0.98rem,1.5vw,1.21rem);color:rgba(255,255,255,0.85);line-height:1.7;">
+          <span style="color:var(--green);font-weight:700;">~20%</span> model quality issues<br>
+          <span style="color:var(--green);font-weight:700;">~80%</span> connecting agents to enterprise data and systems reliably
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+<a class="nav-prev" href="09-process-types.html" title="Previous slide">‹</a>
+<a class="nav-next" href="11-operational-challenges.html" title="Next slide">›</a>
+</body>
+</html>

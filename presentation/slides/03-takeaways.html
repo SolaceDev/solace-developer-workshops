@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 03 · Takeaways</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  .takeaway {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .takeaway:last-child { border-bottom: none; }
+  .check {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(0,200,149,0.15);
+    border: 1px solid var(--green);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .check svg { width: 12px; height: 12px; }
+  .takeaway-text {
+    font-size: clamp(0.95rem, 1.55vw, 1.25rem);
+    color: rgba(255,255,255,0.85);
+    line-height: 1.5;
+  }
+  .takeaway-text strong { color: var(--white); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="stage"><div class="slide">
+  <div class="bg-mesh"></div>
+  <div class="glow glow-green" style="bottom:10%;right:5%;width:25%;height:40%;opacity:0.1;"></div>
+
+  <div class="brand-bar"><span class="overline">Workshop Introduction</span></div>
+  <div class="slide-num">03 / 14</div>
+
+  <div class="content" style="flex-direction:row;align-items:center;gap:5%;">
+    <div style="flex:0 0 38%;">
+      <div class="overline reveal" style="margin-bottom:12px;">What You'll Walk Away With</div>
+      <h2 class="h2 reveal d1" style="font-size:clamp(1.9rem,3.4vw,3rem);">Five skills. One complete picture.</h2>
+      <p class="lead reveal d2" style="margin-top:14px;font-size:clamp(0.9rem,1.4vw,1.15rem);">
+        By the end of this workshop you will be able to build, evaluate, and operate real agents in production.
+      </p>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;" class="reveal d3">
+      <div class="takeaway">
+        <div class="check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#00C895" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="takeaway-text"><strong>Explain the ADLC</strong> and map each of its six stages to Solace Agent Mesh capabilities</div>
+      </div>
+      <div class="takeaway">
+        <div class="check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#00C895" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="takeaway-text"><strong>Stand up a Solace Agent Mesh environment</strong> and apply declarative configuration</div>
+      </div>
+      <div class="takeaway">
+        <div class="check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#00C895" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="takeaway-text"><strong>Define an agent,</strong> assign it tools, and connect it to an external system</div>
+      </div>
+      <div class="takeaway">
+        <div class="check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#00C895" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="takeaway-text"><strong>Evaluate agent behavior</strong> using structured evaluation methods</div>
+      </div>
+      <div class="takeaway">
+        <div class="check"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#00C895" stroke-width="2" stroke-linecap="round"/></svg></div>
+        <div class="takeaway-text"><strong>Understand operational and governance</strong> concerns at production scale</div>
+      </div>
+    </div>
+  </div>
+</div></div>
+<a class="nav-prev" href="02-agenda.html" title="Previous slide">‹</a>
+<a class="nav-next" href="04-adlc-overview.html" title="Next slide">›</a>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 09 · Process Types</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  .proc-card {
+    background: rgba(9,59,95,0.5);
+    border: 1px solid rgba(0,200,149,0.18);
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: space-between;
+    transition: all 0.2s;
+  }
+  .proc-card:hover {
+    background: rgba(0,200,149,0.1);
+    border-color: var(--green);
+    transform: translateY(-3px);
+  }
+  .proc-abbr {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: 0.05em;
+  }
+  .proc-full {
+    font-size: clamp(0.82rem, 1.2vw, 1rem);
+    font-weight: 700;
+    color: var(--white);
+  }
+  .proc-role {
+    font-size: clamp(0.72rem, 1.05vw, 0.88rem);
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .proc-scales {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(0,200,149,0.7);
+    background: rgba(0,200,149,0.08);
+    border: 1px solid rgba(0,200,149,0.2);
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+  }
+  .broker-box {
+    background: rgba(0,200,149,0.08);
+    border: 1px solid var(--green);
+    border-radius: 12px;
+    padding: 14px 20px;
+    text-align: center;
+  }
+  .connector-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(0,200,149,0.4);
+    font-size: 1.2rem;
+    padding: 0 6px;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+<div class="stage"><div class="slide">
+  <div class="bg-mesh"></div>
+  <div class="glow glow-green" style="bottom:5%;left:30%;width:40%;height:30%;opacity:0.08;"></div>
+
+  <div class="brand-bar"><span class="overline">Solace Agent Mesh · Architecture</span></div>
+  <div class="slide-num">09 / 14</div>
+
+  <div class="content" style="gap:14px;">
+    <div class="overline reveal" style="margin-bottom:8px;">Three Independently Deployable Process Types</div>
+    <h2 class="h2 reveal d1" style="font-size:clamp(1.7rem,3vw,2.6rem);margin-bottom:16px;">No component talks directly to another. The broker is the fabric.</h2>
+
+    <div style="display:flex;flex-direction:column;gap:12px;" class="reveal d2">
+      <!-- Three process cards in a row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div class="proc-card">
+          <div class="proc-abbr">AWE</div>
+          <div class="proc-full">Agent-Workflow Executor</div>
+          <div class="proc-role">Hosts agents, workflows, and proxy adapters. The core execution environment.</div>
+          <div class="proc-scales">Scales with: LLM workload</div>
+        </div>
+        <div class="proc-card">
+          <div class="proc-abbr">GWE</div>
+          <div class="proc-full">Gateway Executor</div>
+          <div class="proc-role">HTTP/SSE bridge from external clients to the agent mesh.</div>
+          <div class="proc-scales">Scales with: inbound connections</div>
+        </div>
+        <div class="proc-card">
+          <div class="proc-abbr">STR</div>
+          <div class="proc-full">Secure Tool Runtime</div>
+          <div class="proc-role">Isolated subprocess execution for tools. Python, Go, MCP.</div>
+          <div class="proc-scales">Scales with: tool invocation throughput</div>
+        </div>
+      </div>
+
+      <!-- Connector arrows pointing down to broker -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;height:22px;">
+        <div style="display:flex;justify-content:center;align-items:center;color:rgba(0,200,149,0.85);font-size:1.4rem;line-height:1;">↕</div>
+        <div style="display:flex;justify-content:center;align-items:center;color:rgba(0,200,149,0.85);font-size:1.4rem;line-height:1;">↕</div>
+        <div style="display:flex;justify-content:center;align-items:center;color:rgba(0,200,149,0.85);font-size:1.4rem;line-height:1;">↕</div>
+      </div>
+
+      <!-- Broker spanning full width -->
+      <div class="broker-box" style="text-align:center;">
+        <div style="font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--green);margin-bottom:4px;">Coordination Fabric</div>
+        <div style="font-size:clamp(0.9rem,1.4vw,1.15rem);font-weight:700;color:var(--white);">Solace Message Broker</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">All processes communicate through the broker. No direct HTTP or gRPC between components.</div>
+      </div>
+    </div>
+  </div>
+  <div class="caption reveal d3">No HTTP. No gRPC. Broker-mediated coordination only.</div>
+</div></div>
+<a class="nav-prev" href="08-what-is-sam.html" title="Previous slide">‹</a>
+<a class="nav-next" href="10-real-challenges-stat.html" title="Next slide">›</a>
+</body>
+</html>

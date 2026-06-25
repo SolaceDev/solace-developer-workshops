@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solace Agent Mesh Workshop · Presentation</title>
+<link rel="stylesheet" href="slides/slides.css">
+<style>
+  body { overflow: auto; background: var(--dark-blue); }
+
+  .toolbar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(3,33,59,0.92);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(0,200,149,0.12);
+    padding: 0 32px;
+  }
+  .toolbar-inner {
+    max-width: 1400px; margin: 0 auto;
+    display: flex; align-items: center; gap: 16px;
+    height: 56px;
+  }
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    flex-shrink: 0;
+  }
+  .logo span { color: var(--green); }
+  .toolbar-nav {
+    margin-left: auto;
+    display: flex; gap: 4px;
+  }
+  .toolbar-nav a {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.2s;
+  }
+  .toolbar-nav a:hover {
+    color: var(--green);
+    background: rgba(0,200,149,0.08);
+  }
+  .slide-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.3);
+    flex-shrink: 0;
+  }
+
+  .main { max-width: 1400px; margin: 0 auto; padding: 40px 32px 80px; }
+
+  .section-header {
+    display: flex; align-items: center; gap: 14px;
+    margin: 40px 0 20px;
+  }
+  .section-header:first-child { margin-top: 0; }
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--green);
+    background: rgba(0,200,149,0.08);
+    border: 1px solid rgba(0,200,149,0.2);
+    padding: 4px 10px;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.6);
+  }
+  .section-rule { flex: 1; height: 1px; background: rgba(255,255,255,0.06); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .grid-wide {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .tile {
+    background: rgba(9,59,95,0.4);
+    border: 1px solid rgba(0,200,149,0.14);
+    border-radius: 12px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.22s;
+    display: block;
+  }
+  .tile:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,200,149,0.45);
+    box-shadow: 0 14px 40px rgba(0,0,0,0.4);
+  }
+  .tile-preview {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #03213B;
+    border-bottom: 1px solid rgba(0,200,149,0.1);
+    position: relative;
+  }
+  .tile-preview iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1440px; height: 810px;
+    transform: scale(calc(1/4.5));
+    transform-origin: 0 0;
+    border: 0;
+    pointer-events: none;
+  }
+  .tile-footer {
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .tile-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--green);
+    background: rgba(0,200,149,0.1);
+    border: 1px solid rgba(0,200,149,0.25);
+    padding: 3px 7px;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .tile-title { font-size: 0.85rem; font-weight: 700; color: var(--white); }
+  .tile-sub   { font-size: 0.7rem; color: var(--muted); }
+  .tile-arrow { color: rgba(0,200,149,0.5); margin-left: auto; font-size: 1rem; }
+
+  .hero-cta {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 40px;
+    padding: 24px 28px;
+    background: rgba(9,59,95,0.4);
+    border: 1px solid rgba(0,200,149,0.18);
+    border-radius: 14px;
+  }
+  .hero-cta-text { flex: 1; }
+  .hero-cta-title {
+    font-size: 1.15rem; font-weight: 700; color: var(--white); margin-bottom: 4px;
+  }
+  .hero-cta-sub {
+    font-size: 0.82rem; color: var(--muted);
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 10px 20px; border-radius: 8px; text-decoration: none;
+    transition: all 0.2s; flex-shrink: 0; font-weight: 700;
+  }
+  .btn-primary {
+    background: var(--green); color: var(--dark-blue);
+  }
+  .btn-primary:hover { background: var(--green-bright); }
+  .btn-outline {
+    border: 1px solid rgba(0,200,149,0.35); color: var(--green);
+  }
+  .btn-outline:hover {
+    background: rgba(0,200,149,0.1); border-color: var(--green);
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <div class="logo">Solace <span>Agent Mesh</span> Workshop</div>
+    <nav class="toolbar-nav">
+      <a href="#section-intro">Introduction</a>
+      <a href="#section-lifecycle">Lifecycle</a>
+      <a href="#section-platform">Platform</a>
+      <a href="#section-challenges">Challenges</a>
+      <a href="#section-eventdriven">Event-Driven</a>
+    </nav>
+    <div class="slide-count">14 slides · ~8 min</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="hero-cta">
+    <div class="hero-cta-text">
+      <div class="hero-cta-title">Workshop Introduction Deck</div>
+      <div class="hero-cta-sub">14 slides covering the ADLC framework, Solace Agent Mesh architecture, and why event-driven agents are the right primitive for enterprise AI.</div>
+    </div>
+    <a class="btn btn-primary" href="slides/01-title.html" target="_blank">▶ Start Presentation</a>
+    <a class="btn btn-outline" href="slides/01-title.html" target="_blank">Open Full Screen ↗</a>
+  </div>
+
+  <!-- Section 1: Introduction -->
+  <div class="section-header" id="section-intro">
+    <div class="section-label">Section 1</div>
+    <div class="section-title">Workshop Introduction</div>
+    <div class="section-rule"></div>
+  </div>
+  <div class="grid">
+    <a class="tile" href="slides/01-title.html" target="_blank">
+      <div class="tile-preview">
+        <iframe src="slides/01-title.html" loading="lazy"></iframe>
+      </div>
+      <div class="tile-footer">
+        <span class="tile-num">01</span>
+        <div><div class="tile-title">Title Slide</div><div class="tile-sub">Solace Agent Mesh Workshop</div></div>
+        <span class="tile-arrow">↗</span>
+      </div>
+    </a>
+    <a class="tile" href="slides/02-agenda.html" target="_blank">
+      <div class="tile-preview">
+        <iframe src="slides/02-agenda.html" loading="lazy"></iframe>
+      </div>
+      <div class="tile-footer">
+        <span class="tile-num">02</span>
+        <div><div class="tile-title">Agenda</div><div class="tile-sub">Five topics overview</div></div>
+        <span class="tile-arrow">↗</span>
+      </div>
+    </a>
+    <a class="tile" href="slides/03-takeaways.html" target="_blank">
+      <div class="tile-preview">
+        <iframe src="slides/03-takeaways.html" loading="lazy"></iframe>
+      </div>
+      <div class="tile-footer">
+        <span class="tile-num">03</span>
+        <div><div class="tile-title">Key Takeaways</div><div class="tile-sub">What you'll walk away with</div></div>
+        <span class="tile-arrow">↗</span>
+      </div>
+    </a>
+    <a class="tile" href="slides/04-adlc-overview.html" target="_blank">
+      <div class="tile-preview">
+        <iframe src="slides/04-adlc-overview.html" loading="lazy"></iframe>
+      </div>
+      <div class="tile-footer">
+        <span class="tile-num">04</span>
+        <div><div class="tile-title">ADLC Overview</div><div class="tile-sub">Six stages of the Agent Development Lifecycle</div></div>
+        <span class="tile-arrow">↗</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Section 2: Lifecycle -->
+  <div class="section-header" id="section-lifecycle">
+    <div class="section-label">Section 2</div>
+    <div class="section-title">Why a New Lifecycle?</div>
+    <div class="section-rule"></div>
+  </div>
+  <div class="grid">
+    <a class="tile" href="slides/05-why-new-lifecycle.html" target="_blank">
+      <div class="tile-preview">
+        <iframe src="slides/05-why-new-lifecycle.html" loading="lazy"></iframe>
+      </div>
+      <div class="tile-footer">
+        <span class="tile-num">05</span>
+        <div><div class="tile-title">Good Engineering Requires Repeatability</div><div class="tile-sub">Pull quote: the core argument</div></div>
+        <span class="tile-arrow">↗</span>
+      </div>
+    </a>
+    <a class="tile" href="slides/06-lifecycle-evolution.html" target="_blank">
+      <div class="tile-preview">
+        <iframe src="slides/06-lifecycle-evolution.html" loading="lazy"></iframe>
+      </div>
+      <div class="tile-footer">
+        <span class="tile-num">06</span>
+        <div><div class="tile-title">Lifecycle Evolution</div><div class="tile-sub">SDLC → API lifecycle → ADLC</div></div>
+        <span class="tile-arrow">↗</span>
+      </div>
+    </a>
+    <a class="tile" href="slides/07-nondeterminism.html" target="_blank">
+      <div class="tile-preview">
+        <iframe src="slides/07-nondeterminism.html" loading="lazy"></iframe>
+      </div>
+      <div class="tile-footer">
+        <span class="tile-num">07</span>
+        <div><div class="tile-title">Deterministic vs Probabilistic</div><div class="tile-sub">Same input. Different output.</div></div>
+        <span class="tile-arrow">↗</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Section 3: Platform -->
+  <div class="section-header" id="section-platform">
+    <div class="section-label">Section 3</div>
+    <div class="section-title">What is Solace Agent Mesh</div>
+    <div class="section-rule"></div>
+  </div>
+  <div class="grid">
+    <a class="tile" href="slides/08-what-is-sam.html" target="_blank">
+      <div class="tile-preview">
+        <iframe src="slides/08-what-is-sam.html" loading="lazy"></iframe>
+      </div>
+      <div class="tile-footer">
+        <span class="tile-num">08</span>
+        <div><div class="tile-title">Platform Overview</div><div class="tile-sub">Go-based event-driven agent runtime</div></div>
+        <span class="tile-arrow">↗</span>
+      </div>
+    </a>
+    <a class="tile" href="slides/09-process-types.html" target="_blank">
+      <div class="tile-preview">
+        <iframe src="slides/09-process-types.html" loading="lazy"></iframe>
+      </div>
+      <div class="tile-footer">
+        <span class="tile-num">09</span>
+        <div><div class="tile-title">Three Process Types</div><div class="tile-sub">AWE, GWE, STR — broker-mediated</div></div>
+        <span class="tile-arrow">↗</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Section 4: Challenges -->
+  <div class="section-header" id="section-challenges">
+    <div class="section-label">Section 4</div>
+    <div class="section-title">The Real Challenges</div>
+    <div class="section-rule"></div>
+  </div>
+  <div class="grid">
+    <a class="tile" href="slides/10-real-challenges-stat.html" target="_blank">
+      <div class="tile-preview">
+        <iframe src="slides/10-real-challenges-stat.html" loading="lazy"></iframe>
+      </div>
+      <div class="tile-footer">
+        <span class="tile-num">10</span>
+        <div><div class="tile-title">80% Integration Challenges</div><div class="tile-sub">The model is not the hard part</div></div>
+        <span class="tile-arrow">↗</span>
+      </div>
+    </a>
+    <a class="tile" href="slides/11-operational-challenges.html" target="_blank">
+      <div class="tile-preview">
+        <iframe src="slides/11-operational-challenges.html" loading="lazy"></iframe>
+      </div>
+      <div class="tile-footer">
+        <span class="tile-num">11</span>
+        <div><div class="tile-title">Operational Challenges</div><div class="tile-sub">Six problems that kill production agents</div></div>
+        <span class="tile-arrow">↗</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Section 5: Event-Driven -->
+  <div class="section-header" id="section-eventdriven">
+    <div class="section-label">Section 5</div>
+    <div class="section-title">Why Event-Driven?</div>
+    <div class="section-rule"></div>
+  </div>
+  <div class="grid">
+    <a class="tile" href="slides/12-nonlinear-agents.html" target="_blank">
+      <div class="tile-preview">
+        <iframe src="slides/12-nonlinear-agents.html" loading="lazy"></iframe>
+      </div>
+      <div class="tile-footer">
+        <span class="tile-num">12</span>
+        <div><div class="tile-title">Non-Linear Execution</div><div class="tile-sub">Multi-turn, multi-tool, multi-agent</div></div>
+        <span class="tile-arrow">↗</span>
+      </div>
+    </a>
+    <a class="tile" href="slides/13-broker-vs-http.html" target="_blank">
+      <div class="tile-preview">
+        <iframe src="slides/13-broker-vs-http.html" loading="lazy"></iframe>
+      </div>
+      <div class="tile-footer">
+        <span class="tile-num">13</span>
+        <div><div class="tile-title">Broker vs HTTP</div><div class="tile-sub">The coordination problem solved structurally</div></div>
+        <span class="tile-arrow">↗</span>
+      </div>
+    </a>
+    <a class="tile" href="slides/14-closing.html" target="_blank">
+      <div class="tile-preview">
+        <iframe src="slides/14-closing.html" loading="lazy"></iframe>
+      </div>
+      <div class="tile-footer">
+        <span class="tile-num">14</span>
+        <div><div class="tile-title">Let's Build Agents</div><div class="tile-sub">Closing and transition to hands-on</div></div>
+        <span class="tile-arrow">↗</span>
+      </div>
+    </a>
+  </div>
+
+</div>
+</body>
+</html>

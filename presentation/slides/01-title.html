@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 01 · Welcome</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  .slide { background: linear-gradient(135deg, #03213B 0%, #093B5F 60%, #03213B 100%); }
+  .brand-word { font-family: 'Figtree', sans-serif; font-weight: 800; }
+  .title-serif {
+    font-family: 'New Spirit', 'Georgia', serif;
+    font-weight: 300;
+    font-size: clamp(3.2rem, 6.5vw, 5.8rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+  }
+  .subtitle {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(0.85rem, 1.4vw, 1.1rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--green);
+  }
+  .deco-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(0,200,149,0.15);
+    pointer-events: none;
+  }
+  .flow-dot {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    opacity: 0.5;
+  }
+  .tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(0,200,149,0.3);
+    color: rgba(255,255,255,0.55);
+    margin-right: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="stage"><div class="slide">
+  <div class="bg-mesh"></div>
+
+  <!-- Decorative rings -->
+  <div class="deco-ring" style="width:420px;height:420px;right:-80px;bottom:-100px;opacity:0.6;"></div>
+  <div class="deco-ring" style="width:260px;height:260px;right:20px;bottom:-20px;opacity:0.4;"></div>
+  <div class="deco-ring" style="width:140px;height:140px;right:110px;bottom:60px;opacity:0.3;"></div>
+
+  <!-- Glow accent -->
+  <div class="glow glow-green" style="top:30%;right:10%;width:35%;height:50%;opacity:0.12;"></div>
+
+  <!-- Flow dots -->
+  <div class="flow-dot" style="right:18%;bottom:38%;"></div>
+  <div class="flow-dot" style="right:28%;bottom:25%;opacity:0.3;"></div>
+  <div class="flow-dot" style="right:12%;bottom:55%;opacity:0.2;"></div>
+
+  <div class="brand-bar"><span class="overline">Solace Developer Workshop</span></div>
+  <div class="slide-num">01 / 14</div>
+
+  <div class="content" style="justify-content:center;max-width:65%;">
+    <div class="subtitle reveal" style="margin-bottom:18px;">Hands-On Workshop</div>
+    <div class="title-serif reveal d1">
+      Building Enterprise AI Agents with<br>
+      <span style="color:var(--green);">Solace Agent Mesh</span>
+    </div>
+    <div style="margin-top:28px;" class="reveal d2">
+      <span class="tag">Developers</span>
+      <span class="tag">Architects</span>
+      <span class="tag">Technical Practitioners</span>
+    </div>
+    <p class="lead reveal d3" style="margin-top:22px;max-width:520px;">
+      A structured engineering approach to designing, building, and operating AI agents at enterprise scale.
+    </p>
+  </div>
+</div></div>
+<a class="nav-next" href="02-agenda.html" title="Next slide">›</a>
+</body>
+</html>

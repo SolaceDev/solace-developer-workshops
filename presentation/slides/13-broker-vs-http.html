@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 13 · Broker vs HTTP</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  .side {
+    flex: 1;
+    border-radius: 12px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .side-old {
+    background: rgba(252,168,41,0.07);
+    border: 1px solid rgba(252,168,41,0.2);
+  }
+  .side-new {
+    background: rgba(0,200,149,0.07);
+    border: 1px solid rgba(0,200,149,0.25);
+  }
+  .side-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .side-old .side-label { color: var(--orange); }
+  .side-new .side-label { color: var(--green); }
+  .side-title {
+    font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .side-old .side-title { color: var(--orange); }
+  .side-new .side-title { color: var(--green); }
+  .prop {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: clamp(0.76rem, 1.1vw, 0.9rem);
+    color: rgba(255,255,255,0.75);
+    line-height: 1.45;
+  }
+  .prop:last-child { border-bottom: none; }
+  .prop-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+  .side-old .prop-dot { background: rgba(252,168,41,0.6); }
+  .side-new .prop-dot { background: var(--green); }
+  .solace-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(0,200,149,0.12);
+    color: var(--green);
+    border: 1px solid rgba(0,200,149,0.25);
+    margin-left: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="stage"><div class="slide">
+  <div class="bg-mesh"></div>
+  <div class="glow glow-green" style="bottom:5%;right:5%;width:25%;height:35%;opacity:0.1;"></div>
+
+  <div class="brand-bar"><span class="overline">Why Event-Driven · Broker vs HTTP</span></div>
+  <div class="slide-num">13 / 14</div>
+
+  <div class="content" style="gap:14px;">
+    <div class="overline reveal" style="margin-bottom:8px;">The Coordination Problem Agents Actually Have</div>
+    <h2 class="h2 reveal d1" style="font-size:clamp(1.7rem,3vw,2.6rem);margin-bottom:16px;">A message broker solves this structurally. Solace has done it for 20+ years.</h2>
+
+    <div style="display:flex;gap:16px;align-items:stretch;" class="reveal d2">
+      <div class="side side-old">
+        <div class="side-label">Synchronous HTTP</div>
+        <div class="side-title">Fragile at Agent Scale</div>
+        <div class="prop"><div class="prop-dot"></div>Connections held open for minutes waiting on LLM turns and slow tool calls</div>
+        <div class="prop"><div class="prop-dot"></div>Retry logic reimplemented at every layer in application code</div>
+        <div class="prop"><div class="prop-dot"></div>Any network partition anywhere in the chain loses the task</div>
+        <div class="prop"><div class="prop-dot"></div>Calling agent blocks. If either side restarts, delegation is lost.</div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:center;flex-shrink:0;width:28px;color:rgba(255,255,255,0.15);font-size:1.3rem;font-weight:300;">vs</div>
+
+      <div class="side side-new">
+        <div class="side-label">Message Broker <span class="solace-tag">Solace</span></div>
+        <div class="side-title">Designed for This</div>
+        <div class="prop"><div class="prop-dot"></div>Publisher sends and moves on. Subscriber receives when ready. No blocked connections.</div>
+        <div class="prop"><div class="prop-dot"></div>Delivery guarantees are a broker property, not application code every team reimplements</div>
+        <div class="prop"><div class="prop-dot"></div>Checkpointing: ACK on durable state write. Another instance resumes if one crashes.</div>
+        <div class="prop"><div class="prop-dot"></div>20+ years in financial trading, logistics, and industrial IoT. Task loss has consequences there.</div>
+      </div>
+    </div>
+  </div>
+  <div class="caption reveal d3">Decouple send from receive. Let the broker handle coordination.</div>
+</div></div>
+<a class="nav-prev" href="12-nonlinear-agents.html" title="Previous slide">‹</a>
+<a class="nav-next" href="14-closing.html" title="Next slide">›</a>
+</body>
+</html>

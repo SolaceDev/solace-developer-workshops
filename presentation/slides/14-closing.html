@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 14 · Let's Build</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  .slide { background: linear-gradient(135deg, #03213B 0%, #093B5F 55%, #03213B 100%); }
+  .title-serif {
+    font-family: 'New Spirit', 'Georgia', serif;
+    font-weight: 300;
+    font-size: clamp(3rem, 6vw, 5.4rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+  }
+  .next-card {
+    background: rgba(9,59,95,0.5);
+    border: 1px solid rgba(0,200,149,0.18);
+    border-radius: 10px;
+    padding: 20px 24px;
+    flex: 1;
+    transition: all 0.2s;
+  }
+  .next-card:hover {
+    background: rgba(0,200,149,0.1);
+    border-color: var(--green);
+    transform: translateY(-3px);
+  }
+  .next-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--green);
+    opacity: 0.7;
+    margin-bottom: 4px;
+  }
+  .next-title {
+    font-size: clamp(1.05rem, 1.7vw, 1.4rem);
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+  .next-desc {
+    font-size: clamp(0.85rem, 1.25vw, 1.05rem);
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .deco-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(0,200,149,0.12);
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div class="stage"><div class="slide">
+  <div class="bg-mesh"></div>
+
+  <!-- Deco rings right side -->
+  <div class="deco-ring" style="width:380px;height:380px;right:-60px;top:-60px;"></div>
+  <div class="deco-ring" style="width:220px;height:220px;right:50px;top:30px;opacity:0.6;"></div>
+  <div class="glow glow-green" style="top:0%;right:5%;width:30%;height:50%;opacity:0.1;"></div>
+
+  <div class="brand-bar"><span class="overline">Solace Developer Workshop</span></div>
+  <div class="slide-num">14 / 14</div>
+
+  <div class="content" style="gap:16px;max-width:100%;">
+    <div class="overline reveal" style="margin-bottom:8px;">You're Ready</div>
+    <div class="title-serif reveal d1">
+      Let's build some <span style="color:var(--green);">agents.</span>
+    </div>
+    <p class="lead reveal d2" style="max-width:55%;font-size:clamp(0.9rem,1.4vw,1.15rem);margin-bottom:8px;">
+      Open your GitHub Codespace. The Solace Agent Mesh runtime is already running. Your first hands-on section starts now.
+    </p>
+
+    <div style="display:flex;gap:16px;width:100%;" class="reveal d3">
+      <div class="next-card">
+        <div class="next-num">Up First</div>
+        <div class="next-title">Hiring an Agent</div>
+        <div class="next-desc">Define what your agent does, its role, and who it serves. ADLC Stage 1.</div>
+      </div>
+      <div class="next-card">
+        <div class="next-num">Then</div>
+        <div class="next-title">Onboarding</div>
+        <div class="next-desc">Give your agent the right access, tools, and context to actually operate.</div>
+      </div>
+      <div class="next-card">
+        <div class="next-num">And Beyond</div>
+        <div class="next-title">Coaching through Improvement</div>
+        <div class="next-desc">Evaluate, supervise, scale to multi-agent, and close the feedback loop.</div>
+      </div>
+    </div>
+  </div>
+</div></div>
+<a class="nav-prev" href="13-broker-vs-http.html" title="Previous slide">‹</a>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 11 · Operational Challenges</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  .challenge-card {
+    background: rgba(9,59,95,0.5);
+    border: 1px solid rgba(0,200,149,0.15);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: default;
+    transition: all 0.22s;
+  }
+  .challenge-card:hover {
+    background: rgba(0,200,149,0.1);
+    border-color: var(--green);
+    transform: translateY(-3px);
+  }
+  .ch-icon {
+    font-size: 1.2rem;
+    margin-bottom: 6px;
+  }
+  .ch-title {
+    font-size: clamp(0.9rem, 1.32vw, 1.1rem);
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+  .ch-desc {
+    font-size: clamp(0.77rem, 1.1vw, 0.94rem);
+    color: var(--muted);
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="stage"><div class="slide">
+  <div class="bg-mesh"></div>
+  <div class="glow glow-green" style="top:5%;right:5%;width:25%;height:40%;opacity:0.07;"></div>
+
+  <div class="brand-bar"><span class="overline">The Real Challenges · Operational</span></div>
+  <div class="slide-num">11 / 14</div>
+
+  <div class="content" style="gap:12px;padding-top:9%;">
+    <div class="overline reveal" style="margin-bottom:8px;">Problems That Kill Production Agents</div>
+    <h2 class="h2 reveal d1" style="font-size:clamp(1.7rem,3vw,2.6rem);margin-bottom:16px;">Move from demo to production. The hard problems appear immediately.</h2>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;" class="reveal d2">
+      <div class="challenge-card">
+        <div class="ch-icon">💾</div>
+        <div class="ch-title">State Across Restarts</div>
+        <div class="ch-desc">Conversation history in process memory works until the process restarts. Durable state requires solving concurrent modification and session lifecycle.</div>
+      </div>
+      <div class="challenge-card">
+        <div class="ch-icon">🔧</div>
+        <div class="ch-title">Reliable Tool Execution</div>
+        <div class="ch-desc">External APIs time out. Subprocesses crash. An agent that loses its place after a tool failure is not production software.</div>
+      </div>
+      <div class="challenge-card">
+        <div class="ch-icon">📡</div>
+        <div class="ch-title">Distributed Agent Comms</div>
+        <div class="ch-desc">Point-to-point HTTP is fragile. If either side restarts mid-delegation, the task is lost. This is the common case at scale.</div>
+      </div>
+      <div class="challenge-card">
+        <div class="ch-icon">📦</div>
+        <div class="ch-title">Large Tool Results</div>
+        <div class="ch-desc">Embedding a full PDF or database result in the LLM context is expensive and often impossible. You need an artifact pipeline.</div>
+      </div>
+      <div class="challenge-card">
+        <div class="ch-icon">🔐</div>
+        <div class="ch-title">Access Control</div>
+        <div class="ch-desc">Per-user, per-agent, per-tool permissions must propagate when Agent A delegates to Agent B, which calls Tool C on behalf of User D.</div>
+      </div>
+      <div class="challenge-card">
+        <div class="ch-icon">⚡</div>
+        <div class="ch-title">Reactive Execution</div>
+        <div class="ch-desc">The highest-value agents are triggered by events, not human chat. Building this on HTTP means building a polling layer your app now has to maintain.</div>
+      </div>
+    </div>
+  </div>
+</div></div>
+<a class="nav-prev" href="10-real-challenges-stat.html" title="Previous slide">‹</a>
+<a class="nav-next" href="12-nonlinear-agents.html" title="Next slide">›</a>
+</body>
+</html>

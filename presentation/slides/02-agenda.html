@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 02 · Agenda</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  .section-card {
+    background: rgba(9,59,95,0.5);
+    border: 1px solid rgba(0,200,149,0.15);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .section-card:hover {
+    background: rgba(0,200,149,0.1);
+    border-color: var(--green);
+  }
+  .section-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 1.54rem;
+    font-weight: 700;
+    color: var(--green);
+    opacity: 0.5;
+    min-width: 32px;
+  }
+  .section-title {
+    font-size: clamp(1.05rem, 1.65vw, 1.32rem);
+    font-weight: 700;
+    color: var(--white);
+  }
+  .section-sub {
+    font-size: clamp(0.83rem, 1.21vw, 0.99rem);
+    color: var(--muted);
+    margin-top: 2px;
+  }
+</style>
+</head>
+<body>
+<div class="stage"><div class="slide">
+  <div class="bg-mesh"></div>
+  <div class="glow glow-green" style="top:10%;right:5%;width:30%;height:40%;opacity:0.08;"></div>
+
+  <div class="brand-bar"><span class="overline">Workshop Overview</span></div>
+  <div class="slide-num">02 / 14</div>
+
+  <div class="content" style="gap:10px;">
+    <div class="overline reveal" style="margin-bottom:10px;">Today's Agenda</div>
+    <h2 class="h2 reveal d1" style="font-size:clamp(1.8rem,3.2vw,2.8rem);margin-bottom:18px;">Five topics. One runtime. Ready to build.</h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" class="reveal d2">
+      <div class="section-card">
+        <div class="section-num">01</div>
+        <div>
+          <div class="section-title">Workshop Introduction</div>
+          <div class="section-sub">Goals, takeaways, and the ADLC framework</div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-num">02</div>
+        <div>
+          <div class="section-title">Why a New Lifecycle?</div>
+          <div class="section-sub">SDLC vs ADLC: what changed and why</div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-num">03</div>
+        <div>
+          <div class="section-title">What is Solace Agent Mesh</div>
+          <div class="section-sub">The runtime, its components, and how they connect</div>
+        </div>
+      </div>
+      <div class="section-card">
+        <div class="section-num">04</div>
+        <div>
+          <div class="section-title">The Real Challenges</div>
+          <div class="section-sub">Operational problems that kill production agents</div>
+        </div>
+      </div>
+      <div class="section-card" style="grid-column:1/-1;">
+        <div class="section-num">05</div>
+        <div>
+          <div class="section-title">Why Event-Driven?</div>
+          <div class="section-sub">Message brokers vs HTTP: the coordination problem agents actually have</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></div>
+<a class="nav-prev" href="01-title.html" title="Previous slide">‹</a>
+<a class="nav-next" href="03-takeaways.html" title="Next slide">›</a>
+</body>
+</html>
