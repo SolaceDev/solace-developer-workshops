@@ -4,90 +4,169 @@
 <meta charset="UTF-8">
 <title>Slide 04 · ADLC Overview</title>
 <link rel="stylesheet" href="slides.css">
-<style>
-  .stage-card {
-    background: rgba(9,59,95,0.55);
-    border: 1px solid rgba(0,200,149,0.18);
-    border-radius: 10px;
-    padding: 14px 16px;
-    cursor: default;
-    transition: all 0.2s;
-  }
-  .stage-card:hover {
-    background: rgba(0,200,149,0.13);
-    border-color: var(--green);
-    transform: translateY(-3px);
-  }
-  .stage-num {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--green);
-    opacity: 0.7;
-    margin-bottom: 4px;
-  }
-  .stage-name {
-    font-size: clamp(0.9rem, 1.4vw, 1.15rem);
-    font-weight: 700;
-    color: var(--white);
-    margin-bottom: 4px;
-  }
-  .stage-desc {
-    font-size: clamp(0.72rem, 1.05vw, 0.9rem);
-    color: var(--muted);
-    line-height: 1.45;
-  }
-</style>
 </head>
 <body>
 <div class="stage"><div class="slide">
   <div class="bg-mesh"></div>
-  <div class="glow glow-green" style="top:0%;right:5%;width:30%;height:50%;opacity:0.08;"></div>
 
   <div class="brand-bar"><span class="overline">Workshop Introduction · ADLC</span></div>
   <div class="slide-num">04 / 14</div>
 
-  <div class="content" style="gap:12px;padding-top:9%;">
-    <div class="overline reveal" style="margin-bottom:8px;">The Agent Development Lifecycle</div>
-    <h2 class="h2 reveal d1" style="font-size:clamp(1.7rem,3vw,2.6rem);margin-bottom:16px;">Six stages from concept to continuous improvement</h2>
+  <!--
+    viewBox: 0 0 560 560  (square, fills slide height)
+    Centre: cx=280, cy=280
+    Outer radius R=255, inner radius r=114
+    Midpoint radius for numbers: (255+114)/2 = 184
+    Midpoint radius for label text: 200
 
-    <div style="position:relative;" class="reveal d2">
-      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;">
-        <div class="stage-card">
-          <div class="stage-num">Stage 01</div>
-          <div class="stage-name">Hiring</div>
-          <div class="stage-desc">Define what the agent does, who it serves, its role</div>
-        </div>
-        <div class="stage-card">
-          <div class="stage-num">Stage 02</div>
-          <div class="stage-name">Onboarding</div>
-          <div class="stage-desc">Give the agent the right access, tools, and context</div>
-        </div>
-        <div class="stage-card">
-          <div class="stage-num">Stage 03</div>
-          <div class="stage-name">Coaching</div>
-          <div class="stage-desc">Validate correct performance through structured evaluation</div>
-        </div>
-        <div class="stage-card">
-          <div class="stage-num">Stage 04</div>
-          <div class="stage-name">Supervision</div>
-          <div class="stage-desc">Maintain human oversight and monitor in production</div>
-        </div>
-        <div class="stage-card">
-          <div class="stage-num">Stage 05</div>
-          <div class="stage-name">Teamwork</div>
-          <div class="stage-desc">Integrate into a multi-agent system</div>
-        </div>
-        <div class="stage-card">
-          <div class="stage-num">Stage 06</div>
-          <div class="stage-name">Improvement</div>
-          <div class="stage-desc">Close the feedback loop and continuously improve</div>
-        </div>
-      </div>
+    Angles (clockwise, SVG +y down, 0° = right):
+      Seg 1 Hiring:      -90° to -30°   mid=-60°
+      Seg 2 Onboarding:  -30° to  30°   mid=0°
+      Seg 3 Coaching:     30° to  90°   mid=60°
+      Seg 4 Supervision:  90° to 150°   mid=120°
+      Seg 5 Teamwork:    150° to 210°   mid=180°
+      Seg 6 Improvement: 210° to 270°   mid=240°
+
+    Outer arc points (R=255):
+      -90°: 280, 25
+      -30°: 280+255×.866=501, 280-255×.5=152
+       30°: 501, 408
+       90°: 280, 535
+      150°: 280-255×.866=59,  408
+      210°: 59,  152
+
+    Inner arc points (r=114):
+      -90°: 280, 166
+      -30°: 280+114×.866=379, 280-114×.5=223
+       30°: 379, 337
+       90°: 280, 394
+      150°: 280-114×.866=181, 337
+      210°: 181, 223
+
+    Number centres (r=184, mid-angle of each segment):
+      -60°: 280+184×.5=372,  280-184×.866=121  → (372,121)
+        0°: 280+184=464,     280              → (464,280)
+       60°: 372,             280+159=439      → (372,439)
+      120°: 280-92=188,      439              → (188,439)
+      180°: 280-184=96,      280              → (96,280)
+      240°: 188,             121              → (188,121)
+
+    Label text centres (r=200, same angles):
+      -60°: 280+200×.5=380,  280-200×.866=107  → (380,107)
+        0°: 480,             280               → (480,280)
+       60°: 380,             280+173=453       → (380,453)
+      120°: 180,             453               → (180,453)
+      180°: 80,              280               → (80,280)
+      240°: 180,             107               → (180,107)
+  -->
+
+  <div class="content" style="flex-direction:row;align-items:center;gap:3%;padding:6% 5% 4%;">
+
+    <!-- Left: title + description -->
+    <div style="flex:0 0 28%;display:flex;flex-direction:column;gap:12px;" class="reveal">
+      <div class="overline" style="margin-bottom:4px;">The Agent Development Lifecycle</div>
+      <h2 class="h2" style="font-size:clamp(1.4rem,2.4vw,2rem);line-height:1.2;">Six stages from concept to continuous improvement</h2>
+      <p class="lead" style="font-size:clamp(0.8rem,1.2vw,0.98rem);margin-top:4px;">Each stage maps directly to a set of Solace Agent Mesh capabilities covered in this workshop.</p>
     </div>
+
+    <!-- Right: wheel -->
+    <svg viewBox="0 0 560 560" width="72%" style="flex-shrink:0;max-height:410px;overflow:visible;" class="reveal d1">
+      <defs>
+        <marker id="ring-arr" markerWidth="5" markerHeight="5" refX="2.5" refY="2.5" orient="auto">
+          <path d="M0,0 L5,2.5 L0,5 Z" fill="#00C895"/>
+        </marker>
+      </defs>
+
+      <!-- Clockwise arrow ring at r=272, nearly full circle (355°).
+           Start just clockwise of top (at -88°) and end just before top (-93° = 267°).
+           Start point: 280+272×cos(-88°)=280+272×0.035=290, 280+272×sin(-88°)=280-272×0.999=8
+           End point:   280+272×cos(267°)=280+272×(-0.052)=266, 280+272×sin(267°)=280-271.9=8
+           large-arc-flag=1 (>180°), sweep=1 (clockwise)
+      -->
+      <path d="M290,8 A272,272 0 1,1 196,21"
+            fill="none" stroke="#00C895" stroke-width="8" stroke-linecap="round"
+            marker-end="url(#ring-arr)" opacity="0.85"/>
+
+      <!-- SEGMENT 1: Hiring — Deep Blue -->
+      <path d="M280,166 L280,25 A255,255 0 0,1 501,152 L379,223 A114,114 0 0,0 280,166 Z"
+            fill="rgba(9,59,95,0.9)" stroke="#03213B" stroke-width="3"/>
+
+      <!-- SEGMENT 2: Onboarding — ocean blue -->
+      <path d="M379,223 L501,152 A255,255 0 0,1 501,408 L379,337 A114,114 0 0,0 379,223 Z"
+            fill="rgba(10,79,122,0.85)" stroke="#03213B" stroke-width="3"/>
+
+      <!-- SEGMENT 3: Coaching — teal-blue -->
+      <path d="M379,337 L501,408 A255,255 0 0,1 280,535 L280,394 A114,114 0 0,0 379,337 Z"
+            fill="rgba(0,145,147,0.8)" stroke="#03213B" stroke-width="3"/>
+
+      <!-- SEGMENT 4: Supervision — deep teal -->
+      <path d="M280,394 L280,535 A255,255 0 0,1 59,408 L181,337 A114,114 0 0,0 280,394 Z"
+            fill="rgba(0,105,100,0.85)" stroke="#03213B" stroke-width="3"/>
+
+      <!-- SEGMENT 5: Teamwork — dark navy -->
+      <path d="M181,337 L59,408 A255,255 0 0,1 59,152 L181,223 A114,114 0 0,0 181,337 Z"
+            fill="rgba(5,40,75,0.9)" stroke="#03213B" stroke-width="3"/>
+
+      <!-- SEGMENT 6: Improvement — Classic Green, slightly transparent -->
+      <path d="M181,223 L59,152 A255,255 0 0,1 280,25 L280,166 A114,114 0 0,0 181,223 Z"
+            fill="rgba(0,200,149,0.8)" stroke="#03213B" stroke-width="3"/>
+
+      <!-- Centre circle -->
+      <circle cx="280" cy="280" r="112" fill="#03213B" stroke="rgba(0,200,149,0.4)" stroke-width="2"/>
+      <text x="280" y="256" text-anchor="middle" font-family="Space Mono,monospace" font-size="12" letter-spacing="3" fill="#00C895">ADLC</text>
+      <text x="280" y="278" text-anchor="middle" font-family="Figtree,sans-serif" font-size="15" font-weight="800" fill="white">THE AGENT</text>
+      <text x="280" y="297" text-anchor="middle" font-family="Figtree,sans-serif" font-size="15" font-weight="800" fill="white">DEVELOPMENT</text>
+      <text x="280" y="316" text-anchor="middle" font-family="Figtree,sans-serif" font-size="15" font-weight="800" fill="white">LIFECYCLE</text>
+
+      <!-- Numbers at r=138, mid-angle of each segment -->
+      <!-- -60°: 280+138×.5=349, 280-138×.866=160 -->
+      <text x="349" y="160" text-anchor="middle" dominant-baseline="middle" font-family="Figtree,sans-serif" font-size="28" font-weight="800" fill="rgba(255,255,255,0.35)">1</text>
+      <!-- 0°: 280+138=418, 280 -->
+      <text x="418" y="280" text-anchor="middle" dominant-baseline="middle" font-family="Figtree,sans-serif" font-size="28" font-weight="800" fill="rgba(255,255,255,0.35)">2</text>
+      <!-- 60°: 349, 280+138×.866=400 -->
+      <text x="349" y="400" text-anchor="middle" dominant-baseline="middle" font-family="Figtree,sans-serif" font-size="28" font-weight="800" fill="rgba(255,255,255,0.35)">3</text>
+      <!-- 120°: 280-138×.5=211, 400 -->
+      <text x="211" y="400" text-anchor="middle" dominant-baseline="middle" font-family="Figtree,sans-serif" font-size="28" font-weight="800" fill="rgba(255,255,255,0.35)">4</text>
+      <!-- 180°: 280-138=142, 280 -->
+      <text x="142" y="280" text-anchor="middle" dominant-baseline="middle" font-family="Figtree,sans-serif" font-size="28" font-weight="800" fill="rgba(255,255,255,0.35)">5</text>
+      <!-- 240°: 211, 160 -->
+      <text x="211" y="160" text-anchor="middle" dominant-baseline="middle" font-family="Figtree,sans-serif" font-size="28" font-weight="800" fill="rgba(9,59,95,0.6)">6</text>
+
+      <!-- Segment labels at r=200 (title + desc, vertically centred around mid-angle point) -->
+      <!-- 1 Hiring: (380, 107) -->
+      <text x="380" y="94"  text-anchor="middle" font-family="Figtree,sans-serif" font-size="14" font-weight="800" fill="white">HIRING</text>
+      <text x="380" y="111" text-anchor="middle" font-family="Figtree,sans-serif" font-size="11" fill="rgba(255,255,255,0.7)">Define roles</text>
+      <text x="380" y="125" text-anchor="middle" font-family="Figtree,sans-serif" font-size="11" fill="rgba(255,255,255,0.7)">&amp; responsibilities</text>
+
+      <!-- 2 Onboarding: (480, 280) -->
+      <text x="480" y="266" text-anchor="middle" font-family="Figtree,sans-serif" font-size="14" font-weight="800" fill="white">ONBOARDING</text>
+      <text x="480" y="283" text-anchor="middle" font-family="Figtree,sans-serif" font-size="11" fill="rgba(255,255,255,0.7)">Access, tools</text>
+      <text x="480" y="297" text-anchor="middle" font-family="Figtree,sans-serif" font-size="11" fill="rgba(255,255,255,0.7)">&amp; context</text>
+
+      <!-- 3 Coaching: (380, 453) -->
+      <text x="380" y="440" text-anchor="middle" font-family="Figtree,sans-serif" font-size="14" font-weight="800" fill="white">COACHING</text>
+      <text x="380" y="457" text-anchor="middle" font-family="Figtree,sans-serif" font-size="11" fill="rgba(255,255,255,0.7)">Structured</text>
+      <text x="380" y="471" text-anchor="middle" font-family="Figtree,sans-serif" font-size="11" fill="rgba(255,255,255,0.7)">evaluation</text>
+
+      <!-- 4 Supervision: (180, 453) -->
+      <text x="180" y="440" text-anchor="middle" font-family="Figtree,sans-serif" font-size="14" font-weight="800" fill="white">SUPERVISION</text>
+      <text x="180" y="457" text-anchor="middle" font-family="Figtree,sans-serif" font-size="11" fill="rgba(255,255,255,0.7)">Oversight &amp;</text>
+      <text x="180" y="471" text-anchor="middle" font-family="Figtree,sans-serif" font-size="11" fill="rgba(255,255,255,0.7)">accuracy</text>
+
+      <!-- 5 Teamwork: (80, 280) -->
+      <text x="80" y="266" text-anchor="middle" font-family="Figtree,sans-serif" font-size="14" font-weight="800" fill="white">TEAMWORK</text>
+      <text x="80" y="283" text-anchor="middle" font-family="Figtree,sans-serif" font-size="11" fill="rgba(255,255,255,0.7)">Multi-agent</text>
+      <text x="80" y="297" text-anchor="middle" font-family="Figtree,sans-serif" font-size="11" fill="rgba(255,255,255,0.7)">integration</text>
+
+      <!-- 6 Improvement: (180, 107) -->
+      <text x="180" y="94"  text-anchor="middle" font-family="Figtree,sans-serif" font-size="14" font-weight="800" fill="#03213B">IMPROVEMENT</text>
+      <text x="180" y="111" text-anchor="middle" font-family="Figtree,sans-serif" font-size="11" fill="#03213B">Close the</text>
+      <text x="180" y="125" text-anchor="middle" font-family="Figtree,sans-serif" font-size="11" fill="#03213B">feedback loop</text>
+
+    </svg>
+
   </div>
-  <div class="caption reveal d3">Each stage maps directly to Solace Agent Mesh capabilities</div>
+
 </div></div>
 <a class="nav-prev" href="03-takeaways.html" title="Previous slide">‹</a>
 <a class="nav-next" href="05-why-new-lifecycle.html" title="Next slide">›</a>
