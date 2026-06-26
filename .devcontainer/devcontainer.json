@@ -1,22 +1,7 @@
 {
   "name": "Solace Developer Workshop",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-  "onCreateCommand": "/bin/bash ${containerWorkspaceFolder}/util/tracker_extension.sh",
-  "waitFor": "onCreateCommand",
-  "postCreateCommand": "/bin/bash -i -c .devcontainer/configureEnv.sh",
-  "postAttachCommand": "sam run --embedded configs & /bin/bash util/seed_prompts.sh",
-  "forwardPorts": [8080],
-  "portsAttributes": {
-    "8800": {
-      "label": "Solace Agent Mesh",
-      "onAutoForward": "openPreview"
-    }
-  },
-  "hostRequirements": {
-   "cpus": 4,
-   "memory": "16gb",
-   "storage": "32gb"
-  },
+  "image": "ghcr.io/solacedev/solace-developer-workshops-infra:latest",
+
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
@@ -24,6 +9,26 @@
       "moby": "true"
     }
   },
+
+  "onCreateCommand": "/bin/bash ${containerWorkspaceFolder}/util/tracker_extension.sh",
+  "waitFor": "onCreateCommand",
+  "postCreateCommand": "/bin/bash -i -c 'bash util/register.sh && bash util/set_api_key.sh $(curl -sf https://2n3yr1kp0h.execute-api.us-east-2.amazonaws.com/prod/litellm-token | sed \"s/.*\\\"token\\\":\\\"\\([^\\\"]*\\)\\\".*/\\1/\")'",
+  "postAttachCommand": "sam run --embedded /etc/sam/configs & /bin/bash util/seed_prompts.sh",
+
+  "forwardPorts": [8080],
+  "portsAttributes": {
+    "8800": {
+      "label": "Solace Agent Mesh",
+      "onAutoForward": "openPreview"
+    }
+  },
+
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16gb",
+    "storage": "32gb"
+  },
+
   "customizations": {
     "vscode": {
       "extensions": [
@@ -31,7 +36,7 @@
         "solace-tools.solace-try-me-vsc-extension",
         "barnim.markdown-code-copy-button"
       ],
-       "settings": {
+      "settings": {
         "workshopTracker.webhookUrl": "https://2n3yr1kp0h.execute-api.us-east-2.amazonaws.com/prod/track",
         "files.autoSave": "afterDelay",
         "markdown.preview.openPreviewToSide": true,
