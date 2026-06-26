@@ -14,7 +14,7 @@
     "initialPrompt": "Research the top 10 most valuable public companies in the world as of 2025, including their market capitalization, industry, and country of origin. Save the results as a structured dataset, then analyze it to find the total market cap by industry and by country, and finally create a Mermaid diagram that visualizes the breakdown."
   },
   {
-    "name": "400a - Top 10 Companies Research and Analysis",
+    "name": "400a - Query One Object",
     "description": "Leverage the database connector to read data from database.",
     "category": "Workshop Demo",
     "command": "400a-query-one",
