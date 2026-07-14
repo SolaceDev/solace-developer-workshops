@@ -86,20 +86,17 @@
       <!-- Three process cards in a row -->
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
         <div class="proc-card">
-          <div class="proc-abbr">AWE</div>
-          <div class="proc-full">Agent-Workflow Executor</div>
+          <div class="proc-abbr">Agent-Workflow Executor</div>
           <div class="proc-role">Hosts agents, workflows, and proxy adapters. The core execution environment.</div>
           <div class="proc-scales">Scales with: LLM workload</div>
         </div>
         <div class="proc-card">
-          <div class="proc-abbr">GWE</div>
-          <div class="proc-full">Gateway Executor</div>
-          <div class="proc-role">HTTP/SSE bridge from external clients to the agent mesh.</div>
+          <div class="proc-abbr">Entry Point Executor</div>
+          <div class="proc-role">Bridge from external clients to the agent mesh. (e.g. HTTP/SSE)</div>
           <div class="proc-scales">Scales with: inbound connections</div>
         </div>
         <div class="proc-card">
-          <div class="proc-abbr">STR</div>
-          <div class="proc-full">Secure Tool Runtime</div>
+          <div class="proc-abbr">Secure Tool Runtime</div>
           <div class="proc-role">Isolated subprocess execution for tools. Python, Go, MCP.</div>
           <div class="proc-scales">Scales with: tool invocation throughput</div>
         </div>
