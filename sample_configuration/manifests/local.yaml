@@ -5,9 +5,11 @@ target:
   url: http://localhost:8800
 resources:
   models: []
-  agents: []
-  gateways: []
+  agents: 
+    - retail-analyst
+  entrypoints: []
   workflows: []
   toolsets: []
-  connectors: []
+  connectors: 
+    - retail-postgres
   skills: []
