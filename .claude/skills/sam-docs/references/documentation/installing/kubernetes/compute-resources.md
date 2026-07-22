@@ -1,38 +1,38 @@
 ---
 title: Compute Resources
-description: Advisory CPU and memory requests/limits for the GWE, AWE, and STR workloads, node-sizing guidance, the bundled-broker cost, and how heavy agents drive infrastructure cost.
+description: Advisory CPU and memory requests/limits for the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime workloads, node-sizing guidance, the bundled event broker cost, and how to size and scale for your own load.
 sidebar_position: 354
 ---
 
 # Compute Resources
 
-This page recommends CPU and memory **requests** and **limits** for a Solace Agent Mesh Kubernetes deployment, and explains how those numbers—together with your broker topology and agent workload—drive the size and number of nodes you pay for.
+This page recommends CPU and memory requests and limits for an Agent Mesh Kubernetes deployment and explains how the event broker topology and agent workload combine with those numbers to determine the size and number of nodes the deployment requires.
 
-The numbers here are **advisory starting points**, not hard requirements. A 2 vCPU / 8 GB node does not expose 2000m / 8000Mi of *allocatable* capacity—Kubernetes system components and your cloud provider's DaemonSets reserve a slice that varies by provider and by what else you run on the node. Treat the recommendations as a baseline to adjust against your own observed usage and your cluster's real allocatable capacity. For the deployment layouts these workloads run in, see [Install and Deploy](../index.md).
+The numbers here are advisory starting points, not hard requirements. A 2 vCPU / 8 GB node does not expose 2000m / 8000Mi of allocatable capacity. Kubernetes system components and the cloud provider's DaemonSets reserve a share that varies by provider and by what else runs on the node. Treat the recommendations as a baseline to adjust against observed usage and the cluster's real allocatable capacity. For the deployment layouts these workloads run in, see [Install and Deploy](../index.md).
 
 ## Workloads to Size
 
-A distributed Kubernetes deployment runs three long-lived workloads, each as its own pod:
+A distributed Kubernetes deployment runs three long-lived workloads, each as its own pod — the Entrypoint Executor, the Agent-Workflow Executor, and the Secure Tool Runtime:
 
 | Workload | What it does | Primary resource driver |
 |---|---|---|
-| **GWE** | Hosts the gateways—HTTP and SSE, sessions, auth, web UI | Concurrent user connections and SSE fan-out |
-| **AWE** | Runs configured agents and workflows | Number of bound agents and their context size |
-| **STR** | Executes tools in a sandbox (Python and Go tool binaries) | Memory of tool subprocesses (LibreOffice, ffmpeg, Chromium) |
+| **Entrypoint Executor** | Hosts the entrypoints (HTTP and SSE, sessions, auth, serving the Agent Mesh UI) | Concurrent user connections and SSE fan-out |
+| **Agent-Workflow Executor** | Runs agents and workflows | Number of bound agents and their context size |
+| **Secure Tool Runtime** | Executes tools in a sandbox (Python and Go tool binaries) | Memory of tool subprocesses (LibreOffice, ffmpeg, Chromium) |
 
-The Solace PubSub+ broker and the persistence layer (database and object storage) are sized separately—see Broker and Persistence Topology.
+The Solace event broker and the persistence layer (database and object storage) are sized separately. See [Event Broker and Persistence Topology](#event-broker-and-persistence-topology).
 
 ## Recommended Requests and Limits
 
-These values keep **requests modest** so the three workloads schedule on a constrained cluster, and **limits generous** so each workload has room to absorb load spikes.
+These values are the chart defaults. Because the chart applies them unless overridden, a default install is already Burstable (see [Performance Profile](#performance-profile)) rather than BestEffort. They keep requests modest so the three workloads schedule on a constrained cluster, and limits generous so each workload has room to absorb load spikes.
 
 | Workload | CPU request | CPU limit | Memory request | Memory limit |
 |---|---|---|---|---|
-| **GWE** | 500m | 4 | 1Gi | 2Gi |
-| **AWE** | 500m | 4 | 1Gi | 2Gi |
-| **STR** | 500m | 4 | 2Gi | 4Gi |
+| **Entrypoint Executor** | 500m | 4 | 1Gi | 2Gi |
+| **Agent-Workflow Executor** | 1 | 4 | 1Gi | 2Gi |
+| **Secure Tool Runtime** | 500m | 4 | 2Gi | 4Gi |
 
-Set these in your Helm values:
+The Agent-Workflow Executor takes the highest CPU request because it runs the agents and workflows and is the heaviest of the three at steady state. The chart applies these defaults automatically. Override them per workload when observed usage warrants it:
 
 ```yaml
 # my-values.yaml
@@ -48,7 +48,7 @@ samDeployment:
   awe:
     resources:
       requests:
-        cpu: 500m
+        cpu: "1"
         memory: 1Gi
       limits:
         cpu: "4"
@@ -65,56 +65,49 @@ samDeployment:
 
 ### Understanding the Numbers
 
-A **request** is what the scheduler reserves for a pod and the floor Kubernetes protects under pressure; a **limit** is the ceiling it may use. Exceeding a CPU limit only slows a container, but exceeding a memory limit terminates it (an out-of-memory kill). That asymmetry shapes the defaults—generous CPU limits are cheap insurance, while memory limits set the real safety margin.
+A request is the amount the scheduler reserves for a pod and the floor Kubernetes protects when a node is under memory pressure. A limit is the maximum the container may consume. CPU and memory limits are enforced differently:
 
-| Setting | What it controls | When to raise it |
-|---|---|---|
-| CPU request | Capacity reserved for scheduling; total **1.5 vCPU** across the three workloads keeps them schedulable on a modest node | The workload is consistently CPU-bound at steady state |
-| CPU limit | Burst ceiling under load | Sustained high latency under peak traffic |
-| Memory request | Protected floor—pods over their request are reclaimed first under node memory pressure | A workload is being evicted on a busy node |
-| Memory limit | The out-of-memory threshold | The workload restarts with an out-of-memory error |
+- A container that reaches its CPU limit is throttled. It runs more slowly but continues to operate.
+- A container that exceeds its memory limit is terminated and restarted by Kubernetes (an out-of-memory kill).
 
-STR carries the most memory (2Gi / 4Gi) because its tool subprocesses—LibreOffice, ffmpeg, Chromium—are the largest consumers. AWE memory scales with how many agents it hosts; see Sizing for Heavy Agents.
+Because a CPU limit can be exceeded without affecting availability and a memory limit cannot, set CPU limits generously and treat the memory limit as the workload's stability boundary. Provision memory for the workload's peak with headroom, and allow CPU to run nearer its limit.
 
 ## Performance Profile
 
-The gap between requests and limits is a deliberate trade-off between *consistency* and *headroom*. Decide which trade-off fits your deployment:
+The ratio between a workload's request and its limit determines its Kubernetes quality-of-service class. Because the chart sets requests below limits, the workloads run as Burstable. Each is guaranteed its request and may consume spare node capacity up to its limit. That additional capacity is available only when the node is not contended, and Burstable pods are evicted before pods that reserve their full limit when a node runs short of memory.
 
-- **`requests == limits` (Guaranteed quality of service)** gives a consistent, neighbor-independent throughput baseline. Each workload gets exactly what it reserves—no more under load, but also never evicted for another pod and never starved on a busy node. Choose this when predictable performance matters more than density.
-- **`limits > requests` (Burstable quality of service)**, as recommended above, lets a workload burst toward its limit during peaks. That extra headroom is best-effort: it is available only when the node has free capacity, and is not guaranteed when other workloads on the same node compete for it. Burstable pods are also evicted before Guaranteed ones under memory pressure.
-
-The recommended table is Burstable—it favors a low barrier to entry and room to grow. If your cluster is shared with other latency-sensitive workloads, or you require a guaranteed performance baseline, raise the requests to equal the limits.
+The Burstable profile minimizes the default resource footprint while still allowing workloads to absorb load spikes. On a busy or shared cluster where more predictable performance is required, raise the requests closer to the limits to reserve more capacity in advance, in exchange for lower workload density per node.
 
 ## Node Sizing
 
-Size a node by its **allocatable** capacity, not its nominal instance size. Confirm what a node actually offers before you rely on it:
+Size a node by its allocatable capacity, not its nominal instance size. A node does not offer its full nominal CPU and memory. Kubernetes and the cloud provider's system components reserve a share that varies by provider. Confirm what a node actually offers before relying on it:
 
 ```bash
 kubectl describe node <node-name> | grep -A6 Allocatable
 ```
 
-For a distributed deployment with an **external** broker and persistence (the production layout), the three workloads reserve **~1.5 vCPU / ~4 GiB** in total—the node needs at least that much allocatable free after system overhead. To give them room to burst under load, use a node with **4 vCPU / 16 GiB** allocatable. If you run GWE, AWE, and STR on separate nodes, each needs only its own slice plus headroom.
+For a distributed deployment with an external event broker and persistence (the production layout), the three workloads reserve ~2 vCPU / ~4 GiB in total, so the node needs at least that much allocatable free after system overhead. To give them room to burst under load, use a node with 4 vCPU / 16 GiB allocatable. If the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime run on separate nodes, each needs only its own slice plus headroom.
 
-If you also run the **bundled** broker and persistence on the same cluster (a proof-of-concept or development layout—see below), the broker alone needs roughly **2 vCPU / 3.5 GiB** more. Size that cluster for **6 vCPU / 16 GiB allocatable** or more so the broker, database, and object store leave enough room for the Agent Mesh workloads to burst.
+If the bundled event broker and persistence also run on the same cluster (a proof-of-concept or development layout; see [Event Broker and Persistence Topology](#event-broker-and-persistence-topology)), the event broker alone requires roughly 2 vCPU / 3.5 GiB more. Size that cluster for 6 vCPU / 16 GiB allocatable or more so the event broker, database, and object store leave sufficient headroom for the Agent Mesh workloads.
 
 :::note Sandbox runtimes add overhead
-If you run a workload under a Kubernetes sandbox runtime—gVisor or Kata, opted in per workload via `global.podRuntimes` and `samDeployment.<component>.podRuntime`—the runtime consumes CPU and memory *on top of* the container's own requests and limits. The tax varies—gVisor is modest; VM-based Kata is heavier, depending on how it is provisioned. Record that overhead on the RuntimeClass (its `overhead` field) so the scheduler reserves for it, and add it to the node's allocatable budget when sizing.
+A Kubernetes sandbox runtime (gVisor or Kata, opted in per workload via `global.podRuntimes` and `samDeployment.<component>.podRuntime`) consumes CPU and memory on top of the container's own requests and limits. The tax varies. gVisor is modest, while VM-based Kata is heavier depending on how it is provisioned. Record that overhead on the RuntimeClass (its `overhead` field) so the scheduler reserves for it, and add it to the node's allocatable budget when sizing.
 :::
 
-## Broker and Persistence Topology
+## Event Broker and Persistence Topology
 
-The single largest cost decision is **whether the broker and datastores run inside your cluster or as external services.** It changes both your node bill and where the cost lands.
+The single largest cost decision is whether the event broker and datastores run inside the cluster or as external services. It affects both node cost and where that cost lands.
 
 | | Bundled (`global.broker.embedded: true`, `global.persistence.enabled: true`) | External (production) |
 |---|---|---|
-| Broker | A Solace PubSub+ broker pod—**2 vCPU / 2480Mi memory** (request = limit, Guaranteed), plus ~1Gi of RAM for its shared-memory buffer and a 7Gi persistent disk | A managed or self-hosted Solace PubSub+ broker that you size and bill on its own terms |
+| Event Broker | A Solace event broker pod, 2 vCPU / 2480Mi memory (request equals limit), plus ~1Gi of RAM for its shared-memory buffer and a 7Gi persistent disk | A managed or self-hosted Solace event broker sized and billed on its own terms |
 | Persistence | Bundled database and object-storage pods on the node | Managed database and S3-compatible object storage |
-| Where cost lands | All inside your cluster's node-hours | Broker and storage are separate line items; the cluster carries only GWE, AWE, and STR |
+| Where cost lands | All inside the cluster's node-hours | Event broker and storage are separate line items, and the cluster carries only the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime |
 | Use it for | Proof-of-concept and development | Production |
 
-The bundled broker is resource-heavy, and its reservation is fixed—it holds **2 vCPU and about 3.5 GiB of RAM** for itself whether idle or busy. On a 2-vCPU node, the broker alone claims nearly all the CPU, leaving little room for GWE, AWE, and STR to run alongside it. **Use the bundled broker for proof-of-concept and development only**; production deployments should point at an external broker (below).
+The bundled event broker is resource-heavy, and its reservation is fixed: it holds 2 vCPU and about 3.5 GiB of RAM for itself whether idle or busy. On a 2-vCPU node, the event broker alone consumes nearly all available CPU, leaving little for the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime. Use the bundled event broker for proof-of-concept and development only. Production deployments use an external event broker instead.
 
-For production, run an **external** broker, database, and object store:
+For production, run an external event broker, database, and object store:
 
 ```yaml
 # my-values.yaml
@@ -125,49 +118,44 @@ global:
     enabled: false
 ```
 
-This removes ~2 vCPU / ~3.5 GiB and the datastore pods from your cluster. Your node cost then scales purely with the GWE, AWE, and STR footprint plus agent density—the model in the next section. For more information about wiring an external broker and persistence, see [Configuring Agent Mesh](../configure.md).
+This removes the event broker's ~2 vCPU / ~3.5 GiB, along with the bundled database and object-store pods, from the cluster. Node cost then scales with the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime footprint and the workload. See [Sizing and Scaling](#sizing-and-scaling). For more about wiring an external event broker and persistence, see [Configuring Agent Mesh](../configure.md).
 
-## Sizing for Heavy Agents
+## Sizing and Scaling
 
-The recommended limits assume **typical agents**—modest prompts, a few tools, normal context windows. AWE hosts configured agents in-process, so one AWE pod's footprint is roughly its own overhead plus the sum of its agents. A *heavy* agent consumes more, and that changes your infrastructure cost.
+Treat the recommended limits as a baseline and tune them against real traffic. The resources a deployment needs depend on how many users it serves concurrently and the type of work they perform, so deploy with the defaults, observe the workloads under realistic load, and adjust the limits from those measurements.
 
-What makes an agent heavy:
+Each workload runs as a single pod, and the chart does not provision replicas. Scale a workload by raising its CPU and memory limits, and by moving it to a larger node when the current node lacks capacity.
 
-| Driver | Effect |
-|---|---|
-| Large or retrieval-augmented context windows | Higher peak memory per in-flight task on AWE |
-| Many concurrent tasks against one agent | More parallel work—more AWE CPU and memory |
-| Large artifacts (documents, images, video) | Memory spikes during artifact handling |
-| Tool-heavy workflows | Pushes **STR** memory, not AWE—size STR accordingly |
+### What Drives Each Workload
 
-### How Density Drives Cost
+| Workload | Load grows with | Watch |
+|---|---|---|
+| Entrypoint Executor | Concurrent sessions and in-flight tasks, each held in memory until it finishes | Memory |
+| Agent-Workflow Executor | Number of agents, their context size, concurrent tasks, and artifact size | Memory |
+| Secure Tool Runtime | Concurrent tool runs, each an isolated subprocess (LibreOffice, ffmpeg, Chromium are the heaviest) | CPU and memory |
 
-Your infrastructure cost for the agent tier is a function of how many agents fit on a node before the most-constrained resource—almost always memory—runs out:
+### Right-Size From the Workload
 
-```text
-agents per node ≈ ⌊ (node allocatable memory − fixed Agent Mesh overhead) ÷ per-agent memory ⌋
-monthly node cost ≈ ⌈ total agents ÷ agents per node ⌉ × node hourly rate × 730
-```
+1. Run representative traffic at the expected peak.
+2. Record each workload's peak memory with `kubectl top pod <pod>` or the `container_memory_working_set_bytes` metric.
+3. Set the memory limit 25 to 50 percent above that peak.
+4. Re-run at peak. If a pod still restarts with `OOMKilled`, raise the limit and repeat.
 
-Per-agent memory is in the denominator, so doubling it (light to heavy) roughly **halves** agent density and **doubles** the node count for the same fleet. It is the single biggest cost lever in the deployment.
+Increase CPU only when latency at peak is unacceptable and the affected workload is the one constrained on CPU. The default 4-core limit provides substantial headroom above typical steady-state CPU use.
 
-| Agent profile | AWE memory | Agents per 16 GiB node (illustrative) | Nodes for 24 agents | Relative cost |
-|---|---|---|---|---|
-| Light | 1 GiB | ~12 | 2 | 1.0× |
-| Standard | 2 GiB | ~6 | 4 | ~2× |
-| Heavy | 4 GiB | ~3 | 8 | ~4× |
+### Find the Constraint Before Adding Resources
 
-The figures are illustrative ratios after fixed overhead and system pods—validate the absolute counts against your own workload. The point is the *ratio*: heavy agents cost proportionally more because they pack proportionally less densely.
+Adding capacity to the wrong workload does not relieve the constraint. Use the following symptoms to identify the constrained resource:
 
-### Containing the Cost
+| Observed behavior | Cause | Action |
+|---|---|---|
+| `kubectl describe pod` shows `Last State: Terminated, Reason: OOMKilled`, and `kubectl get pods` shows a rising `RESTARTS` count or `CrashLoopBackOff` | Memory limit below peak demand | Raise that workload's memory limit, or move it to a larger node if the node is full |
+| The pod stays `Running` while `kubectl top pod` shows CPU at the limit and responses slow under load | CPU saturation, where the container is throttled rather than terminated | Raise the CPU limit if peak latency is unacceptable |
+| Task latency is high while `kubectl top pod` shows the Entrypoint Executor's CPU and memory below their limits | The constraint is downstream, in tool execution (the Secure Tool Runtime) or the large language model (LLM) | Additional entrypoint resources have no effect. Reduce per-task work, or improve tool and LLM response time |
+| Document or image generation backs up while the Entrypoint Executor stays healthy | The Secure Tool Runtime pipeline is saturated | Raise Secure Tool Runtime memory and CPU |
 
-- **Isolate heavy agents.** Raising the shared AWE memory limit to satisfy one heavy agent inflates the limit for every agent and collapses density across the whole fleet. Run heavy agents on a separate AWE deployment with its own higher limits to keep the rest of the fleet dense. Prefer this.
-- **Scale the node, not just the limit.** A heavy agent that needs 4 GiB packs poorly on a small node where fixed overhead leaves little room. Move heavy-agent AWE pods onto larger nodes so the higher limit still packs two or three agents per node instead of one.
-
-:::tip Right-size from observed usage
-Set the memory limit from an agent's real peak (watch the `container_memory_working_set_bytes` metric), not its theoretical maximum. Over-provisioning the limit does not cause out-of-memory kills, but it silently lowers density and raises cost for no benefit.
-:::
+After the Entrypoint Executor has sufficient memory for the level of concurrency, overall responsiveness is governed by tool execution and LLM latency rather than by the Entrypoint Executor.
 
 ## Next Steps
 
-You have sized the Agent Mesh workloads for your cluster. Most readers next wire up the external broker, persistence, and LLM provider those resources will run against. For more information, see [Configuring Agent Mesh](../configure.md). Before carrying production traffic, see [Production Readiness Checklist](../../administering/production-readiness-checklist.md).
+With the Agent Mesh workloads sized, most readers next configure the external event broker, persistence, and LLM provider that these resources run against. See [Configuring Agent Mesh](../configure.md). Before carrying production traffic, see [Production Readiness Checklist](../../administering/production-readiness-checklist.md).

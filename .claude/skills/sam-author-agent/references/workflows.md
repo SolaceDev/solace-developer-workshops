@@ -13,10 +13,10 @@ Engine supports six: **`agent`** (invoke a named agent), **`workflow`** (nested 
 
 ## Composition (the seams)
 
-- **Trigger**: a person chatting hits the workflow like an agent; an *event* trigger (mesh topic) is an eventmesh **gateway** → `sam-gateways`.
-- **Actions**: reaching databases/APIs from a node = connectors/tools on the node's agent (or workflow-level connectors) → `sam-tools-and-skills` to create them.
+- **Trigger**: a person chatting hits the workflow like an agent; an *event* trigger (mesh topic) is an eventmesh **entrypoint** → `sam-entrypoints`.
+- **Actions**: reaching databases/APIs from a node = connectors/tools on the node's agent, or bound to the workflow itself for `tool` nodes — workflow-level `connectors` and `toolsets` (a toolset's tools are addressed as `<toolset>__<tool>` in the node's `tool_name`) → `sam-tools-and-skills` to create them.
 - **Typed steps**: workflows pass structured data between nodes; per-node schema overrides + the agents' structured output (see [structured-output.md](structured-output.md)) keep steps machine-readable.
 
 ## Worked decomposition ("listen → filter → store")
 
-eventmesh gateway (trigger, other skill) → workflow: `switch` node on the field (or a `tool`/`agent` node if filtering needs logic) → `agent` or `tool` node writing via a sql connector. The workflow owns ordering/retries; the gateway and connector stay outside it.
+eventmesh entrypoint (trigger, other skill) → workflow: `switch` node on the field (or a `tool`/`agent` node if filtering needs logic) → `agent` or `tool` node writing via a sql connector. The workflow owns ordering/retries; the entrypoint and connector stay outside it.

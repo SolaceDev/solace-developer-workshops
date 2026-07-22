@@ -158,9 +158,9 @@ the following sources in priority order:
 
 ## Debugging: `sam api`
 
-`sam api` is a generic authenticated HTTP client for the SAM gateway REST API — think `gh api` for SAM. It reuses the same `$XDG_CONFIG_HOME/sam/auth/<target>.json` cache and refresh ladder described above, so a developer who has run `sam auth login` once can poke at the gateway from the shell without copying tokens around.
+`sam api` is a generic authenticated HTTP client for the SAM entrypoint REST API — think `gh api` for SAM. It reuses the same `$XDG_CONFIG_HOME/sam/auth/<target>.json` cache and refresh ladder described above, so a developer who has run `sam auth login` once can poke at the entrypoint from the shell without copying tokens around.
 
-Useful when authoring or debugging declarative-config repos: after a `sam config apply`, hit the gateway to confirm a resource looks the way the YAML said it should, dump the live shape of a DTO you're about to encode, or chase down a 4xx that the apply surfaced without telling you which field tripped it.
+Useful when authoring or debugging declarative-config repos: after a `sam config apply`, hit the entrypoint to confirm a resource looks the way the YAML said it should, dump the live shape of a DTO you're about to encode, or chase down a 4xx that the apply surfaced without telling you which field tripped it.
 
 ### Quick reference
 

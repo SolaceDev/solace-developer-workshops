@@ -1,14 +1,14 @@
 ---
 name: sam-author-agent
-description: Use when creating or editing Solace Agent Mesh agents or workflows — writing instructions/system prompts, enabling built-in tool groups, giving an agent an MCP server's tools, peer delegation between agents (inter_agent_communication), structured input/output schemas, agent cards/abilities, or multi-step workflow DAGs (switch/map/loop nodes). Not for creating connectors (sam-connectors), custom tools (sam-tools-and-skills), inbound gateways (sam-gateways), or choosing where SAM runs (sam-install-run / sam-deploy).
-version: dev
+description: Use when creating or editing Solace Agent Mesh agents or workflows — writing instructions/system prompts, enabling built-in tool groups, giving an agent an MCP server's tools, peer delegation between agents (inter_agent_communication), structured input/output schemas, agent cards/abilities, or multi-step workflow DAGs (switch/map/loop nodes). Not for creating connectors (sam-connectors), custom tools (sam-tools-and-skills), inbound entrypoints (sam-entrypoints), or choosing where SAM runs (sam-install-run / sam-deploy).
+version: main-v2.249.1-dirty
 ---
 
 # sam-author-agent
 
-This skill creates and edits SAM **agents and workflows** (behavior: instructions, tools, delegation, structured I/O, DAGs). For reaching external data/services no-code see `sam-connectors`; for custom tool code see `sam-tools-and-skills`; for making agents reachable from outside (Slack, MCP clients, events) see `sam-gateways`.
+This skill creates and edits SAM **agents and workflows** (behavior: instructions, tools, delegation, structured I/O, DAGs). For reaching external data/services no-code see `sam-connectors`; for custom tool code see `sam-tools-and-skills`; for making agents reachable from outside (Slack, MCP clients, events) see `sam-entrypoints`.
 
-**Agent or workflow?** A single assistant that converses and uses tools = agent. A multi-step pipeline with branching, iteration, or fixed sequencing ("listen → filter → store", "research → summarize → send") = workflow (a DAG that orchestrates agents and tools). Workflows compose: gateways trigger them, connectors act for them.
+**Agent or workflow?** A single assistant that converses and uses tools = agent. A multi-step pipeline with branching, iteration, or fixed sequencing ("listen → filter → store", "research → summarize → send") = workflow (a DAG that orchestrates agents and tools). Workflows compose: entrypoints trigger them, connectors act for them.
 
 ## Authoring paths — teach in this order
 

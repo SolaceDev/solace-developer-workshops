@@ -21,6 +21,24 @@
   manifests safe — apply without `--prune` and the rest of the platform
   is untouched. Only reach for `--prune` with a full manifest that is
   genuinely the complete desired state.
+- **Omitting `systemPrompt` on a standard agent.** The schema marks it
+  optional, but the platform enforces it at create/update time: a
+  `standard` agent (the only supported type) without a system prompt is
+  rejected with HTTP 422 `system prompt is required for standard agents`.
+  Always set `spec.systemPrompt` to at least 100 characters.
+- **Flat agent YAML instead of `spec:`.** Agent fields (`systemPrompt`,
+  `toolsets`, …) live under a top-level `spec:` block; only `kind:`,
+  `name:`, and `description:` sit at the root. The flat form passes `plan`
+  silently but drops the fields at `apply`, surfacing as a misleading 422
+  (e.g. a missing `systemPrompt`). Use the `spec:` shape from
+  `references/agent.md` (it matches `sam config pull` output).
+- **Putting `tools` in `additionalConfigurations`.** `additionalConfigurations`
+  is a catch-all for un-modelled config keys, **not** for tools. The platform
+  computes the deployed `tools:` block from `spec.toolsets` and rejects
+  `additionalConfigurations.tools` with HTTP 422. List built-in toolset IDs
+  (`builtin_artifact_tools`, `builtin_web_request_tools`, …) under
+  `spec.toolsets` instead — see the ID table in `references/toolset.md`. The
+  runtime AWE `tools:` / `group_name` shape never goes in the declarative API.
 - **Skill files vs directories.** A `skills:` resource entry points
   at a directory under `skills/<name>/`, not a YAML file. The
   directory must contain a SKILL.md.
@@ -28,7 +46,7 @@
   own `kind:` (e.g. `kind: agent`); the manifest's `kind: manifest`
   is unrelated. Setting `kind: agent` inside a manifest is a parse
   error.
-- **Trying to mutate immutable fields.** Agent and gateway `type`
+- **Trying to mutate immutable fields.** Agent and entrypoint `type`
   fields are immutable after creation; apply silently ignores
   attempts to change them. Recreate the resource (delete + apply) to
   switch type.
@@ -40,11 +58,12 @@
   "mandatory input parameters are not present". When in doubt,
   pick one signal per field. See `references/tool-build.md`
   "Authoring pitfalls".
-- **Re-uploading an in-use toolset.** The platform rejects toolset
-  uploads with HTTP 409 PackageInUse when any deployed agent
-  references the package. Use `sam config apply --force-toolset`
-  during iteration; it appends `?force=true` and the platform
-  auto-redeploys affected agents.
+- **Re-uploading an in-use toolset.** Re-uploading a toolset that
+  deployed agents reference overwrites the package and auto-redeploys
+  those agents (async, via the outbox publisher). `sam config apply`
+  re-uploads only when the bundle's SHA-256 differs from the
+  platform-stored content hash, so any content change re-uploads and an
+  unchanged bundle is a true no-op.
 - **Stale build-cache poison.** `[BUILD: cache-hit <os>/<arch>]`
   short-circuits the build and re-uploads whatever zip is cached for
   that target. Cross-target poisoning is now prevented by segmenting

@@ -11,7 +11,7 @@ different questions; don't conflate them.
 
 | Field | Lives on | Values | Meaning |
 |---|---|---|---|
-| `deploymentStatus` | agent, gateway, workflow | `deployed`, `not_deployed`, `deploy_failed` | Did the last deploy succeed? |
+| `deploymentStatus` | agent, entrypoint, workflow | `deployed`, `not_deployed`, `deploy_failed` | Did the last deploy succeed? |
 | `syncStatus` | agent | `in_sync`, `out_of_sync` | Does the **running deployment** match the **stored config**? `out_of_sync` means a config change never made it into a running deployment (e.g. a deploy that failed after the config was saved). |
 | `discoveryStatus` | toolset | `pending`, `ready`, `failed` | Has STR finished scanning the tool bundle and learned its schema? A deploy that references a toolset still `pending` is rejected until it reaches `ready`. |
 | `runtimeStatus` | agent | `running`, `starting`, `disconnected`, `stopped` | Is the deployed process actually up right now? |
@@ -58,7 +58,7 @@ return the bare DTO. Walk multi-page lists with `--paginate`.
 
 ## Embedded mode note
 
-In embedded mode (`sam run --embedded`, desktop) the `remote_tool_execution`
+In embedded mode (the desktop app) the `remote_tool_execution`
 feature is enabled by default, so `sam config apply` of agents/toolsets/skills
 works out of the box. On a standalone platform deployment it is off unless
 `SAM_FEATURE_REMOTE_TOOL_EXECUTION=true` is set; the 501 you'd get names the

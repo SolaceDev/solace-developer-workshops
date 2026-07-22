@@ -28,10 +28,10 @@ tokens for everything it writes. Both are avoidable for bulk data.
 - **Return artifacts; don't inline.** When a tool or agent produces a large
   result, save it as an artifact and return a reference, not the bytes. A 50 KB
   report inlined is 50 KB of history on every subsequent turn; an artifact
-  reference is a few dozen bytes. Downstream consumers (the gateway, the client)
+  reference is a few dozen bytes. Downstream consumers (the entrypoint, the client)
   load the artifact on demand.
 - **Use `«artifact_content:…»` late embeds for user-facing data.** A late embed
-  is resolved at the gateway on the way to the user — the *data never enters the
+  is resolved at the entrypoint on the way to the user — the *data never enters the
   model's context at all*. The model emits a one-line embed directive; the user
   receives the full content. This is the cheapest way to deliver a large payload.
 - **Slice before you inject with the embed modifier chain.** When the model *does*
@@ -56,6 +56,13 @@ the most expensive way to do it — and the least reliable. Instead, ship a
 (a small JSON/CSV artifact), and the template's embeds/Liquid render the document
 at serve time. A 200-line report rendered from 100 rows costs the model the ~5 KB
 of data it generated, not the ~100 KB of document it would otherwise have typed.
+
+Bind the data by **logical name** via `instantiate_template`'s `data_inputs`
+arg — `{ <binding>: <the artifact you produced> }` — and the tool rewrites the
+document's references to point at that artifact, pinned to the exact version it
+validated, so the model never has to reproduce the sidecar's magic filenames. The same call works from a **workflow `tool`
+node**: bind `data_inputs` to an upstream node's artifact and the workflow
+renders the document with no LLM in the loop at all.
 
 See [Asset templates](https://solacedev.github.io/solace-agent-mesh-go/documentation/building/skills#asset-templates)
 for the `assets/` + `.template.yaml` authoring contract, and prefer this pattern

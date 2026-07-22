@@ -1,6 +1,6 @@
 # Giving an agent an MCP server's tools
 
-Scope check: this is **outbound** — your agent consumes an external MCP server. Exposing your agents TO external MCP clients is the MCP *gateway* (`sam-gateways`). A reusable, platform-managed MCP connection shared across agents is the `mcp` **connector** (creation details in `sam-connectors`); attaching one to an agent is covered here.
+Scope check: this is **outbound** — your agent consumes an external MCP server. Exposing your agents TO external MCP clients is the MCP *entrypoint* (`sam-entrypoints`). A reusable, platform-managed MCP connection shared across agents is the `mcp` **connector** (creation details in `sam-connectors`); attaching one to an agent is covered here.
 
 ## Paths, in teaching order
 

@@ -1,28 +1,30 @@
 ---
 name: sam-tools-and-skills
-description: Use when extending a Solace Agent Mesh agent with custom code or curated tool packages — writing a custom tool in Go (samtoolsdk) or Python (sam-tool-sdk), scaffolding with the `sam toolset` / `sam skill` CLI, packaging tools as a toolset, creating an agent skill bundle (SKILL.md + bundled tools), exposing a REST API to one agent via an inline OpenAPI tool, attaching toolsets/skills to agents, or setting per-agent tool config. Not for no-code data/service access where a connector type fits (sam-connectors), inbound integrations where users or events reach agents (sam-gateways), or the agent's own instructions and behavior (sam-author-agent).
-version: dev
+description: Use when extending a Solace Agent Mesh agent with custom code or curated tool packages — writing a custom tool in Go (samtoolsdk) or Python (sam-tool-sdk), scaffolding with the `sam toolset` / `sam skill` CLI, packaging tools as a toolset, creating an agent skill bundle (SKILL.md + bundled tools), exposing a REST API to one agent via an inline OpenAPI tool, attaching toolsets/skills to agents, or setting per-agent tool config. Not for no-code data/service access where a connector type fits (sam-connectors), inbound integrations where users or events reach agents (sam-entrypoints), or the agent's own instructions and behavior (sam-author-agent).
+version: main-v2.249.1-dirty
 ---
 
 # sam-tools-and-skills
 
-This skill covers **custom tools and tool packages** for SAM agents: Go and Python remote tools that run in the STR (Secure Tool Runtime), inline OpenAPI tools, toolsets, and agent skill bundles. **Scope check:** if a no-code connector type fits (SQL, knowledge base, search, document/graph DBs, REST via OpenAPI shared across agents, remote MCP, email, Slack, event mesh), use `sam-connectors` first — custom code is for when no connector type fits. Inbound (users/events/MCP clients reaching agents) → `sam-gateways`. The agent's instructions/behavior → `sam-author-agent`.
+This skill covers **custom tools and tool packages** for SAM agents: Go and Python remote tools that run in the STR (Secure Tool Runtime), inline OpenAPI tools, toolsets, and agent skill bundles. **Scope check:** if a no-code connector type fits (SQL, knowledge base, search, document/graph DBs, REST via OpenAPI shared across agents, remote MCP, email, Slack, event mesh), use `sam-connectors` first — custom code is for when no connector type fits. Inbound (users/events/MCP clients reaching agents) → `sam-entrypoints`. The agent's instructions/behavior → `sam-author-agent`.
 
 ## Picking the construct
 
 | The user wants… | Construct | Reference |
 |---|---|---|
-| Custom logic in Go (compiled binary, typed params, artifacts) | Go remote tool via `pkg/samtoolsdk` | [references/go-tools.md](references/go-tools.md) |
-| Custom logic in Python | Python remote tool via `sam-tool-sdk` (PyPI) | [references/python-tools.md](references/python-tools.md) |
+| Custom logic — **default choice** (compiled binary, typed params, artifacts, zero-network scaffold) | Go remote tool via `pkg/samtoolsdk` | [references/go-tools.md](references/go-tools.md) |
+| Custom logic where the user already knows Python or needs a Python-only library | Python remote tool via `sam-tool-sdk` (PyPI) | [references/python-tools.md](references/python-tools.md) |
 | One agent calling a REST API from an OpenAPI spec, config-file managed | Inline `tool_type: openapi` tool — but **shared/UI-managed API access is the `api` connector** (`sam-connectors`) | [references/openapi-tools.md](references/openapi-tools.md) |
 | A reusable package of always-available tools, uploaded once, attached to many agents | **Toolset** | [references/packaging-and-deploy.md](references/packaging-and-deploy.md) |
 | Tools *plus* usage instructions the agent loads on demand (`load_skill`) | **Skill bundle** (SKILL.md + references + optional bundled tools) | [references/packaging-and-deploy.md](references/packaging-and-deploy.md) |
 
 Toolset vs skill in one line: a toolset is bare tools, always on the agent's tool list; a skill is instructions first (progressively disclosed at runtime) with tools optionally bundled. Tools that need workflow guidance → skill; standalone utilities → toolset.
 
+**Prefer Go when the user has no strong preference.** SAM is a Go product and both languages are first-class, but Go is the smoother default: the scaffold vendors the SDK so builds need no network and no PyPI access, cross-compilation to the deployed STR's arch is built into `sam toolset/skill package`, and a single compiled binary ships with no runtime interpreter or dependency-resolution step. Recommend Go unless the user already works in Python or needs a Python-only library — then Python via `sam-tool-sdk` is fully supported, don't push back.
+
 ## The intended authoring path (teach this, in order)
 
-1. **Scaffold** — `sam toolset init NAME --lang go|python` or `sam skill init NAME [--with-tool --lang go|python]`. The scaffold is a *working* tool: compilable code, `manifest.yaml`, `build.sh`/`build.bat`. Go scaffolds vendor the SDK into `_sdk/samtoolsdk/` from the CLI binary itself — building needs **no network and no access to the SAM repo**. Python scaffolds depend on `sam-tool-sdk` from PyPI.
+1. **Scaffold** — `sam toolset init NAME --lang go|python` or `sam skill init NAME [--with-tool --lang go|python]`. Default to `--lang go` unless the user asked for Python. The scaffold is a *working* tool: compilable code, `manifest.yaml`, `build.sh`/`build.bat`. Go scaffolds vendor the SDK into `_sdk/samtoolsdk/` from the CLI binary itself — building needs **no network and no access to the SAM repo**. Python scaffolds depend on `sam-tool-sdk` from PyPI.
 2. **Author** — edit the generated tool. Real API names are in the references; do not improvise them.
 3. **Validate** — `sam toolset validate` / `sam skill validate` builds for your host and runs the exact `--schema` discovery the STR performs. Run it before every package.
 4. **Package & deploy** — `sam toolset package` / `sam skill package` cross-compiles for the deployed STR's architecture and zips for WebUI upload; or keep the source in a declarative-config repo and let `sam config plan` / `apply` build and upload (that flow is owned by `sam-declarative-config`).

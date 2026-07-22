@@ -467,7 +467,10 @@ non-pointer (string); treating as optional. Use a pointer type (e.g.
 one-liner, second arg) is what the platform stores as the tool's
 public DTO field and what the agent prompt's tool-selection table
 shows. Keep it tight and accurate; it's the LLM's primary signal for
-"which tool do I want."
+"which tool do I want." It is **required and must be non-empty**:
+`sdk.NewTool` panics at registration (and the Python SDK raises at
+discovery) on a blank description, and strict providers such as Amazon
+Bedrock reject a tool advertised with an empty one.
 
 `sdk.WithInstructions(text)` — the **instructions** are longer prose
 guidance the agent surfaces alongside the tool. Useful for nuanced
@@ -691,21 +694,19 @@ sam config apply --manifest manifests/dev.yaml
 
 ### Re-uploading a toolset that's already in use
 
-The platform refuses to re-upload (HTTP 409 `PackageInUse`) a toolset
-that is referenced by any currently-deployed agent — the upload would
-race the running agents' tool dispatch. The error names the holding
-agent IDs.
+Re-uploading a toolset that is referenced by deployed agents overwrites
+the stored package and auto-redeploys every affected agent via the
+outbox publisher (the redeploy is async; the first attempt may
+transiently fail with `tool package not ready` while discovery is
+pending, followed by a retry that succeeds — both are normal and the
+apply returns success once the upload itself lands). The platform does
+not gate the overwrite; confirmation lives in the web UI, which prompts
+before reimporting an in-use toolset.
 
-For development iteration, use `sam config apply --force-toolset` to
-append `?force=true` to the upload calls. The platform overwrites the
-package and auto-redeploys every affected agent via the outbox
-publisher (the redeploy is async; the first attempt may transiently
-fail with `tool package not ready` while discovery is pending,
-followed by a retry that succeeds — both are normal and the apply
-returns success once the upload itself lands).
-
-Without `--force-toolset` the safe sequence is: undeploy each
-referenced agent, apply, then redeploy.
+`sam config apply` re-uploads only when it detects the bundle changed: it
+diffs the local bundle's SHA-256 against the platform-stored content hash,
+so any content change re-uploads and a byte-identical bundle is a true
+no-op (no size-collision false-negative, no force flag needed).
 
 ### STR per-invocation lifetime — no cross-call cache
 
@@ -732,7 +733,7 @@ the agent binary. It cannot directly attach an STR toolset's tools.
 
 To use an STR toolset, list it in the **agent's** `toolsets:` block.
 The skill body can name the resulting tools (`<toolset>__<tool>`,
-double-underscore separator — see [skill design](../design/skill-design.md))
+double-underscore separator — see [skill design](./design/skill-design.md))
 as prompt guidance, but the toolset itself is wired on the agent.
 
 ## Python tool authoring

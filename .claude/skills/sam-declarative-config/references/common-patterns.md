@@ -26,7 +26,7 @@ resources are fetched from the source repo's matching `<plural>/`
 directory.
 
 **Naming.** Most resources require `safename` characters: lowercase
-letters, digits, and `-`. Agent names are 3-40 chars; gateway names 3-
+letters, digits, and `-`. Agent names are 3-40 chars; entrypoint names 3-
 255; model aliases 1-100. The schema for each kind documents the live
 constraints.
 

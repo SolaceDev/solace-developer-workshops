@@ -12,7 +12,7 @@ rewritten as `${VAR}` placeholders by `sam config pull`.
 
 ## Schema
 
-CreateModelConfigRequest is the request body for POST /models.
+Authoring fields for the "model" resource.
 
 | Field | Type | Required | Validation | Description |
 |---|---|---|---|---|
@@ -20,10 +20,10 @@ CreateModelConfigRequest is the request body for POST /models.
 | `provider` | `string` | yes |  | (no description) |
 | `modelName` | `string` | yes |  | (no description) |
 | `apiBase` | `string` |  |  | (no description) |
-| `authConfig` | `map[string]any` | yes |  | (no description) |
-| `modelParams` | `map[string]any` |  |  | (no description) |
+| `authConfig` | `object` | yes |  | (no description) |
+| `modelParams` | `object` |  |  | (no description) |
 | `description` | `string` |  |  | (no description) |
-| `maxInputTokens` | `*int` |  | tri-state pointer | (no description) |
+| `maxInputTokens` | `integer` |  | tri-state pointer | (no description) |
 
 ## Example
 

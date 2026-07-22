@@ -23,7 +23,7 @@ YAML supports `!include path/to/file` for modular config (relative to the config
 
 ## Common secret-bearing surfaces
 
-Broker password (`SOLACE_BROKER_PASSWORD` / `broker.broker_password`); LLM key (`ANTHROPIC_API_KEY`/`OPENAI_API_KEY`/… / `model.api_key`); cloud storage creds (AWS/GCS/Azure on `artifact_service.*`); DB password (in `session_service.database_url`); `SESSION_SECRET_KEY` (gateway cookie signing); OIDC `client_secret`; Slack `SLACK_APP_TOKEN`/`SLACK_BOT_TOKEN`. Per-connector/per-toolset credentials live in that resource's config (owned by `sam-connectors` / `sam-tools-and-skills`), not here.
+Broker password (`SOLACE_BROKER_PASSWORD` / `broker.broker_password`); LLM key (`ANTHROPIC_API_KEY`/`OPENAI_API_KEY`/… / `model.api_key`); cloud storage creds (AWS/GCS/Azure on `artifact_service.*`); DB password (in `session_service.database_url`); `SESSION_SECRET_KEY` (entrypoint cookie signing); OIDC `client_secret`; Slack `SLACK_APP_TOKEN`/`SLACK_BOT_TOKEN`. Per-connector/per-toolset credentials live in that resource's config (owned by `sam-connectors` / `sam-tools-and-skills`), not here.
 
 ## Promotion dev → staging → prod
 
@@ -40,7 +40,7 @@ SOLACE_BROKER_PASSWORD=...   ANTHROPIC_API_KEY=...
 
 - **Broker password:** rotate at the broker first; live sessions stay on old creds, reconnects use the new value.
 - **LLM key:** issue new → deploy → revoke old (overlap window).
-- **OIDC client secret:** rotate at the IdP, update the env var, restart the gateway. In-flight logins fail during restart; existing signed sessions survive (they're signed with `SESSION_SECRET_KEY`, not the IdP secret).
+- **OIDC client secret:** rotate at the IdP, update the env var, restart the entrypoint. In-flight logins fail during restart; existing signed sessions survive (they're signed with `SESSION_SECRET_KEY`, not the IdP secret).
 - **`SESSION_SECRET_KEY`:** changing it **invalidates every active session** — all users are forced to log in again. Flag this before recommending it.
 - **DB password:** coordinate with active connections; rolling restart of consumers.
 
@@ -64,7 +64,7 @@ Three surfaces: **binary version** (new image tag per workload), **database sche
 **platform → GWE → AWE → STR.** Wait for each workload's health server to report healthy before rolling the next. During the roll mixed versions coexist: A2A traffic crosses freely; the DB schema is shared (N+1 extends it; an old-N pod started *after* the extension may refuse to boot, so don't roll backward mid-upgrade); each workload reads its YAML at startup, so a config-key mismatch fails that workload's start.
 
 ### Migrations are automatic
-The runtime applies goose migrations at startup (`session_*`, `gateway_*`, `platform_*` version tables) — there's no separate `sam migrate` command. A migration failure on a **configured** store **fails the workload fast**: gateway/platform log `migration failed` and exit (orchestrator restarts them), and a configured AWE/gateway session store that can't be opened or migrated returns `migrate session db: …` so the workload refuses to start. This is deliberate — it will **not** silently fall back to in-memory and drop sessions. The **only** in-memory fallback is when **no** durable store is configured at all (`session_service` absent / `type: memory` / empty `database_url`): the workload comes up on a volatile in-memory store with a loud WARN (`no session database_url configured — using a volatile in-memory session store; chat history will NOT survive a restart`). So treat a *configured*-store migration failure as a hard startup failure, and an unexpected in-memory WARN as "the DB wasn't configured," not a migration problem.
+The runtime applies goose migrations at startup (`session_*`, `gateway_*`, `platform_*` version tables) — there's no separate `sam migrate` command. A migration failure on a **configured** store **fails the workload fast**: entrypoint/platform log `migration failed` and exit (orchestrator restarts them), and a configured AWE/entrypoint session store that can't be opened or migrated returns `migrate session db: …` so the workload refuses to start. This is deliberate — it will **not** silently fall back to in-memory and drop sessions. The **only** in-memory fallback is when **no** durable store is configured at all (`session_service` absent / `type: memory` / empty `database_url`): the workload comes up on a volatile in-memory store with a loud WARN (`no session database_url configured — using a volatile in-memory session store; chat history will NOT survive a restart`). So treat a *configured*-store migration failure as a hard startup failure, and an unexpected in-memory WARN as "the DB wasn't configured," not a migration problem.
 
 ### `sam config migrate` is a different thing
 `sam config migrate <legacy-path> <output-path>` is a **one-shot, bootstrap-only** converter from legacy SAC YAML to clean-spec YAML — pure file transformation, doesn't touch the platform or the DB. It is **not** the schema-migration mechanism. Don't conflate "upgrade migrations" (automatic, DB) with `sam config migrate` (manual, YAML format).

@@ -23,7 +23,7 @@ Today **only the Bedrock knowledge base probes the connection at create/update**
 
 ## Who can manage connectors
 
-Connector CRUD is RBAC-gated with dedicated scopes (`sam:connectors:create` / `read` / `update` / `delete`) — if a user can't see or create connectors in the UI, that's a role/scope question for `sam-operate`, not a missing feature. A connector attachment can also carry per-instance scopes restricting which callers may invoke its tool — key names via `sam-declarative-config`.
+Connector CRUD is RBAC-gated (`connector:_:create` to create; `connector:*:read`/`:update`/`:delete` to manage — per-instance `connector:<name>:…` is accepted by the matcher but not yet enforced; `connector:*:*` is a valid wildcard grant) — if a user can't see or create connectors in the UI, that's a role/scope question for `sam-operate`, not a missing feature. A connector attachment can also carry per-instance scopes restricting which callers may invoke its tool — key names via `sam-declarative-config`.
 
 ## Change blast radius
 

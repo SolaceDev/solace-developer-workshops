@@ -14,4 +14,4 @@ Enforcement is **validate-and-retry against the LLM** (validation errors are fed
 
 ## Consuming it
 
-The structured result is delivered as the task's final output (as an artifact reference on the A2A result for workflow/programmatic invocations). For "my script calls the agent": submit via the gateway HTTP API, wait for the terminal task event — not intermediate streaming chunks — then parse. Gateway/API specifics for external callers (MCP clients, REST) are `sam-gateways` territory.
+The structured result is delivered as the task's final output (as an artifact reference on the A2A result for workflow/programmatic invocations). For "my script calls the agent": submit via the entrypoint HTTP API, wait for the terminal task event — not intermediate streaming chunks — then parse. Entrypoint/API specifics for external callers (MCP clients, REST) are `sam-entrypoints` territory.

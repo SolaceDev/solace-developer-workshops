@@ -269,6 +269,45 @@ nodes:
 
 Use when: A sub-process is reusable across multiple parent workflows, or when the parent workflow would be too complex as a flat DAG.
 
+### Render a Report Template
+
+To turn workflow data into a formatted artifact (HTML/Markdown/JSON report), use a plain `tool` node calling the built-in `instantiate_template` — there is no dedicated template node. Bind each of the template's declared `data_inputs` by its **logical name** to an upstream artifact (`filename` or `filename:version`); the tool rewrites the document's references to point at that artifact, pinned to the exact version it validated, so you never reproduce the sidecar's magic filenames.
+
+```yaml
+tools:
+  - tool_type: builtin
+    tool_name: query_data_with_sql
+  - tool_type: builtin
+    tool_name: instantiate_template
+
+nodes:
+  - id: aggregate
+    type: tool
+    tool_name: query_data_with_sql      # saves an artifact of aggregated rows
+    input:
+      input_files:
+        sales: "{{workflow.input.input_filename}}"
+      sql_query: "SELECT region, SUM(revenue) AS total FROM sales GROUP BY region"
+      output_filename: "sales_totals"
+      output_format: "csv"
+
+  - id: build_report
+    type: tool
+    tool_name: instantiate_template
+    depends_on: [aggregate]
+    input:
+      skill_name: quarterly-report       # or: source_artifact: my_template.samt
+      asset: report.html.samt            # must be the bundled .samt (a non-.samt asset is copied verbatim)
+      substitutions:
+        report_title: "Q3 Sales"
+      data_inputs:
+        sales_rows: "{{aggregate.output.output_filename}}"   # logical name → upstream artifact
+```
+
+Bind `data_inputs` to the field the upstream node actually returns (`query_data_with_sql` returns `output_filename`; an agent node returns its `output_schema` fields); the rendered artifact comes back as `{{build_report.output.filename}}`.
+
+Use when: a workflow's final step is a rendered document. Tool-node failures are terminal, so a bad contract (schema mismatch, missing/invalid data, unresolved embed) fails the node cleanly instead of emitting a hollow success — there is no LLM here to read findings and retry.
+
 ---
 
 ## Structured I/O Contracts

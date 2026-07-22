@@ -28,6 +28,8 @@ sdk.NewTool[P any](name, description string,
 
 One binary may register multiple tools — `sdk.Run` dispatches by tool name (exact, case-sensitive match).
 
+`description` is **required and must be non-empty** — it is the field the LLM uses to choose the tool, and strict providers (e.g. Amazon Bedrock) reject a tool advertised with an empty description. `sdk.NewTool` panics at registration if it is blank.
+
 **Parameter structs** — fields use `json:"name"` for the wire name and `desc:"…"` for the LLM-visible description. Pointer-typed fields are optional; non-pointer are required. Supported: string, int*/float*/bool, slices, maps, nested structs, and `sdk.Artifact` / `*sdk.Artifact` / `[]sdk.Artifact` (artifact contents are loaded *before* your handler runs; `Artifact` has `Content`, `Filename`, `Version`, `MIMEType`, `Metadata`, plus `AsText()` / `AsBytes()`).
 
 **Results**

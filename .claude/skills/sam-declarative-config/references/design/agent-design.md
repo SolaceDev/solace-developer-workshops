@@ -143,7 +143,7 @@ options and explain the implications of each choice.
 
 ### Autonomous Agents
 
-Autonomous agents run behind an event mesh gateway, as workflow nodes, or as delegated peers. They have no user to ask. They must:
+Autonomous agents run behind an event mesh entrypoint, as workflow nodes, or as delegated peers. They have no user to ask. They must:
 
 - **NOT** include `ask_user_question` in their tool set
 - Be explicitly instructed to operate autonomously
@@ -518,7 +518,7 @@ Tool outputs larger than 2KB are saved as artifacts; the LLM sees a truncated pr
 
 ## Agent Card Design
 
-The agent card is how other agents and gateways discover this agent. The capability descriptions (the `skills` field in YAML) are the most important part.
+The agent card is how other agents and entrypoints discover this agent. The capability descriptions (the `skills` field in YAML) are the most important part.
 
 ### Writing Good Capability Descriptions
 

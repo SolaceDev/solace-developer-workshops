@@ -110,7 +110,7 @@ Avoid putting everything in a single huge file. Agents search references with `g
 
 ## Asset Templates
 
-A skill's `assets/` directory can ship report and document **templates**, not just static files. Pair an asset (for example `report.html`) with a `<name>.template.yaml` sidecar and it becomes a template the agent fills with `@@KEY@@` substitutions and instantiates with `instantiate_skill_asset` — the embeds and Liquid in the body render live each time the artifact is downloaded. An asset with no sidecar is copied verbatim.
+A skill's `assets/` directory can ship report and document **templates**, not just static files. Pair an asset (for example `report.html`) with a `<name>.template.yaml` sidecar and it becomes a template the agent fills with `@@KEY@@` substitutions and instantiates with `instantiate_template` — the embeds and Liquid in the body render live each time the artifact is downloaded. An asset with no sidecar is copied verbatim.
 
 Prefer a template over having the agent generate a structured document token by token: the model produces only the small data artifact, and the template engine renders the document. This is both cheaper and more reliable for any repeatable report or export.
 

@@ -11,8 +11,8 @@ repo-root/
 │  └─ <model-name>.yaml      # one file per model resource
 ├─ agents/
 │  └─ <agent-name>.yaml
-├─ gateways/
-│  └─ <gateway-name>.yaml
+├─ entrypoints/
+│  └─ <entrypoint-name>.yaml
 ├─ workflows/
 │  └─ <workflow-name>.yaml
 ├─ toolsets/

@@ -59,8 +59,8 @@ will surface a plan-time dangling-reference error until updated.
    frontmatter, and extracts the description.
 2. The reconciler bundles `skills/<name>/` into a deterministic ZIP
    (sorted entries, fixed mtime — same machinery as toolsets) and
-   uploads it via `POST /skills` (multipart; description as a form
-   field). Re-uploads against an existing skill use `POST /skills/{id}/upload`.
+   uploads it to the platform (multipart; description as a form
+   field). Re-uploads against an existing skill reuse the same upload endpoint.
 3. The platform validates the ZIP server-side: SKILL.md must be at the
    root, and its frontmatter `name` becomes the persisted skill name.
 
@@ -69,9 +69,8 @@ SHA-256 against the platform-stored `SkillDetailResponse.contentHash`
 and skips the upload when they match, so an unchanged skill plans as a
 no-op instead of bouncing through pending→ready and redeploying every
 bound agent. A description-only edit PATCHes metadata but skips the
-upload. `--force-skill` forces a re-upload of an unchanged bundle, and a
-skill stuck in `discoveryStatus: failed` always re-uploads to retrigger
-the STR scan.
+upload. A skill stuck in `discoveryStatus: failed` always re-uploads to
+retrigger the STR scan.
 
 ## Pull flow
 

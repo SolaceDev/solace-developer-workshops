@@ -12,7 +12,7 @@ tags:
 
 ## What is Solace Agent Mesh
 
-Solace Agent Mesh (SAM) is an event-driven AI agent platform. Agents communicate through a message broker rather than calling each other directly. This decoupled architecture means any component — an agent, a gateway, a workflow — can be added, removed, or replaced independently without affecting the rest of the system.
+Solace Agent Mesh (SAM) is an event-driven AI agent platform. Agents communicate through a message broker rather than calling each other directly. This decoupled architecture means any component — an agent, an entrypoint, a workflow — can be added, removed, or replaced independently without affecting the rest of the system.
 
 All inter-component communication uses the A2A (Agent-to-Agent) protocol over the event mesh. Components discover each other automatically: agents announce their capabilities, and other components find them dynamically through agent card publishing. There is no manual wiring required.
 
@@ -46,7 +46,7 @@ A well-designed skill has focused, non-overlapping content. Associated tools on 
 
 ### Capability (Agent Card Entry)
 
-A capability is a public description of something an agent can do, listed on the agent's card for discovery by other agents, the orchestrator, and gateways. When another agent needs help with a specific task, it finds the right peer by matching the task to capability descriptions.
+A capability is a public description of something an agent can do, listed on the agent's card for discovery by other agents, the orchestrator, and entrypoints. When another agent needs help with a specific task, it finds the right peer by matching the task to capability descriptions.
 
 **Important terminology note**: In the YAML configuration, capabilities are defined under the `skills` field on the agent card (this is the A2A protocol field name). Throughout this documentation we use "capability" to avoid confusion with knowledge-base skills, but the config field remains `skills`.
 
@@ -64,35 +64,35 @@ Workflows are discovered as agents: they publish an agent card and receive tasks
 
 Workflow node types are described in the Workflow Node Types section below.
 
-### Gateway
+### Entrypoint
 
-A gateway bridges external protocols into the SAM mesh. Users and external systems interact with agents through gateways. A gateway handles:
+An entrypoint bridges external protocols into the SAM mesh. Users and external systems interact with agents through entrypoints. An entrypoint handles:
 
 - Protocol translation (HTTP/SSE, REST, webhooks, Slack, Teams, etc.)
 - Authentication and authorization
 - Message formatting and response streaming
 - Session management for multi-turn conversations
 
-The most common gateway is the HTTP SSE gateway, which provides a streaming chat interface. Other gateways (Slack, Teams, Event Mesh) are available as plugins.
+The most common entrypoint is the HTTP SSE entrypoint, which provides a streaming chat interface. Other entrypoints (Slack, Teams, Event Mesh) are available as plugins.
 
-#### Event Mesh Gateway
+#### Event Mesh Entrypoint
 
-The event mesh gateway is particularly important for building autonomous, background-running agents. It connects agents to real-world events flowing through the Solace event broker — messages from IoT devices, application events, database change notifications, webhook payloads, or any other event source.
+The event mesh entrypoint is particularly important for building autonomous, background-running agents. It connects agents to real-world events flowing through the Solace event broker — messages from IoT devices, application events, database change notifications, webhook payloads, or any other event source.
 
-An event mesh gateway configuration defines:
+An event mesh entrypoint configuration defines:
 
 - **Topic subscriptions**: Which broker topics to listen on for incoming events
 - **Message mapping**: How to transform incoming event payloads into agent requests
 - **Routing**: Which agent should handle events from which topics
 - **Output handling**: How to publish agent responses back to the event mesh
 
-This is the key component for building agents that operate autonomously without human interaction — reacting to events as they happen, processing data streams, and triggering actions based on real-time conditions. Without an event mesh gateway, agents can only respond to user-initiated chat requests.
+This is the key component for building agents that operate autonomously without human interaction — reacting to events as they happen, processing data streams, and triggering actions based on real-time conditions. Without an event mesh entrypoint, agents can only respond to user-initiated chat requests.
 
 For configuration details, refer to the `sam-gateway-schema` skill.
 
-You typically do not need to create custom gateways unless you are bridging a new external protocol. The built-in HTTP SSE gateway covers most interactive use cases. For event-driven use cases, use an event mesh gateway (see below).
+You typically do not need to create custom entrypoints unless you are bridging a new external protocol. The built-in HTTP SSE entrypoint covers most interactive use cases. For event-driven use cases, use an event mesh entrypoint (see below).
 
-For design guidance on event mesh gateways, refer to `sam-event-mesh-design`. For configuration details, refer to `sam-event-mesh-schema`.
+For design guidance on event mesh entrypoints, refer to `sam-event-mesh-design`. For configuration details, refer to `sam-event-mesh-schema`.
 
 ### Proxy
 
@@ -109,12 +109,12 @@ Use proxies when you need to integrate agents hosted outside your SAM deployment
 
 ### Plugin
 
-A plugin is a packaged, distributable SAM component. Plugins wrap agents, gateways, or custom functionality into installable units that can be shared across projects and teams.
+A plugin is a packaged, distributable SAM component. Plugins wrap agents, entrypoints, or custom functionality into installable units that can be shared across projects and teams.
 
 Plugin types:
 
 - **Agent plugins**: Package an agent with its tools, skills, and configuration
-- **Gateway plugins**: Package a gateway with its protocol adapters
+- **Entrypoint plugins**: Package an entrypoint with its protocol adapters
 - **Custom plugins**: Package arbitrary functionality (tools, service providers, etc.)
 
 Plugins are the mechanism for reuse and distribution. Build a standalone agent first for prototyping, then package it as a plugin when it needs to be shared or deployed in multiple environments.
@@ -147,9 +147,9 @@ Prompts are user-facing conveniences — they make it easier to interact with ag
 Agents are the fundamental unit. Everything else either composes agents, exposes agents, or supports agents:
 
 - **Workflows compose agents**: A workflow's agent nodes invoke agents as steps. The workflow controls the order and logic; the agents do the actual work.
-- **Gateways expose agents**: Users reach agents through gateways. The gateway translates the user's protocol (HTTP, Slack, etc.) into A2A messages.
+- **Entrypoints expose agents**: Users reach agents through entrypoints. The entrypoint translates the user's protocol (HTTP, Slack, etc.) into A2A messages.
 - **Proxies bridge agents**: External agents become available on the mesh through proxies, appearing as regular agents to everything else.
-- **Plugins package agents**: A plugin wraps an agent (or gateway, or tool) for distribution and reuse.
+- **Plugins package agents**: A plugin wraps an agent (or entrypoint, or tool) for distribution and reuse.
 - **Skills provide agent knowledge**: Skills are loadable knowledge bundles with reference material and optional associated tools, loaded on demand.
 - **Capabilities describe agent expertise**: Listed on the agent card, capabilities tell other components what this agent can do.
 - **Tools extend agent reach**: Tools are how agents take actions — calling APIs, querying databases, managing artifacts, delegating to peers.
@@ -172,7 +172,7 @@ Agent discovery is automatic. Every agent (and workflow) publishes an agent card
 - Supported input and output modes (text, file, etc.)
 - Provider information
 
-Other components — including gateways, other agents, and the orchestrator — subscribe to agent card announcements and maintain a live directory of available capabilities. When an agent needs to delegate a task, it searches this directory to find the right peer.
+Other components — including entrypoints, other agents, and the orchestrator — subscribe to agent card announcements and maintain a live directory of available capabilities. When an agent needs to delegate a task, it searches this directory to find the right peer.
 
 ---
 
@@ -302,13 +302,13 @@ For detailed guidance on mapping requirements to SAM components, refer to the `s
 |------|-----------|
 | Flexible reasoning about a task, tool use, conversation | Agent |
 | Deterministic multi-step process with explicit control flow | Workflow |
-| Expose agents to users or external systems | Gateway |
+| Expose agents to users or external systems | Entrypoint |
 | Integrate an agent hosted outside your deployment | Proxy |
 | Package a component for reuse and distribution | Plugin |
 | Organize user sessions and artifacts | Project |
 | Save reusable message templates | Prompt |
 | Provide loadable knowledge and associated tools to an agent | Skill |
-| React to external events with AI processing | Event Mesh Gateway |
+| React to external events with AI processing | Event Mesh Entrypoint |
 
 **Agent vs. Workflow**: Use an agent when the LLM should decide what to do next. Use a workflow when you know the sequence of steps ahead of time and want deterministic execution. Workflows often contain agents as nodes — the workflow controls the process, the agents handle the reasoning within each step.
 
@@ -326,7 +326,7 @@ For exact field definitions, required fields, and annotated examples, refer to t
 - `sam-agent-schema` — agent configuration schema
 - `sam-workflow-schema` — workflow configuration schema
 - `sam-tool-schema` — tool definition schema
-- `sam-event-mesh-schema` — event mesh gateway configuration schema
-- `sam-gateway-schema` — full gateway configuration schema (HTTP SSE and event mesh gateways)
+- `sam-event-mesh-schema` — event mesh entrypoint configuration schema
+- `sam-gateway-schema` — full entrypoint configuration schema (HTTP SSE and event mesh entrypoints)
 
 When building components through the SAM builder, configurations are stored in the platform database and deployed through the platform service's control protocol. You do not need to manage config files directly.

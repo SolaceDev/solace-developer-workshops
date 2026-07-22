@@ -1,114 +1,180 @@
 ---
 title: Configuring Agent Mesh
-description: Wire Agent Mesh to your broker, LLM provider, artifact storage, session storage, and identity provider with YAML and environment variables.
+description: Configure the event broker, LLM provider, artifact and session storage, authentication, and secrets for a Kubernetes install of Agent Mesh.
 sidebar_position: 360
 ---
 
 # Configuring Agent Mesh
 
-<!-- WRITER NOTE: Source: archive/installing/configure.md. Rewrite to Solace style. Do NOT copy/paste. -->
+You have Agent Mesh installed. Configuration connects it to your environment and makes it usable for your deployment.
 
-This page covers configuration for the CLI binary, Docker, and Kubernetes deployments. The desktop bundle uses bundled defaults and is not configurable—see [Installing the Desktop Bundle](./desktop.md).
+A Kubernetes install reads its configuration from Helm chart values: you set values in a values file, and the chart renders the underlying configuration and environment for you. This page covers the most common values for each concern and links to the full procedure. For the step-by-step production install, see [Installing Kubernetes for Production](./kubernetes/production.md). For every chart value, see [Helm Values Reference](../reference/helm-values.md).
 
-## Event Broker Connection
+The desktop bundle is not configured through this page; it runs with bundled defaults and prompts for your large language model (LLM) API key on first launch.
 
-<!-- WRITER NOTE: Numbered steps. Cover: the YAML block for broker connection (host, port, VPN, credentials), environment variables for credentials, TLS configuration, and how to verify the connection is working (health check or log output). -->
+## What to Configure First
 
-1. Add the broker connection block to your configuration file:
+Configuration breaks down into concerns that you can set independently. The following table lists each concern, what it controls, and when you need it.
 
-   ```yaml
-   broker:
-     [host]: [your-broker-host]
-     [port]: [your-broker-port]
-     [vpn]: [your-message-vpn]
-     [username]: ${BROKER_USERNAME}
-     [password]: ${BROKER_PASSWORD}
-   ```
+| What you configure | What it controls | Required for |
+|---|---|---|
+| Event broker | Which event broker carries messages between components | Every deployment |
+| LLM provider | Which model the agent calls and how it authenticates | Every agent that calls an LLM |
+| Artifact storage | Where versioned artifacts such as documents and images persist | Any agent that produces artifacts |
+| Session storage | Where conversation history and task checkpoints persist | Multi-turn chats and resumable tasks |
+| Authentication | Who can use the entrypoint | Non-local deployments |
+| Secrets | How API keys, tokens, and credentials are sourced | Every deployment |
 
-2. Export your broker credentials as environment variables:
+A production Kubernetes deployment needs at minimum an external event broker, a real LLM provider, durable artifact and session storage, and an identity provider.
 
-   ```bash
-   export BROKER_USERNAME=[username]
-   export BROKER_PASSWORD=[password]
-   ```
+## Event Broker
 
-3. [Start or restart Agent Mesh and verify the connection — for example, run a health check or look for a successful connection log line.]
+The event broker carries every agent-to-agent and agent-to-entrypoint message. The chart deploys an embedded event broker by default for evaluation. A production deployment disables the embedded event broker and points at an external Solace event broker:
 
-   The startup log shows a successful connection to the event broker and no connection error messages appear.
+```yaml
+global:
+  broker:
+    embedded: false
+broker:
+  url: "tcps://your-broker.messaging.solace.cloud:55443"
+  vpn: "your-vpn"
+  clientUsername: "your-username"
+  password: "${BROKER_PASSWORD}"
+```
+
+:::warning
+The embedded event broker provides no high availability and no backup and restore. Set `global.broker.embedded: false` and supply an external event broker for production.
+:::
+
+For the full event broker value set and the procedure for connecting an external event broker, see [Installing Kubernetes for Production](./kubernetes/production.md).
 
 ## LLM Provider
 
-<!-- WRITER NOTE: Numbered steps. Cover: how to set the provider and model in YAML, how to pass the API key via environment variable, and how to verify the LLM connection is working. Cover multiple providers if configuration differs between them. -->
+Every agent, and the entrypoint's system agent when present, calls a model identified by a `<provider>/<model-name>` string. The prefix selects the API protocol, and the runtime handles the per-provider details.
 
-1. Set the model provider and model name in your agent configuration:
+| Prefix | Provider | Notes |
+|---|---|---|
+| `openai/` | OpenAI direct, or any OpenAI-compatible endpoint | The default when you give no prefix. |
+| `anthropic/` | Anthropic Claude direct | Inferred from any model name that contains `claude` or `anthropic`. |
+| `azure/` | Azure OpenAI | Requires an endpoint, an API version, and a deployments map. |
+| `bedrock/` | AWS Bedrock | Requires an IAM principal with `bedrock:InvokeModel`, plus an access key, a secret key, and a region. |
+| `vertex/` | Google Vertex AI | Requires a service account with the `aiplatform.user` role, plus a project ID, a region, and application default credentials. |
+| `google/` | Google Generative AI direct | Inferred from any model name that contains `gemini`. |
+| `ollama/` | Local Ollama | Requires an endpoint URL, for example `http://localhost:11434`. |
+| `huggingface/`, `replicate/` | Hugging Face Inference and Replicate | Use the standard API-key pattern. |
+| `groq/`, `mistral/`, `cohere/`, `xai/`, `openrouter/`, `perplexity/`, `cerebras/`, `nebius/` | Other supported providers | Use the standard API-key pattern. The `cerebras` and `nebius` providers are recognized but not tested end-to-end. |
 
-   ```yaml
-   model:
-     model: [provider]/[model-name]
-     api_key: ${[PROVIDER_API_KEY_VAR]}
-   ```
+For the connection, retry, and authentication fields that accompany the model string, see [The `model` Block](../reference/config-schema.md#the-model-block) in Configuration Schema.
 
-2. Export your LLM API key:
+On Kubernetes, the LLM block is optional. If you leave it empty, you choose a provider and enter the API key on first login through the Model Configuration prompt.
 
-   ```bash
-   export [PROVIDER_API_KEY_VAR]=[your-api-key]
-   ```
+```yaml
+llmService:
+  llmServiceEndpoint: "https://api.openai.com/v1"
+  llmServiceApiKey: "${LLM_SERVICE_API_KEY}"
+  planningModel: "gpt-4o"
+  generalModel: "gpt-4o"
+```
 
-3. [Verify the LLM connection — for example, send a test task or run `sam-enterprise doctor`.] The command reports the LLM provider as reachable.
+The endpoint, API key, and non-empty model names are seeded at startup as the `planning` and `general` model aliases. You can add or change model configurations later in the Agent Mesh UI.
 
 ## Artifact Storage
 
-<!-- WRITER NOTE: Numbered steps. Cover: the available backends (filesystem, S3, GCS, Azure Blob), the YAML configuration for each, required credentials, and how to verify artifacts are being written correctly. Note which backend is the default. -->
+The artifact service holds the versioned artifacts that agents produce or consume, such as documents, images, and generated reports. A production deployment points at an external object store through the `dataStores` values:
 
-1. Choose a storage backend and add the appropriate block to your configuration file:
+```yaml
+dataStores:
+  objectStorage:
+    type: "s3"
+  s3:
+    bucketName: "my-sam-artifacts"
+    region: "us-east-1"
+    accessKey: "${S3_ACCESS_KEY}"
+    secretKey: "${S3_SECRET_KEY}"
+```
 
-   ```yaml
-   artifact_service:
-     type: [filesystem | s3 | gcs | azure_blob]
-     [backend-specific settings here]
-   ```
+Set `dataStores.objectStorage.type` to `s3`, `azure`, or `gcs`, and populate the matching block. To remove static access keys, use workload identity instead. For workload identity and the full storage value set, see [Authenticate to Cloud Storage with Workload Identity](./kubernetes/production.md#authenticate-to-cloud-storage-with-workload-identity).
 
-   [Describe each backend option and its settings in detail here.]
-
-2. [For cloud storage backends, export any required credentials as environment variables.]
-
-3. [Start or restart Agent Mesh.] Agent Mesh starts without storage errors in the log output.
+:::warning
+Agent Mesh validates S3 bucket access at startup, so a missing or forbidden bucket fails the workload before it accepts traffic. The Google Cloud Storage and Azure backends defer their credential and container checks to the first read or write. Verify access independently to catch a misconfigured bucket before it appears under load.
+:::
 
 ## Session Storage
 
-<!-- WRITER NOTE: Numbered steps. Cover: the available backends (SQLite, Postgres, in-memory), the YAML configuration for each, and the trade-offs between them (persistence, scalability). Note which backend is the default and when to use Postgres instead. -->
+The session service holds the conversation history and task checkpoints that let an agent resume across requests. A production deployment points at an external PostgreSQL database through the `dataStores.database` values:
 
-1. Choose a session storage backend and add the appropriate block to your configuration file:
+```yaml
+dataStores:
+  database:
+    host: "mydb.abc123.us-east-1.rds.amazonaws.com"
+    port: "5432"
+    adminUsername: "postgres"
+    adminPassword: "${DB_ADMIN_PASSWORD}"
+    applicationPassword: "${DB_APP_PASSWORD}"
+```
 
-   ```yaml
-   session_service:
-     type: [memory | sqlite | postgres]
-     [backend-specific settings here]
-   ```
+A database init container uses the admin credentials to create the Agent Mesh application users and databases. The `applicationPassword` is the shared password for those users.
 
-   [Describe each backend option, its settings, and when to use it — for example, use Postgres for production deployments that require persistence and horizontal scaling.]
+:::warning
+The init container creates the application users only if they do not already exist, and it does not change the password of a user that is already present. Set `applicationPassword` before the first install. To change it later, set a new `global.persistence.namespaceId` to create a fresh set of users and databases, or update the passwords directly in the database.
+:::
 
-2. [Start or restart Agent Mesh.] Agent Mesh starts and session data is written to the configured backend.
+For the full database value set, see [Installing Kubernetes for Production](./kubernetes/production.md).
 
-## Authentication and RBAC
+## Authentication
 
-<!-- WRITER NOTE: Numbered steps. Cover: the three authorization_service.type modes (none / default_rbac / deny_all), OIDC provider wiring, and the built-in login option. Cross-reference RBAC Reference for the scope catalog. -->
+Authentication is a property of the Web UI entrypoint, not the agents. It answers who the user is. Role-based access control (RBAC), which answers what an authenticated user can do, is a separate concern. For more information, see [RBAC Reference](../reference/rbac-reference.md).
 
-1. Set the authorization mode in your configuration file:
+A production deployment enables authorization and configures the OpenID Connect (OIDC) provider through the `sam` values:
 
-   ```yaml
-   authorization_service:
-     type: [none | default_rbac | deny_all]
-   ```
+```yaml
+sam:
+  authorization:
+    enabled: true
+  oauthProvider:
+    oidc:
+      issuer: "https://login.microsoftonline.com/YOUR-TENANT-ID/v2.0"
+      clientId: "your-client-id"
+      clientSecret: "${OIDC_CLIENT_SECRET}"
+```
 
-   [Describe when to use each mode — for example, use `none` for local development, `default_rbac` for normal operation, and `deny_all` for hardening a deployment.]
+:::warning
+When `sam.authorization.enabled` is `false`, every user has admin access. Set it to `true` for production and configure the OIDC provider.
+:::
 
-2. [If using OIDC authentication, add the identity provider configuration block and any required environment variables.]
+Register the callback URI `https://your-dns-name/api/v1/auth/callback` with your identity provider, where `your-dns-name` is the value of `sam.dnsName`. For the full authentication procedure, see [Installing Kubernetes for Production](./kubernetes/production.md).
 
-3. [Start or restart Agent Mesh.] The Web UI login page reflects the configured authentication mode.
+## Secrets
+
+Every credential is sourced at startup rather than written inline in your values file. Instead of placing passwords and API keys directly in the values file, reference existing Kubernetes Secrets through `extraSecretEnvironmentVars`. Each entry maps an environment variable name to a Secret name and key, and the chart injects the value into the workloads. The `${VAR}` placeholders in the values above—`${BROKER_PASSWORD}`, `${S3_ACCESS_KEY}`, `${DB_ADMIN_PASSWORD}`, `${OIDC_CLIENT_SECRET}`, and the like—resolve from those injected variables.
+
+## Validate the Configuration
+
+Confirm that the configuration is well-formed before the first task arrives.
+
+To pre-flight connectivity, run `sam doctor`. It reads the connection settings present in your environment (event broker, LLM service endpoint, databases, object storage, TLS, and OIDC) and reports a PASS, WARN, FAIL, or SKIP line per check. On a developer machine, set `SAM_DOCTOR_CONTEXT=local`, which skips the checks for services you have not configured instead of failing them:
+
+```bash
+SAM_DOCTOR_CONTEXT=local sam doctor -v
+```
+
+The `-v` flag turns on verbose output, and a failing check causes a non-zero exit. This pre-flight is most useful when you set the connection variables yourself, for example when rehearsing a Kubernetes deployment.
+
+On Kubernetes, the chart runs the `sam-doctor` pre-install check automatically before it creates any workload pods, using the `helm` rule set. The check confirms cluster resources and the referenced Secrets, ConfigMaps, StorageClass, and IngressClass exist. For how to read its output, see [Kubernetes Installation Issues](./troubleshoot.md#kubernetes-installation-issues).
+
+After the install, you can confirm the deployment is reachable through its ingress hostname:
+
+```bash
+curl -s https://sam.example.com/health
+curl -s https://sam.example.com/api/v1/platform/health
+```
+
+If both endpoints return a successful response, Agent Mesh is running correctly. The entrypoint `/health` endpoint returns a plain `ok` body, and the platform endpoint returns:
+
+```json
+{"status":"healthy","service":"Platform Service"}
+```
 
 ## Next Steps
 
-- To set up logging and metrics, see [Monitoring Your Deployment](./monitor.md).
-- For the full configuration schema, see [Config Schema](../reference/config-schema.md).
-- For the RBAC scope catalog, see [RBAC Reference](../reference/rbac-reference.md).
+You have configured Agent Mesh for your environment. After it is running, confirm it is healthy and emitting the metrics and logs your monitoring stack consumes. For more information, see [Monitoring Your Deployment](./monitor.md).

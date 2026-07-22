@@ -10,6 +10,14 @@ fields, which `sam config pull` rewrites as `${VAR}` placeholders).
 Unlike skills, connectors are referenced from agents by name only —
 there is no per-agent override of connector values.
 
+Workflow `type: tool` nodes also reference connectors by name: the
+node's `connector:` field names the connector, and `tool:` selects
+one of a multi-tool connector's tools by un-suffixed base name
+(optional when the connector produces exactly one). The platform
+resolves the reference to a concrete `tool_name` at deploy time, and
+connector edits or renames auto-redeploy bound workflows. See the
+workflow kind reference for the node shape.
+
 ### Human-in-the-loop (HIL) on MCP tools
 
 MCP connectors expose many tools from one binding, so HIL is authored
@@ -55,10 +63,42 @@ one tool and `hil:` sits directly on the entry. For the full feature
 reference (fields, `{{.argName}}` template syntax, design guidance),
 see `references/design/agent-design.md` → *Human-in-the-Loop (HIL)*.
 
+### OpenAPI spec files (`api`/`openapi`)
+
+An `api`/`openapi` connector's tool surface comes from an OpenAPI spec,
+supplied one of two ways (mutually exclusive):
+
+- `specification_url` — an external URL the deployed agent fetches live
+  at startup. Requires the cluster to have egress to that URL.
+- `specification_file` — a local spec file vendored in the repo that
+  `sam config apply` uploads as the connector's resource. The agent
+  loads it from in-cluster object storage, so it works in deployments
+  with no external egress. The path resolves relative to the connector's
+  YAML file; the convention is a `connectors/<name>.openapi.(yaml|json)`
+  sidecar:
+
+```yaml
+kind: connector
+name: figma
+spec:
+  type: api
+  subtype: openapi
+  values:
+    specification_file: figma.openapi.yaml
+    base_url: "https://api.figma.com"
+    allow_list: "getFile, getComments"
+```
+
+Uploads are hash-diffed: an unchanged spec file is a no-op (no
+re-upload, no agent redeploy); a changed file shows in `sam config
+plan` as `update (spec <old> → <new>)`. `sam config pull` round-trips a
+spec that was uploaded through the UI wizard by writing the sidecar
+file and referencing it via `specification_file`.
+
 
 ## Wrapper schema
 
-CreateConnectorRequest is the request body for POST /connectors.
+Authoring fields for the "connector" resource.
 
 | Field | Type | Required | Validation | Description |
 |---|---|---|---|---|
@@ -66,7 +106,7 @@ CreateConnectorRequest is the request body for POST /connectors.
 | `description` | `string` | yes | len 10–1000 | (no description) |
 | `type` | `string` | yes | max 50 | (no description) |
 | `subtype` | `string` | yes | max 50 | (no description) |
-| `values` | `any` | yes |  | (no description) |
+| `values` | `object` | yes |  | (no description) |
 
 ## Per-(type, subtype) detail
 
@@ -80,11 +120,32 @@ Each connector type carries one or more subtypes. Find the `## type:` matching t
 
 Connect to REST APIs via OpenAPI specification
 
+**Usage guidance**
+
+Use the OpenAPI connector when the user wants to connect an agent to a
+REST API that has an OpenAPI (Swagger) specification. The spec URL points
+to the API's OpenAPI JSON or YAML definition. The connector will parse
+the spec and expose the API's endpoints as tools.
+
+If the user provides the spec URL, you can use the ParseOpenAPISpec tool
+to detect what authentication the API requires. This helps you set the
+correct auth_type and fill in what you can.
+
+Authentication options:
+- none: Public API, no auth needed
+- apikey: API key sent in a header or query parameter
+- http: HTTP auth (basic username/password or bearer token)
+- oauth: OAuth2 flow
+
+Always use <<__SAM_REQUIRED__>> for secret fields since these should
+never appear in artifacts.
+
 > ⚠ All agents using this connector will have the same API access. Ensure the API has minimal necessary permissions.
 
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
 | `file_s3_key` | `string (secret)` |  |  | secret | (no description) |
+| `specification_file` | `string` |  |  |  | Declarative-config only: path to a local OpenAPI spec file that `sam config apply` uploads as the connector resource. Mutually exclusive with specification_url. |
 | `specification_url` | `string` |  |  |  | URL to your OpenAPI specification (leave empty if uploading file) |
 | `base_url` | `string` | yes |  | len 11–2048; matches regex | Base URL for the API server |
 | `auth_type` | `select` | yes | `none` | one of: none, apikey, http, oauth | (no description) |
@@ -116,6 +177,7 @@ spec:
   subtype: openapi
   values:
     file_s3_key: ${EXAMPLE_API_OPENAPI_FILE_S3_KEY}  # secret — provide via env var
+    # optional: specification_file: "..."
     # optional: specification_url: "http://localhost:8002/openapi.json or upload file"
     base_url: "xxxxxxxxxxx"
     auth_type: "none"
@@ -144,6 +206,18 @@ spec:
 **DynamoDB**
 
 Connect to an Amazon DynamoDB table
+
+**Usage guidance**
+
+Use the DynamoDB connector when the user wants an agent to query an
+Amazon DynamoDB table. Each connector targets a single table.
+Authentication supports either AWS Access Keys or IAM Role Chaining
+(only available when SAM is deployed on AWS). For Role Chaining,
+provide the role ARN to assume.
+
+Always use <<__SAM_REQUIRED__>> for the access key, secret key, and
+external ID fields since these are AWS credentials that should never
+appear in artifacts.
 
 > ⚠ Agents using this connector run queries with the configured AWS credentials. Use a least-privilege IAM role or user scoped to specific tables. Agent Mesh cannot restrict what queries agents execute—access control must be configured at the AWS IAM level.
 
@@ -184,13 +258,28 @@ spec:
 
 Connect to a MongoDB database
 
+**Usage guidance**
+
+Use the MongoDB connector when the user wants to query or interact with
+a MongoDB database via aggregation pipelines. The connector exposes one
+collection per connector—create separate connectors for additional
+collections. The user provides the host, optional credentials, a database
+name, and a collection name. Choose the mongodb+srv scheme for DNS
+seedlist clusters (e.g. MongoDB Atlas), which ignores the port. For the
+builder, use <<__SAM_REQUIRED__>> for the password.
+
 > ⚠ All agents using this connector will have the same database access. Agent Mesh cannot restrict what queries agents execute—access control must be configured at the database level. For security, use credentials with minimal necessary permissions (e.g., read-only, scoped to a single database/collection).
 
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
-| `connection_string` | `password (secret)` | yes |  | len 10–2048; matches regex; secret | MongoDB connection URI (mongodb:// or mongodb+srv://). May include the database name in the path. Leave placeholder to keep existing value. After saving, this value will no longer be displayed. |
-| `database` | `string` |  |  | max len 255; matches regex | Leave blank if the database is encoded in the connection string path. |
+| `scheme` | `select` |  | `mongodb` | one of: mongodb, mongodb+srv | Use mongodb+srv for DNS seedlist clusters (e.g. MongoDB Atlas), which resolve hosts via SRV records and ignore the port. |
+| `hostname` | `string` | yes |  | len 1–255; matches regex | MongoDB host or cluster address (without scheme or port). |
+| `port` | `number` |  | `27017` | range 1–65535 | Ignored for the mongodb+srv scheme. Defaults to 27017. |
+| `username` | `string` |  |  | max len 255 | Optional. Leave blank for unauthenticated access. |
+| `password` | `password (secret)` |  |  | secret | Leave the placeholder to keep the existing value. After saving, this value is no longer displayed. |
+| `database` | `string` |  |  | max len 255; matches regex | Authentication database and default database. Often required when a username is set (e.g. admin). |
 | `collection` | `string` | yes |  | len 1–255; matches regex | MongoDB collection this connector will query. |
+| `options` | `string` |  |  | max len 2048; matches regex | Optional URI query options, without the leading '?'. Examples: retryWrites=true, authSource=admin, tls=true. |
 
 #### Example
 
@@ -202,9 +291,14 @@ spec:
   type: document_db
   subtype: mongodb
   values:
-    connection_string: ${EXAMPLE_DOCUMENT_DB_MONGODB_CONNECTION_STRING}  # secret — provide via env var
+    # optional: scheme: "mongodb"
+    hostname: "cluster0.abcd.mongodb.net"
+    # optional: port: 27017
+    # optional: username: "..."
+    password: ${EXAMPLE_DOCUMENT_DB_MONGODB_PASSWORD}  # secret — provide via env var
     # optional: database: "..."
     collection: "x"
+    # optional: options: "retryWrites=true&w=majority"
 ```
 
 ## type: email
@@ -214,6 +308,28 @@ spec:
 **SMTP Email**
 
 Send emails via SMTP server
+
+**Usage guidance**
+
+Use the SMTP Email connector when the user wants an agent to send outbound
+emails. The connector provides a send_email tool that agents can use to
+compose and send emails with optional HTML bodies and attachments.
+
+The user must provide the SMTP server host, port, and authentication
+credentials. TLS should be enabled for security (STARTTLS or implicit TLS).
+
+Authentication options:
+- PLAIN/LOGIN: Traditional username/password authentication
+- OAuth 2.0: Modern authentication for Microsoft 365 and Google Workspace
+  - Microsoft 365: Use Azure AD app registration with SMTP.Send permission
+  - Google: Use Google Cloud OAuth with Gmail API scope
+
+IMPORTANT: The connector enforces a recipient allowlist — agents can only
+send to approved domains. The envelope_from address is fixed and cannot be
+changed by agents.
+
+For passwords and credentials not provided, use <<__SAM_REQUIRED__>> as
+the placeholder value.
 
 > ⚠ The send_email tool allows agents to send emails externally. Configure the recipient allowlist carefully to prevent unauthorized outbound communication. All sent emails are logged for audit purposes.
 
@@ -286,26 +402,58 @@ spec:
 
 **Solace Event Mesh**
 
-Send requests to backend microservices via a Solace event broker
+Connect agents to event-driven services through a Solace event broker
 
-> ⚠ Agents can publish messages to topics on the configured event broker. Configure appropriate ACLs on the event broker.
+**Usage guidance**
+
+Use the Event Mesh connector when agents need to interact with backend
+microservices through Solace's event mesh. Supports Request-Reply and
+Publish-Subscribe messaging patterns.
+
+Each operation uses a standard JSON Schema object for its agent-facing
+inputs. Its topic address can include {property_name} dynamic levels.
+Add x-solace-payload-path to map a property into a nested payload and
+x-solace-context-expression to source a value from runtime context.
+
+Example input schema:
+{"type":"object","properties":{"order_id":{"type":"string","description":"Order ID","x-solace-payload-path":"order.id"}},"required":["order_id"]}
+
+When importing from Event Portal, treat the event's payload schema as a
+starting point rather than the final tool input:
+- Remove broker-generated envelope fields such as eventId and eventTimestamp.
+- Add properties used only by the topic address, such as store_id or
+  warehouse_id, and leave their payload path empty (topic-only).
+- Set a payload path for every property that belongs in the message body.
+- Review required fields, descriptions, enums, and defaults for agent use.
+- Remove fields the agent should not provide, or source them from runtime
+  context with x-solace-context-expression.
 
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
-| `broker_connection_type` | `select` | yes | `sam` | one of: sam, custom | Select an option to pre-fill connection details from the Agent Mesh event broker, or enter a custom event broker. A password is always required. |
 | `broker_url` | `string` | yes |  | len 1–512 | Secured SMF URI (Public Endpoint) |
-| `broker_vpn` | `string` | yes |  | len 1–128 | Message VPN name |
+| `broker_vpn` | `string` | yes |  | len 1–128 | (no description) |
 | `broker_username` | `string` | yes |  | len 1–128 | (no description) |
-| `broker_password` | `password (secret)` | yes |  | len 1–1024; secret | Event broker password for client connections. |
-| `tool_name` | `string` | yes |  | max len 64; matches regex | Name shown to the LLM (e.g., get_order_status). Must start with a lowercase letter. |
-| `tool_description` | `textarea` | yes |  | len 10–2048 | Tool description given to the LLM. |
-| `topic` | `string` | yes |  | len 1–512 | Topic to publish to. Use {{ param }} for parameter substitution. |
-| `wait_for_response` | `select` | yes | `true` | one of: true, false | (no description) |
-| `request_expiry_ms` | `number` |  | `60000` | range 1000–300000 | Request timeout in milliseconds (request-reply mode only). |
-| `reply_mode` | `select` |  | `temp_queue` | one of: temp_queue, p2p_inbox | How replies are received (request-reply mode only). |
-| `qos` | `select` | yes | `1` | one of: 1, 0 | How requests are delivered to the event broker. |
-| `payload_format` | `select` | yes | `json` | one of: json, yaml, text | (no description) |
-| `parameters` | `textarea` |  |  | max len 16384 | JSON array defining LLM-visible parameters. Each parameter can have: name, type (string/number/boolean/integer), required, description, payload_path, default, context_expression.  |
+| `broker_password` | `password (secret)` | yes |  | len 1–1024; secret | (no description) |
+| `operations` | `operations` | yes |  |  | One or more agent tools that share this event broker connection. |
+
+**Inner schema for `operations` (`operations`)**:
+
+One or more agent tools that share this event broker connection. Each operation maps a tool's JSON Schema inputs onto a Solace topic and message payload.
+
+Each entry is an object with:
+
+| Field | Type | Required | Default | Validation | Description |
+|---|---|---|---|---|---|
+| `tool_name` | `string` | yes |  |  | Agent-facing tool name. Lowercase, digits, underscores; must start with a letter. |
+| `tool_description` | `string` | yes |  |  | What the tool does and when the agent should call it (min 10 chars). |
+| `topic` | `string` | yes |  |  | Solace topic to publish to. Use {property_name} for dynamic levels sourced from input_schema. |
+| `wait_for_response` | `bool` | yes |  |  | true for Request-Reply (await a correlated reply); false for fire-and-forget Publish-Subscribe. |
+| `payload_format` | `string` | yes |  |  | One of: json, yaml, text. |
+| `input_schema` | `object` | yes |  |  | JSON Schema object. Add x-solace-payload-path to map a property into the payload; x-solace-context-expression to source it from runtime context. |
+| `qos` | `number` |  |  |  | 0 (direct) or 1 (guaranteed). Defaults to 1. |
+| `request_expiry_ms` | `number` |  |  |  | [advanced] Reply timeout for Request-Reply, 1000-300000. Ignored when wait_for_response is false. |
+| `reply_mode` | `string` |  |  |  | [advanced] Request-Reply only: temp_queue or p2p_inbox. |
+
 
 #### Example
 
@@ -317,20 +465,69 @@ spec:
   type: event_mesh
   subtype: solace
   values:
-    broker_connection_type: "sam"
     broker_url: "tcps://broker.example.com:55443"
     broker_vpn: "x"
     broker_username: "x"
     broker_password: ${EXAMPLE_EVENT_MESH_SOLACE_BROKER_PASSWORD}  # secret — provide via env var
-    tool_name: "get_order_status"
-    tool_description: "Get the status of a customer order by its ID"
-    topic: "myapp/v1/orders/{{ order_id }}/status"
-    wait_for_response: "true"
-    # optional: request_expiry_ms: 60000
-    # optional: reply_mode: "temp_queue"
-    qos: "1"
-    payload_format: "json"
-    # optional: parameters: "[\n  {\"name\": \"order_id\", \"type\": \"string\", \"required\": true, \"description\": \"Order ID to look up\", \"payload_path\": \"request.order_id\"}\n]\n"
+    operations:
+      - tool_name: create_replenishment_command
+        tool_description: "Create a replenishment command for a store SKU. Use when stock is critically low or a stockout is predicted."
+        topic: "retail/ca/store/{store_id}/replenishment/command/requested/v1"
+        wait_for_response: false
+        payload_format: json
+        qos: 1
+        input_schema:
+          type: object
+          required: [store_id, sourceSystem, sku, quantity, priority]
+          properties:
+            store_id:
+              type: string
+              description: Store identifier (dynamic topic level, not part of the payload)
+            sourceSystem:
+              type: string
+              description: System or process that originated this event
+              x-solace-payload-path: sourceSystem
+            sku:
+              type: string
+              description: Product SKU to replenish
+              x-solace-payload-path: sku
+            quantity:
+              type: integer
+              minimum: 1
+              description: Requested replenishment quantity
+              x-solace-payload-path: quantity
+            priority:
+              type: string
+              enum: [HIGH, MEDIUM, LOW]
+              description: Urgency level
+              x-solace-payload-path: priority
+            freeText:
+              type: string
+              description: Additional context for the fulfillment team
+              x-solace-payload-path: freeText
+            correlationId:
+              type: string
+              description: Links related events across the same operational cycle
+              x-solace-payload-path: correlationId
+      - tool_name: get_store_inventory
+        tool_description: "Look up the current on-hand inventory for a SKU at a store before deciding whether replenishment is needed."
+        topic: "retail/ca/store/{store_id}/inventory/query/request/v1"
+        wait_for_response: true
+        request_expiry_ms: 30000
+        reply_mode: temp_queue
+        qos: 1
+        payload_format: json
+        input_schema:
+          type: object
+          required: [store_id, sku]
+          properties:
+            store_id:
+              type: string
+              description: Store identifier (dynamic topic level, not part of the payload)
+            sku:
+              type: string
+              description: Product SKU to query
+              x-solace-payload-path: sku
 ```
 
 ## type: graph_db
@@ -341,11 +538,21 @@ spec:
 
 Connect to a Neo4j graph database
 
+**Usage guidance**
+
+Use the Neo4j connector when the user wants an agent to query a Neo4j
+graph database with Cypher. The user provides the host, a scheme
+(bolt / bolt+s / neo4j / neo4j+s), username, password, and optionally a
+database name (defaults to "neo4j"). For the builder, use
+<<__SAM_REQUIRED__>> for the password.
+
 > ⚠ All agents using this connector will have the same database access. Agent Mesh cannot restrict what queries agents execute—access control must be configured at the database level. For security, use credentials with minimal necessary permissions.
 
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
-| `connection_string` | `password (secret)` | yes |  | len 10–1024; matches regex; secret | Bolt URI: bolt://, bolt+s:// (TLS), neo4j://, or neo4j+s:// (TLS, routing). Treated as secret because Bolt URIs can embed credentials (user:pass@host). Leave placeholder to keep existing value. |
+| `scheme` | `select` |  | `neo4j` | one of: neo4j, neo4j+s, bolt, bolt+s | bolt / bolt+s connect to a single instance; neo4j / neo4j+s route across a cluster. The +s variants use TLS. |
+| `hostname` | `string` | yes |  | len 1–255; matches regex | Neo4j host or IP address (without scheme or port). |
+| `port` | `number` |  | `7687` | range 1–65535 | Bolt port. Defaults to 7687. |
 | `username` | `string` | yes |  | len 1–255 | (no description) |
 | `password` | `password (secret)` | yes |  | secret | Leave placeholder to keep existing value. After saving, this value will no longer be displayed. |
 | `database` | `string` |  | `neo4j` | max len 255; matches regex | Defaults to 'neo4j' when not specified. |
@@ -360,7 +567,9 @@ spec:
   type: graph_db
   subtype: neo4j
   values:
-    connection_string: ${EXAMPLE_GRAPH_DB_NEO4J_CONNECTION_STRING}  # secret — provide via env var
+    # optional: scheme: "neo4j"
+    hostname: "my-neo4j.example.com"
+    # optional: port: 7687
     username: "x"
     password: ${EXAMPLE_GRAPH_DB_NEO4J_PASSWORD}  # secret — provide via env var
     # optional: database: "neo4j"
@@ -372,11 +581,24 @@ spec:
 
 Connect to an Amazon Neptune graph database
 
+**Usage guidance**
+
+Use the Neptune connector when the user wants an agent to query an
+Amazon Neptune graph database with openCypher. Provide the cluster
+endpoint (typically ending in .neptune.amazonaws.com), AWS region,
+and either AWS Access Keys or an IAM Role to assume.
+
+Always use <<__SAM_REQUIRED__>> for the access key, secret key, and
+external ID fields since these are AWS credentials that should never
+appear in artifacts.
+
 > ⚠ Agents using this connector run queries with the configured AWS credentials. Use a least-privilege IAM role or user scoped to specific clusters.
 
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
-| `connection_string` | `string` | yes |  | len 10–2048; matches regex | Bolt+s URL of the Neptune cluster endpoint. Credentials embedded in the URI (user:pass@host) are ignored — Neptune authenticates via the AWS credentials configured below. |
+| `scheme` | `select` |  | `bolt+s` | one of: bolt+s, neo4j+s, bolt, neo4j | Neptune requires TLS; bolt+s is standard. neo4j+s enables routing. |
+| `hostname` | `string` | yes |  | len 1–255; matches regex | Neptune cluster endpoint host (without scheme or port). Neptune authenticates via the AWS credentials configured below. |
+| `port` | `number` |  | `8182` | range 1–65535 | Neptune port. Defaults to 8182. |
 | `database` | `string` |  |  | max len 255; matches regex | Optional. Most Neptune clusters do not require a database name. |
 | `region` | `string` | yes | `us-east-1` | len 1–50; matches regex | (no description) |
 | `auth_type` | `select` | yes | `access_key` | one of: access_key, iam | Authentication method for connecting to Neptune. AWS IAM Role Chaining is only supported when SAM runs on AWS. |
@@ -396,7 +618,9 @@ spec:
   type: graph_db
   subtype: neptune
   values:
-    connection_string: "bolt+s://my-cluster.cluster-abc.us-east-1.neptune.amazonaws.com:8182"
+    # optional: scheme: "bolt+s"
+    hostname: "my-cluster.cluster-abc.us-east-1.neptune.amazonaws.com"
+    # optional: port: 8182
     # optional: database: "..."
     region: "us-east-1"
     auth_type: "access_key"
@@ -414,6 +638,17 @@ spec:
 **Amazon Bedrock**
 
 Connect to Amazon Bedrock Knowledge Base for RAG retrieval
+
+**Usage guidance**
+
+Use the Bedrock Knowledge Base connector when the user wants to give an
+agent access to a knowledge base for retrieval-augmented generation (RAG).
+The user needs an existing Amazon Bedrock Knowledge Base with its ID and
+AWS credentials. The knowledge base ID is a unique identifier from the
+AWS Bedrock console. The region defaults to us-east-1 if not specified.
+
+Always use <<__SAM_REQUIRED__>> for the access_key and secret_key fields
+since these are AWS credentials that should never appear in artifacts.
 
 > ⚠ All agents using this connector will have access to the same Knowledge Base. Access control must be configured at the AWS IAM level. For AWS IAM Role authentication, ensure SAM is deployed on AWS.
 
@@ -457,6 +692,23 @@ spec:
 **Remote MCP**
 
 Connect to remote MCP servers via SSE or Streamable HTTP
+
+**Usage guidance**
+
+Use the MCP connector when the user wants to connect to a remote tool server
+implementing the Model Context Protocol (MCP). MCP servers expose tools that
+agents can call over HTTP. The user needs to provide the server URL and choose
+a connection type (streamable-http or SSE). Authentication is optional and
+depends on the server.
+
+If the user provides credentials (or none are needed), you can use the
+DiscoverMCPTools tool to list available tools before saving. If credentials
+are required but not yet provided, skip discovery — the UI will handle it
+after the user fills in the <<__SAM_REQUIRED__>> placeholders.
+
+Common MCP servers include Stripe, GitHub, Slack, and custom enterprise
+tool servers. Ask the user what the MCP server provides to help write a
+good connector description.
 
 > ⚠ Remote MCP servers must be accessible and trusted. Ensure proper network security and validate the MCP server's identity before connecting.
 
@@ -533,13 +785,29 @@ spec:
 
 Connect to an Elasticsearch cluster
 
+**Usage guidance**
+
+Use the Elasticsearch connector when the user wants an agent to query
+an Elasticsearch cluster (or a self-hosted OpenSearch cluster that
+exposes the Elasticsearch-compatible API) with the Query DSL.
+Connect via either a host (with optional port) or an Elastic Cloud ID
+(Cloud ID). Authentication is via an API key for secured clusters;
+leave it blank for a local or unsecured cluster (e.g. one started with
+security disabled).
+
+When an API key is supplied, use <<__SAM_REQUIRED__>> for it.
+
 > ⚠ All agents using this connector will have the same cluster access. Agent Mesh cannot restrict what queries agents execute—access control must be configured at the cluster level. For security, use API keys with minimal necessary permissions. Self-hosted OpenSearch clusters that expose the Elasticsearch-compatible API can also be reached through this connector.
 
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
-| `connection_string` | `string` |  |  | max len 2048; matches regex | Full URL of the Elasticsearch cluster. Provide either this or a Cloud ID. |
-| `cloud_id` | `string` |  |  | max len 2048 | Elastic Cloud deployment ID. Provide either this or a Connection URL. |
-| `api_key` | `password (secret)` | yes |  | len 10–4096; secret | Elasticsearch API key (Base64-encoded id:api_key). Leave placeholder to keep existing value. |
+| `scheme` | `select` |  | `https` | one of: https, http | Connection scheme for the host form. Ignored when a Cloud ID is provided. |
+| `hostname` | `string` |  |  | max len 255; matches regex | Elasticsearch host (without scheme). Provide either this or a Cloud ID. |
+| `port` | `number` |  | `9200` | range 1–65535 | Elasticsearch port. Defaults to 9200. |
+| `cloud_id` | `string` |  |  | max len 2048 | Elastic Cloud deployment ID. Provide either this or a Host. |
+| `api_key` | `password (secret)` |  |  | len 10–4096; secret | Elasticsearch API key (Base64-encoded id:api_key) for secured clusters. Leave blank for a local/unsecured cluster or when using a username and password. Leave the placeholder to keep an existing value. |
+| `username` | `string` |  |  | max len 255 | Basic-auth username (e.g. 'elastic'). Use this with a password as an alternative to an API key. Leave blank for an API key or an unsecured cluster. |
+| `password` | `password (secret)` |  |  | len 1–1024; secret | Basic-auth password, paired with the username. Leave the placeholder to keep an existing value. |
 
 #### Example
 
@@ -551,9 +819,13 @@ spec:
   type: search
   subtype: elasticsearch
   values:
-    # optional: connection_string: "https://elastic.example.com:9200"
+    # optional: scheme: "https"
+    # optional: hostname: "elastic.example.com"
+    # optional: port: 9200
     # optional: cloud_id: "my-deployment:dXMtZWFzdC0xLmF3cy5jbG91ZC5lcy5pbyQ..."
     api_key: ${EXAMPLE_SEARCH_ELASTICSEARCH_API_KEY}  # secret — provide via env var
+    # optional: username: "..."
+    password: ${EXAMPLE_SEARCH_ELASTICSEARCH_PASSWORD}  # secret — provide via env var
 ```
 
 ### subtype: opensearch
@@ -562,11 +834,27 @@ spec:
 
 Connect to an Amazon-managed OpenSearch domain or Serverless collection
 
+**Usage guidance**
+
+Use the OpenSearch connector when the user wants an agent to query
+an Amazon-managed OpenSearch domain or OpenSearch Serverless
+collection. Provide the cluster URL (typically ending in
+.es.amazonaws.com or .aoss.amazonaws.com), AWS region, and either
+AWS Access Keys or an IAM Role to assume. For self-hosted OpenSearch
+that exposes the Elasticsearch-compatible API, use the Elasticsearch
+connector instead.
+
+Always use <<__SAM_REQUIRED__>> for the access key, secret key, and
+external ID fields since these are AWS credentials that should never
+appear in artifacts.
+
 > ⚠ Agents using this connector run queries with the configured AWS credentials. Use a least-privilege IAM role or user scoped to specific domains/collections. For self-hosted OpenSearch with the Elasticsearch-compatible API, use the Elasticsearch connector instead.
 
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
-| `connection_string` | `string` | yes |  | len 10–2048; matches regex | Full URL of the OpenSearch domain or serverless collection. |
+| `scheme` | `select` |  | `https` | one of: https, http | Connection scheme. Managed OpenSearch uses HTTPS. |
+| `hostname` | `string` | yes |  | len 1–255; matches regex | OpenSearch domain or serverless collection host (without scheme). |
+| `port` | `number` |  |  | range 1–65535 | Optional. Managed OpenSearch listens on 443 (leave blank). Set only for a non-standard port. |
 | `region` | `string` | yes | `us-east-1` | len 1–50; matches regex | AWS region used for SigV4 request signing. |
 | `auth_type` | `select` | yes | `access_key` | one of: access_key, iam | Authentication method for connecting to OpenSearch. AWS IAM Role Chaining is only supported when SAM runs on AWS. |
 | `aws_access_key_id` | `password (secret)` | yes |  | len 16–128; secret | (no description) |
@@ -585,7 +873,9 @@ spec:
   type: search
   subtype: opensearch
   values:
-    connection_string: "https://my-domain.us-east-1.es.amazonaws.com"
+    # optional: scheme: "https"
+    hostname: "my-domain.us-east-1.es.amazonaws.com"
+    # optional: port: 1
     region: "us-east-1"
     auth_type: "access_key"
     aws_access_key_id: ${EXAMPLE_SEARCH_OPENSEARCH_AWS_ACCESS_KEY_ID}  # secret — provide via env var
@@ -603,11 +893,19 @@ spec:
 
 Send messages to Slack channels
 
+**Usage guidance**
+
+Use the Slack connector when the user wants an agent to send messages
+to Slack channels. The connector provides a slack_send_message tool.
+The user needs to provide a Slack Bot Token (xoxb-...).
+Use <<__SAM_REQUIRED__>> for the bot token if not mentioned in the
+conversation.
+
 > ⚠ All agents using this connector can send messages to any channel the bot has access to. Ensure the bot's channel access is appropriately scoped in Slack's app settings.
 
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
-| `slack_bot_token` | `password (secret)` | yes |  | len 10–255; secret | Slack Bot User OAuth Token. Recommended scopes: chat:write, files:write, users:read, users:read.email |
+| `slack_bot_token` | `password (secret)` | yes |  | len 10–255; matches regex; secret | Slack Bot User OAuth Token. Recommended scopes: chat:write, files:write, users:read, users:read.email |
 
 #### Example
 
@@ -629,6 +927,11 @@ spec:
 **MariaDB**
 
 Connect to MariaDB database
+
+**Usage guidance**
+
+Use the MariaDB connector when the user wants to query or interact with
+a MariaDB database. Same field requirements as MySQL (default port 3306).
 
 > ⚠ All agents using this connector will have the same database access. Agent Mesh cannot restrict what queries agents execute—access control must be configured at the database level. For security, use credentials with minimal necessary permissions (e.g., read-only, limited to specific schemas).
 
@@ -664,6 +967,16 @@ spec:
 **Microsoft SQL Server**
 
 Connect to Microsoft SQL Server database
+
+**Usage guidance**
+
+Use the MSSQL connector when the user wants to query or interact with
+a Microsoft SQL Server database. The connector provides a SQL tool that
+the agent can use to run read and write queries. The user needs to
+provide the host, port, database name, username, and password. Default
+port is 1433. Encryption is enabled by default. Use
+<<__SAM_REQUIRED__>> for password and any other values not mentioned in
+the conversation.
 
 > ⚠ All agents using this connector will have the same database access. Agent Mesh cannot restrict what queries agents execute—access control must be configured at the database level. For security, use credentials with minimal necessary permissions (e.g., read-only, limited to specific schemas).
 
@@ -704,6 +1017,12 @@ spec:
 
 Connect to MySQL database
 
+**Usage guidance**
+
+Use the MySQL connector when the user wants to query or interact with
+a MySQL database. Same field requirements as PostgreSQL but with default
+port 3306.
+
 > ⚠ All agents using this connector will have the same database access. Agent Mesh cannot restrict what queries agents execute—access control must be configured at the database level. For security, use credentials with minimal necessary permissions (e.g., read-only, limited to specific schemas).
 
 **Connection template**: `mysql://$USERNAME:$PASSWORD@$HOSTNAME:$PORT/$DATABASE`
@@ -739,6 +1058,15 @@ spec:
 
 Connect to Oracle database
 
+**Usage guidance**
+
+Use the Oracle connector when the user wants to query or interact with
+an Oracle database. The connector uses thin mode (no Oracle Client
+libraries required). The user needs to provide the host, port, service
+name, username, and password. Default port is 1521. Note: Oracle uses
+a service name, not a database name. Use <<__SAM_REQUIRED__>> for
+password and any other values not mentioned in the conversation.
+
 > ⚠ All agents using this connector will have the same database access. Agent Mesh cannot restrict what queries agents execute—access control must be configured at the database level. For security, use credentials with minimal necessary permissions (e.g., read-only, limited to specific schemas).
 
 **Connection template**: `oracle://$USERNAME:$PASSWORD@$HOSTNAME:$PORT/$SERVICE_NAME`
@@ -773,6 +1101,15 @@ spec:
 **PostgreSQL**
 
 Connect to PostgreSQL database
+
+**Usage guidance**
+
+Use the PostgreSQL connector when the user wants to query or interact with
+a PostgreSQL database. The connector provides a SQL tool that the agent can
+use to run read and write queries. The user needs to provide the host, port,
+database name, username, and password. For the builder, use
+<<__SAM_REQUIRED__>> for password and any other values not mentioned in the
+conversation.
 
 > ⚠ All agents using this connector will have the same database access. Agent Mesh cannot restrict what queries agents execute—access control must be configured at the database level. For security, use credentials with minimal necessary permissions (e.g., read-only, limited to specific schemas).
 

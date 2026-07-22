@@ -41,17 +41,17 @@ Use a workflow instead of (or wrapping) agents when any of these apply:
 
 Workflows often contain agents as nodes — the workflow controls the "what order" and the agents handle the "how" within each step. Recognize when a workflow is the right choice early — don't default to agents and retrofit a workflow later.
 
-### Use event mesh gateways for event-driven integration
+### Use event mesh entrypoints for event-driven integration
 
-Use an event mesh gateway when events arrive from an external Solace broker and need autonomous processing:
+Use an event mesh entrypoint when events arrive from an external Solace broker and need autonomous processing:
 
 - **Events from external systems.** IoT sensor readings, application events, database change notifications, webhook payloads — anything that arrives asynchronously without a user initiating it.
 - **Autonomous processing.** No user is in the loop. The event arrives, the agent processes it, and optionally a response is published back to the broker.
 - **Flexible routing.** One or more topic subscription patterns, routed to agents or workflows, with optional response routing, context forwarding, and acknowledgment policies.
 
-An event mesh gateway always requires an autonomous target agent — one designed without interactive tools (`ask_user_question`) and with explicit error handling in the instruction. If the event processing is multi-step, point the gateway at a workflow instead of a single agent.
+An event mesh entrypoint always requires an autonomous target agent — one designed without interactive tools (`ask_user_question`) and with explicit error handling in the instruction. If the event processing is multi-step, point the entrypoint at a workflow instead of a single agent.
 
-An event mesh gateway supports multiple event handlers (subscription patterns routed to different agents), output transforms, artifact extraction from events, and dynamic agent routing.
+An event mesh entrypoint supports multiple event handlers (subscription patterns routed to different agents), output transforms, artifact extraction from events, and dynamic agent routing.
 
 ### Add skills for on-demand knowledge
 
@@ -130,7 +130,7 @@ A focused agent with a clear capability description can be reused across multipl
 To avoid confusion between two different concepts that share the word "skills" in the A2A protocol:
 
 - **Skill**: A loadable knowledge bundle for an agent — reference documents, schemas, examples, and optionally associated tools. Internal to the agent. Loaded on demand.
-- **Capability**: A public description of what an agent can do, listed on its agent card for discovery by other agents and gateways. External-facing.
+- **Capability**: A public description of what an agent can do, listed on its agent card for discovery by other agents and entrypoints. External-facing.
 
 **Important**: In the YAML configuration, capabilities are defined under the `skills` field on the agent card. This is the A2A protocol field name and must be used in configs. Use "capability" when discussing design to maintain clarity.
 
@@ -192,7 +192,7 @@ Agents operate in two fundamentally different modes, and the instruction must be
 - Include tone and personality guidance appropriate to the user interaction (conversational, patient, professional, etc.)
 - Explain their reasoning and provide options when the path forward isn't clear
 
-**Autonomous agents** (event-driven agents behind an event mesh gateway, or agents running as workflow nodes) have no user to ask. They must:
+**Autonomous agents** (event-driven agents behind an event mesh entrypoint, or agents running as workflow nodes) have no user to ask. They must:
 - NOT include `ask_user_question` in their tool set
 - Be explicitly instructed: "You operate autonomously. Do not ask for clarification — use your best judgment based on available data and log uncertainty."
 - Be purely functional in instruction style — no tone or personality guidance
@@ -314,15 +314,15 @@ Chaining multiple agent calls or tool calls without validating intermediate resu
 
 ### Autonomous Agent with Interactive Assumptions
 
-Building an agent that asks for user input, then deploying it behind an event mesh gateway or as a workflow node where no user exists. The agent blocks indefinitely waiting for input.
+Building an agent that asks for user input, then deploying it behind an event mesh entrypoint or as a workflow node where no user exists. The agent blocks indefinitely waiting for input.
 
 **Fix**: Design for the deployment mode from the start. Autonomous agents must handle all ambiguity through defaults, fallback logic, and logging — never by asking.
 
-### Interactive Agent Behind an Event Mesh Gateway
+### Interactive Agent Behind an Event Mesh Entrypoint
 
-Building an agent with `ask_user_question` and interactive tools, then wiring it to an event mesh gateway. The agent blocks indefinitely because there is no user to respond. This is the event-mesh-specific version of "Autonomous Agent with Interactive Assumptions."
+Building an agent with `ask_user_question` and interactive tools, then wiring it to an event mesh entrypoint. The agent blocks indefinitely because there is no user to respond. This is the event-mesh-specific version of "Autonomous Agent with Interactive Assumptions."
 
-**Fix**: When building an event mesh gateway, always design the target agent for autonomous operation. Set `supports_streaming: false`, exclude `general_agent_tools` (which includes `ask_user_question`), and include explicit autonomous operation guidance in the instruction. See `sam-event-mesh-design` for the recommended agent instruction pattern.
+**Fix**: When building an event mesh entrypoint, always design the target agent for autonomous operation. Set `supports_streaming: false`, exclude `general_agent_tools` (which includes `ask_user_question`), and include explicit autonomous operation guidance in the instruction. See `sam-event-mesh-design` for the recommended agent instruction pattern.
 
 ### Premature Multi-Agent Split
 

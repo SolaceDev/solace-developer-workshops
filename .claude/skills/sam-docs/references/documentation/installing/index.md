@@ -1,6 +1,6 @@
 ---
 title: Install and Deploy
-description: Choose your install path — desktop bundle, CLI, Docker, or Kubernetes — then configure, monitor, and troubleshoot your deployment.
+description: Choose your install path — desktop bundle or Kubernetes — then configure, monitor, and troubleshoot your deployment.
 sidebar_position: 0
 ---
 
@@ -14,9 +14,9 @@ This section covers everything you need to get Agent Mesh running. If you haven'
 
 ## Installation Options
 
-- [Installing the Desktop Bundle](./desktop.md)—Try Agent Mesh on your laptop with no external dependencies.
-- [Installing the CLI Binary](./binary.md)—Build and run projects locally using the `sam` CLI binary.
-- [Deploying with Docker](./docker.md)—Single-host deployments and CI environments.
+Choose based on where you are. The desktop bundle is for evaluating Agent Mesh on your own laptop and is not supported for team or production workloads. When you are ready to run Agent Mesh for a team or in production, deploy with Kubernetes.
+
+- [Installing the Desktop Bundle](./desktop.md)—Evaluate Agent Mesh on your laptop.
 - [Deploying with Kubernetes](./kubernetes/index.md)—Team and production deployments using Helm.
 
 ## Configure, Monitor, and Troubleshoot
@@ -27,6 +27,6 @@ This section covers everything you need to get Agent Mesh running. If you haven'
 
 ## What's Next
 
-- [Building Your Agent Mesh](../building/index.md)—Create agents, configure gateways, add tools, and package skills.
-- [Administering Solace Agent Mesh](../administering/index.md)—Authentication, RBAC, observability, upgrades, and troubleshooting.
+- [Building Your Agent Mesh](../building/index.md)—Create agents, configure entrypoints, add tools, and package skills.
+- [Administering Agent Mesh](../administering/index.md)—Authentication, RBAC, observability, upgrades, and troubleshooting.
 - [Production Readiness Checklist](../administering/production-readiness-checklist.md)—The pre-production gate before you carry live traffic.

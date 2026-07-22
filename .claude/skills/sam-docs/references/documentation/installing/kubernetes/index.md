@@ -1,6 +1,6 @@
 ---
 title: Deploying with Kubernetes
-description: Deploy Solace Agent Mesh on Kubernetes using the Helm chart — quick start evaluation, production deployment, and air-gapped environments.
+description: Deploy Agent Mesh on Kubernetes using the Helm chart — quick start evaluation, production deployment, and air-gapped environments.
 sidebar_position: 0
 ---
 
@@ -17,5 +17,7 @@ Agent Mesh is deployed on Kubernetes using a Helm chart. Three deployment paths 
 The Quick Start is not suitable for production use. It embeds a development event broker and ephemeral storage that are not supported for workloads serving real traffic.
 
 For CPU and memory sizing guidance for production Kubernetes deployments, see [Compute Resources](./compute-resources.md).
+
+To run workloads under a sandboxed container runtime such as gVisor or Kata Containers, see [Sandbox Pod Runtimes](./sandbox-pod-runtimes.md).
 
 For prerequisites that apply to all Kubernetes deployments, see [Before You Begin](../before-you-begin.md).

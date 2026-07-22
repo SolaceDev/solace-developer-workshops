@@ -4,13 +4,13 @@ A **task event log** — called a **STIM file** in SAM-Go — is a YAML record o
 
 ## Enable capture (two requirements, both needed)
 
-On the gateway's `app_config`:
+On the entrypoint's `app_config`:
 
 1. A **SQL** session service (SQLite or Postgres — not in-memory):
    ```yaml
    session_service:
      type: sql
-     database_url: "sqlite:////absolute/path/to/gateway.db"   # 4 slashes = absolute
+     database_url: "sqlite:////absolute/path/to/entrypoint.db"   # 4 slashes = absolute
    ```
 2. **Task logging on:**
    ```yaml
@@ -31,9 +31,9 @@ The `task_logging` **feature flag** (`SAM_FEATURE_TASK_LOGGING`) only gates the 
 ## Locate / download the file for a specific task
 
 - **Via the API:** `GET /api/v1/tasks/{taskId}` returns the STIM as a downloadable attachment, `Content-Type: application/yaml`, filename `{rootTaskId}.stim`. It includes the parent task chain + all descendants, so a workflow's sub-tasks come in one file.
-- **Via the CLI:** `sam task send "<msg>" -u http://localhost:8800 -a <AgentName>` auto-saves the STIM under the task output dir (e.g. `/tmp/sam-task-{id}/{id}.stim`). `--no-stim` disables that. (`8800` is the gateway's default port; use your own gateway URL for a remote/K8s deployment.)
-- **Find the taskId:** list tasks (`GET /api/v1/tasks`, paginated) or read it from the UI / the gateway log line for the conversation.
-- **Auth against a deployed gateway:** a remote gateway with SSO/OIDC on rejects an unauthenticated CLI call with **401**. Run `sam auth login <gateway-url>` once first — `sam task send` / `sam api` then reuse the cached token (auto-refreshed), so you can drop `-u` and use `--target <name>`. Bearer tokens are refused over plain `http://` unless you pass `--insecure`. The full CLI-auth surface (`sam auth login/logout/status/list`, token precedence) is owned by `sam-declarative-config`'s CLI-auth reference — go there for details, don't guess token flags.
+- **Via the CLI:** `sam task send "<msg>" -u http://localhost:8800 -a <AgentName>` auto-saves the STIM under the task output dir (e.g. `/tmp/sam-task-{id}/{id}.stim`). `--no-stim` disables that. (`8800` is the entrypoint's default port; use your own entrypoint URL for a remote/K8s deployment.)
+- **Find the taskId:** list tasks (`GET /api/v1/tasks`, paginated) or read it from the UI / the entrypoint log line for the conversation.
+- **Auth against a deployed entrypoint:** a remote entrypoint with SSO/OIDC on rejects an unauthenticated CLI call with **401**. Run `sam auth login <entrypoint-url>` once first — `sam task send` / `sam api` then reuse the cached token (auto-refreshed), so you can drop `-u` and use `--target <name>`. Bearer tokens are refused over plain `http://` unless you pass `--insecure`. The full CLI-auth surface (`sam auth login/logout/status/list`, token precedence) is owned by `sam-declarative-config`'s CLI-auth reference — go there for details, don't guess token flags.
 
 ## Read it: the `stim-analyze` CLI
 
@@ -48,7 +48,7 @@ stim-analyze <file>.stim --verbose
 Reading it for a silent tool failure:
 - A `tool_invocation_start` with **no matching `tool_result`** → the tool died mid-call (STR crash, timeout, sandbox kill).
 - A `tool_result` **carrying an error** → the tool ran and reported failure.
-- The flow **ends right after the `request`** with no LLM response or tool events → the task never got past the gateway→agent or agent→LLM hop. That's not a tool problem — go back to `traceID` correlation and the broker/LLM checks in [diagnose.md](diagnose.md).
+- The flow **ends right after the `request`** with no LLM response or tool events → the task never got past the entrypoint→agent or agent→LLM hop. That's not a tool problem — go back to `traceID` correlation and the broker/LLM checks in [diagnose.md](diagnose.md).
 
 ## Event schema (for reading the raw YAML)
 
@@ -72,4 +72,4 @@ Safe to walk a user through: enabling capture, downloading the `.stim`, running 
 
 ## Docs gap
 
-There is currently **no published customer page** for task logging / STIM (it's mentioned only briefly under the gateways doc and the eval docs). Until one lands, this reference is the user-facing source; don't invent a doc URL for it.
+There is currently **no published customer page** for task logging / STIM (it's mentioned only briefly under the entrypoints doc and the eval docs). Until one lands, this reference is the user-facing source; don't invent a doc URL for it.

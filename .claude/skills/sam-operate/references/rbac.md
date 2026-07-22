@@ -2,7 +2,7 @@
 
 ## Turn it on: `authorization_service.type`
 
-Set in the gateway and platform YAML:
+Set in the entrypoint and platform YAML:
 
 | Type | Behavior |
 |---|---|
@@ -14,16 +14,17 @@ Set in the gateway and platform YAML:
 
 ## Scope syntax
 
-Colon-separated hierarchical strings, charset `[a-z0-9_*-]`, with `*` wildcards per segment (a granted `*` matches one required segment; trailing-`*` matches the rest). Verified scopes:
+Three colon-separated segments: `<category>:<resource>:<verb>`. Segment 2 is a specific instance name, `*` (any instance), or the literal `_` sentinel (no specific instance — for collection-level or flat-feature actions). Wildcards: a granted `*` matches one required segment; a trailing `*` matches the rest. Bare `*` is the superadmin grant. Verified scopes:
 
 - `*` — everything (full admin).
-- `tool:*`, `tool:artifact:load` — tool operations.
-- `agent:<name>:delegate`, `agent:*:delegate` — **peer delegation**: lets one agent call another. **This is not the scope for an end user "using" an agent** — agent invocation through the gateway is gated by the user being authenticated + the gateway/app's own access policy, not by a per-agent user scope. Don't promise `agent:X:use`/`:invoke` — those aren't the model.
-- `sam:connectors:*` — connector management (and `sam:<resource>:<action>` generally for platform resources, e.g. `sam:agent_builder:*`).
-- `sam:rbac:read|create|update|delete` — managing RBAC itself.
-- `control:apps/<name>:<action>` — control-plane operations.
+- `tool:email:send`, `tool:datadog_logs:invoke` — the only tool-execution scopes. All other built-in tools require no scopes: agent access (`agent:<name>:invoke`) implies access to the tools configured on that agent.
+- `agent:<name>:invoke`, `agent:*:invoke` — **agent invocation**: gates BOTH a user submitting a task to that agent through the entrypoint AND peer delegation (one agent routing to another). Same scope, both call paths.
+- `workflow:<uuid>:invoke`, `workflow:*:invoke` — **deployed-workflow invocation**. Deployed workflows live in their own `workflow` category, so `agent:*:invoke` does NOT cover them. The three-row rule for the required invoke scope: a deployed workflow needs `workflow:<dashed-uuid>:invoke`, a platform-deployed agent needs `agent:<dashed-uuid>:invoke`, and a YAML/built-in agent needs `agent:<name>:invoke`. Segment 2 is always the dashed UUID, never the underscored broker name.
+- `connector:_:create`, `connector:*:read`/`:update`/`:delete`, `connector:*:*` — connector management (per-instance `connector:<name>:…` is accepted by the matcher but not yet enforced; and per-resource families generally: `agent_builder:*:*`, `entrypoint:*:*`, `model_config:*:*`, `skill:*:*`, `toolset:*:*`, etc.). (`project` is ownership-gated, not a CRUD scope family — its only scope is the retained-but-unenforced `project:_:share`.)
+- `rbac:_:read` / `:_:create` / `:_:update` / `:_:delete`, `rbac:*:*` — managing RBAC itself.
+- `analytics:_:read`, `deployment:_:read`, `builder:_:use`, `profile_provider:_:update` — flat platform features.
 
-If a user asks for a scope you can't confirm from this list, say you'd verify it against the RBAC reference rather than emit a guess.
+The full catalog of fixed-string scopes ships with the entrypoint, alongside helpers that build per-instance scopes (`agent:<name>:invoke`, `workflow:<uuid>:invoke`, and the `InvokeScopeForInstance` pivot the runtime uses to pick between them). If a user asks for a scope you can't confirm from the RBAC reference doc, say you'd verify rather than emit a guess.
 
 ## Where roles come from (two sources of truth)
 
@@ -53,15 +54,14 @@ This is how "users in the `analysts` IdP group get the `analyst` role." `idp_cla
 
 ## Worked shape: gate connector management to admins, give analysts a role
 
-- Define an `admin` role with `*` (or scope it down to `sam:connectors:*` + what else admins need) and an `analyst` role with the tool/agent scopes that team needs.
+- Define an `admin` role with `*` (or scope it down to `connector:*:*` + what else admins need) and an `analyst` role with the tool/agent scopes that team needs.
 - Map IdP groups to those roles via `idp_claims` (`groups` → `admin`/`analyst`), or assign directly in the users file / platform UI.
-- For "only admins manage connectors," the gate is the `sam:connectors:*` scope on the `admin` role; for "analysts use agent X," the gate is authentication + the analyst role carrying whatever tool scopes the agent's tools require — not a per-agent user scope.
-
-**Known limitation — be honest about this.** SAM-Go has **no first-class "only group G may invoke agent X" control.** Agent invocation through the gateway is gated by authentication plus the app/gateway access policy, and the *capabilities* an agent exposes are gated by the tool `required_scopes` its tools carry. So the enforceable approximation of "only analysts use this agent" is: ensure the agent's tools require scopes only the `analyst` role grants. If the requirement is truly "non-analysts must not reach this agent at all," say plainly that per-agent user-reach restriction isn't a first-class RBAC feature today rather than inventing a scope for it. And note the approximation only bites on tool-heavy agents — a pure-LLM/chat agent whose value is the response itself (no scoped tools) has nothing for scope-gating to catch, so capability-gating won't restrict it at all.
+- For "only admins manage connectors," the gate is `connector:*:*` (or just `connector:_:create` + `connector:*:read|update|delete` to split create from manage) on the `admin` role; for "only analysts may invoke agent X," grant `agent:X:invoke` on the `analyst` role and leave it off everyone else.
+- For "this role can run workflows," grant `workflow:*:invoke` (or per-UUID `workflow:<uuid>:invoke`) PLUS `agent:*:invoke`. The agent wildcard covers the child agent hops a workflow's DAG delegates to (each hop is authorized on its own). A later release makes the workflow grant transitive to those hops, at which point the extra agent wildcard is unnecessary but stays harmless.
 
 ## Other notes
 
 - **`mini_idp_mode: true`** (built-in Keycloak deployments) downgrades RBAC-management endpoints to read-only — group assignment happens in the IdP, not in SAM.
-- **Enforcement points:** tool execution (a tool's `required_scopes`), peer delegation (`agent:<name>:delegate`), control-plane and platform-API calls. Peer delegation propagates the **original caller's** identity, not the delegating agent's scopes (no scope laundering).
-- **Feature flag:** with the `rbac` flag off, `default_rbac` soft-downgrades to `none` with a warning and the RBAC management API returns 501. If RBAC "isn't taking effect," check that flag.
+- **Enforcement points:** tool execution (a tool's `required_scopes`), agent/workflow invocation (the invoke scope `InvokeScopeForInstance` resolves — `agent:<name>:invoke` or `workflow:<uuid>:invoke`; direct user submission AND peer routing share it), control-plane and platform-API calls. Peer delegation propagates the **original caller's** identity, not the delegating agent's scopes (no scope laundering).
+- **Feature flag:** the `rbac` flag gates only the **in-product RBAC management UI** (custom-roles pages, assignable-scope catalog, known-users picker, view-as). The foundational substrate is **always on regardless of the flag**: the `/api/v1/platform/rbac/{roles,assignments,claimMappings}` CRUD API, configapply reconcile/pull of `rbac*` kinds, and entrypoint/broker authorization enforcement. So a flag-off environment still enforces scopes — if RBAC "isn't taking effect," look at `authorization_service.type` and role assignments, not the flag.
 - There is a published **RBAC reference** page on the docs site (scope reference, authoring, two-sources model) — point operators there for the exhaustive scope list and YAML field detail. Full YAML authoring for the roles/users files: defer to that page / `sam-declarative-config`; name the keys here, don't hand-assemble large files from memory.

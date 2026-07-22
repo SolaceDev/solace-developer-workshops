@@ -1,12 +1,12 @@
 ---
 name: sam-connectors
-description: Use when giving a Solace Agent Mesh agent access to external data or services without writing code — query a SQL database (PostgreSQL, MySQL, MariaDB, SQL Server, Oracle), retrieve from a knowledge base (Amazon Bedrock RAG), search Elasticsearch/OpenSearch, look up MongoDB/DynamoDB documents or Neo4j/Neptune graphs, call a REST API from an OpenAPI spec, use a remote MCP server's tools, send email or Slack messages, or publish to the Solace event mesh — and when creating, editing, or attaching connectors. Not for inbound integrations where users or events reach agents (sam-gateways), custom Go/Python tool code or toolsets (sam-tools-and-skills), or authoring the agent itself (sam-author-agent).
-version: dev
+description: Use when giving a Solace Agent Mesh agent access to external data or services without writing code — query a SQL database (PostgreSQL, MySQL, MariaDB, SQL Server, Oracle), retrieve from a knowledge base (Amazon Bedrock RAG), search Elasticsearch/OpenSearch, look up MongoDB/DynamoDB documents or Neo4j/Neptune graphs, call a REST API from an OpenAPI spec, use a remote MCP server's tools, send email or Slack messages, or publish to the Solace event mesh — and when creating, editing, or attaching connectors. Not for inbound integrations where users or events reach agents (sam-entrypoints), custom Go/Python tool code or toolsets (sam-tools-and-skills), or authoring the agent itself (sam-author-agent).
+version: main-v2.249.1-dirty
 ---
 
 # sam-connectors
 
-This skill creates and manages SAM **connectors** — platform-managed, credentialed, reusable connections that give agents outbound access to data and services with **no code**. **Scope check:** if the outside world reaches *into* your agents (users chatting from Slack/Teams/email, MCP clients calling your agents, mesh events triggering tasks), that is a *gateway* → `sam-gateways`. Custom Go/Python tool code, toolsets, and skill bundles → `sam-tools-and-skills`. The agent's own instructions/behavior → `sam-author-agent`.
+This skill creates and manages SAM **connectors** — platform-managed, credentialed, reusable connections that give agents outbound access to data and services with **no code**. **Scope check:** if the outside world reaches *into* your agents (users chatting from Slack/Teams/email, MCP clients calling your agents, mesh events triggering tasks), that is an *entrypoint* → `sam-entrypoints`. Custom Go/Python tool code, toolsets, and skill bundles → `sam-tools-and-skills`. The agent's own instructions/behavior → `sam-author-agent`.
 
 ## What a connector is
 
@@ -23,13 +23,13 @@ Route by what the agent should do (full field-level detail: [references/catalog.
 | Call a REST API you have an OpenAPI spec for | `api` (openapi) | GA |
 | Use tools from a remote MCP server | `mcp` (remote) | GA |
 | Post/update messages in Slack | `slack` (bot) | GA |
-| Send email | `email` (smtp) | Experimental — feature flag |
-| Send requests to backend services over the Solace mesh | `event_mesh` (solace) | Experimental — feature flag |
-| Look up documents | `document_db` (mongodb, dynamodb) | Experimental — feature flag |
-| Query a graph database | `graph_db` (neo4j, neptune) | Experimental — feature flag |
-| Run full-text search | `search` (elasticsearch, opensearch) | Experimental — feature flag |
+| Send requests to backend services over the Solace mesh | `event_mesh` (solace) | GA |
+| Look up documents | `document_db` (mongodb, dynamodb) | On by default — experimental |
+| Query a graph database | `graph_db` (neo4j, neptune) | On by default — experimental |
+| Run full-text search | `search` (elasticsearch, opensearch) | On by default — experimental |
+| Send email | `email` (smtp) | Off by default — experimental |
 
-Experimental types are hidden until the operator sets the type's `SAM_FEATURE_<TYPE>_CONNECTOR=true` flag on the platform (exact keys in the catalog reference). Say this plainly — never present a gated type as generally available, and never deflect to a non-SAM workaround without first naming the in-product type and its flag.
+Only `email` is off until the operator turns it on (`SAM_FEATURE_EMAIL_CONNECTOR=true`). `event_mesh` is GA; `document_db`, `graph_db`, and `search` ship **enabled by default** but are still experimental. For all four flagged types (`event_mesh`, `document_db`, `graph_db`, `search`) the flag is a **kill-switch** (`SAM_FEATURE_<TYPE>_CONNECTOR=false` disables one). Check a type's flag state before promising it's available, and never deflect to a non-SAM workaround without first naming the in-product type and its flag.
 
 ## Paths, in teaching order
 
@@ -49,7 +49,7 @@ Experimental types are hidden until the operator sets the type's `SAM_FEATURE_<T
 - **Secrets:** never inline in YAML or echo back in commands. A credential pasted into chat is exposed — say so once, advise rotation, and reference it only as `${VAR}` from then on.
 - **"Look up data" asks → connector first, not an MCP server install.** MongoDB/Postgres/search asks are served by `document_db`/`sql`/`search` connectors, not by telling the user to bolt on a third-party MCP server. The MCP *connector* is for when the user already has a remote MCP server — and it is **remote-only** (SSE / streamable HTTP); there is no stdio-command connector.
 - **Shared-credential model:** every attached agent gets identical access, and SAM cannot restrict what queries agents run — restrict at the external system (read-only DB user, scoped API key, minimal Slack scopes). See [references/credentials-and-security.md](references/credentials-and-security.md).
-- **Outbound vs inbound:** "agent posts to Slack / sends email / publishes to the mesh" = connector (here). "People or events reach the agent from Slack / email / the mesh" = gateway (`sam-gateways`). State which one you picked and why.
+- **Outbound vs inbound:** "agent posts to Slack / sends email / publishes to the mesh" = connector (here). "People or events reach the agent from Slack / email / the mesh" = entrypoint (`sam-entrypoints`). State which one you picked and why.
 
 ## References
 

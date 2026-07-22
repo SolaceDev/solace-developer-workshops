@@ -3,10 +3,11 @@
 Manifest path: `resources.toolsets`
 
 A toolset is a discoverable collection of tools (Python or Go binaries)
-that agents can call. The metadata (name, description, shared config)
-lives in YAML; the actual tool code lives in a per-toolset directory
-under the same `toolsets/` tree. Built-in toolsets do not need a YAML
-entry — list them by ID under `spec.toolsets:` on the agent that uses them.
+that agents and workflows can call. The metadata (name, description,
+shared config) lives in YAML; the actual tool code lives in a per-toolset
+directory under the same `toolsets/` tree. Built-in toolsets do not need a
+YAML entry — list them by ID under `spec.toolsets:` on the agent or
+workflow that uses them.
 
 ## Built-in toolset IDs
 
@@ -15,16 +16,21 @@ them by their platform ID in `spec.toolsets:` on the agent — no toolset
 YAML file is needed. Use `sam api GET /api/v1/platform/toolsets` to get
 the live list for your instance.
 
-| ID | Description |
-|---|---|
-| `builtin_artifact_tools` | Create, read, update, and manage artifacts |
-| `builtin_web_request_tools` | HTTP GET/POST/PUT/DELETE requests to external services |
-| `builtin_research_tools` | Iterative multi-step web research + Google search |
-| `builtin_image_tools` | Describe, generate, and edit images; describe audio |
-| `builtin_file_tools` | Convert PDF, DOCX, XLSX, HTML, CSV, PPTX to Markdown |
-| `builtin_time_tools` | Get current time and date |
-| `hil_tools` | Human-in-the-loop: `ask_user_question` |
-| `data_analysis` | SQL queries, JMESPath transforms, SQLite, structured merge |
+| ID | Legacy `group_name` | Description |
+|---|---|---|
+| `builtin_artifact_tools` | `artifact_management` | Create, read, update, and manage artifacts |
+| `builtin_web_request_tools` | `web_tools` | HTTP GET/POST/PUT/DELETE requests to external services |
+| `builtin_research_tools` | `research` | Iterative multi-step web research + Google search |
+| `builtin_image_tools` | `image_tools` | Describe, generate, and edit images; describe audio |
+| `builtin_file_tools` | `general_agent_tools` † | Convert PDF, DOCX, XLSX, HTML, CSV, PPTX to Markdown |
+| `builtin_time_tools` | `general_agent_tools` † | Get current time and date |
+| `hil_tools` | `hil_tools` | Human-in-the-loop: `ask_user_question` |
+| `data_analysis` | `data_analysis` | SQL queries, JMESPath transforms, SQLite, structured merge |
+| `scheduling_tools` | `scheduling_tools` | Create and manage scheduled tasks in-chat: `schedule_task` (create), `list_scheduled_tasks`, `update_scheduled_task`, `delete_scheduled_task`, `set_scheduled_task_enabled` |
+
+† `builtin_file_tools` and `builtin_time_tools` carve specific tools out of
+the legacy `general_agent_tools` group (file-conversion tools, and
+`get_current_time`, respectively); there is no exact one-to-one legacy alias.
 
 ```yaml
 # agents/my-agent.yaml
@@ -39,10 +45,41 @@ spec:
   ...
 ```
 
-> **Note:** the runtime group-name aliases (`artifact_management`, `research`,
-> `web_tools`, `image_tools`, etc.) are also accepted in `spec.toolsets:` — they
-> resolve to the same built-in toolsets as the `builtin_*` IDs above. Either form
-> validates; prefer the IDs in this table for consistency.
+> **Note:** the legacy runtime group-name aliases in the middle column
+> (`artifact_management`, `research`, `web_tools`, `image_tools`, …) are also
+> accepted in `spec.toolsets:` — they resolve to the same built-in toolsets as
+> the `builtin_*` IDs. Either form validates; prefer the `builtin_*` IDs for
+> consistency. These names go under `spec.toolsets:`, **never** inside an
+> agent's `additionalConfigurations.tools` (which the platform rejects).
+
+## Binding a toolset to a workflow
+
+Workflows bind toolsets the same way: a `toolsets:` list on the workflow
+spec (alongside the workflow definition), accepting the same names as
+agent `spec.toolsets:`. At deploy time the platform expands each toolset
+into its tools; a custom toolset's tools register as `<toolset>__<tool>`,
+which is the name a `type: tool` node references in `tool_name:`. Toolset
+`spec.config` (secrets, shared defaults) applies exactly as it does for
+agents, and toolset re-uploads/config changes auto-redeploy bound
+workflows. See the workflow kind reference for the node shape.
+
+```yaml
+# workflows/greeter.yaml
+kind: workflow
+name: greeter
+description: "Calls a toolset tool directly, without an agent."
+spec:
+  toolsets:
+    - echo-tools
+  workflow:
+    nodes:
+      - id: greet
+        type: tool
+        tool_name: echo-tools__greet
+        input: { name: "{{workflow.input.name}}" }
+    output_mapping:
+      greeting: "{{greet.output}}"
+```
 
 ## On-disk layout
 
@@ -336,7 +373,7 @@ placeholders. If you want to re-template after a pull, re-add the
 
 ## Schema
 
-CreateToolsetRequest is the request body for POST /toolsets.
+Authoring fields for the "toolset" resource.
 
 | Field | Type | Required | Validation | Description |
 |---|---|---|---|---|

@@ -15,4 +15,4 @@ Say so plainly. The mesh visualization *displays* delegation, but the builder ca
 
 ## Verify
 
-Ask the delegating agent a question in the peer's domain and watch the task flow visualization — you should see the hop. No `peer_<name>` tool appearing → check allow-list spelling and that both agents are running and discoverable. RBAC can also gate delegation (`agent:<name>:delegate` scopes) — if configured, that's `sam-operate` territory.
+Ask the delegating agent a question in the peer's domain and watch the task flow visualization — you should see the hop. No `peer_<name>` tool appearing → check allow-list spelling and that both agents are running and discoverable. RBAC can also gate delegation (`agent:<name>:invoke` scopes) — if configured, that's `sam-operate` territory.
