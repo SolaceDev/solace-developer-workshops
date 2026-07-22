@@ -34,7 +34,7 @@ A connector is a named, credentialed binding between an agent and an external sy
 
 ### Declarative Applying
 
-Navigate to the [local manifest file](../sample_configuration/manifests/local.yaml) in the sample_configuration and observe the configuration 
+Navigate to the [local manifest file](../sample_configuration/manifests/local.yaml) in the [sample_configuration](../sample_configuration/) and observe the configuration 
 
 1. Change the local manifest file to include a connector by adding `- retail-postgres` under connectors
 
