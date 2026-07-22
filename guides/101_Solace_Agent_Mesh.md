@@ -98,14 +98,18 @@ Agents are not stateless services. A single agent task can span multiple LLM tur
 
 A message broker solves this structurally. The publishing component sends a message and moves on. The subscribing component receives it when ready. Acknowledgment is decoupled from processing time. Delivery guarantees are a broker property, not application code that every team reimplements differently.
 
-![Synchronous HTTP vs Event-Driven Broker](./img/broker_vs_http.svg)
+<div align="center">
+  <img src="./img/broker_vs_http.svg" alt="Synchronous HTTP vs Event-Driven Broker" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+</div>
 
 
 ### The Solace Advantage
 
 Solace adds capabilities that matter specifically for distributed agent systems.
 
-![The Solace Advantage for distributed agent systems](./img/solace_advantage.svg)
+<div align="center">
+  <img src="./img/solace_advantage.svg" alt="The Solace Advantage for distributed agent systems" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+</div>
 
 <details>
     <summary> Break down the Solace Advantage</summary>
@@ -131,7 +135,9 @@ Through work across enterprise AI deployments, a consistent pattern has emerged:
 
 Solace is not a hobbyist project or a cloud-native experiment. It runs in financial trading systems, logistics networks, and industrial IoT infrastructure at organizations where message loss has direct financial or safety consequences. The operational maturity, tuning tooling, and support infrastructure that come with that deployment history matter when you are running agents that coordinate actual business processes.
 
-![Where enterprise AI deployments actually fail](./img/integration_gap.svg)
+<div align="center">
+  <img src="./img/integration_gap.svg" alt="Where enterprise AI deployments actually fail" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+</div>
 
 ### Supplementary to existing event-driven investments
 

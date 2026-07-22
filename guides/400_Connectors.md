@@ -1,6 +1,8 @@
 # Working with connectors to provision access: Onboarding 
 
-<img src="img/onboarding.png" alt="Onboarding" width="400"/>
+<div align="center">
+  <img src="img/onboarding.png" alt="Onboarding" width="400"/>
+</div>
 
 Once the role is defined, connect the agent to the systems and data sources it needs to perform it. This is the analogous to provisioning a new employee with tools, credentials, and access rights on day one. For AI agents, onboarding covers connectivity to enterprise databases via SQL, enterprise applications via APIs, MCP servers, and third-party agents via A2A protocols, as well as defining how the agent is triggered (chat, event, API call, or from another agent). Getting onboarding right means providing the right access: role-based access controls, SSO, and delegated identity ensure each agent operates only within the permissions appropriate to its defined function.
 
