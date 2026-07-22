@@ -49,7 +49,7 @@ Navigate to the [local manifest file](../sample_configuration/manifests/local.ya
     resources:
         models: []
         agents: []
-        gateways: []
+        entrypoints: []
         workflows: []
         toolsets: []
         connectors:
@@ -92,7 +92,7 @@ Navigate to the [local manifest file](../sample_configuration/manifests/local.ya
         models: []
         agents:
             - retail-analyst
-        gateways: []
+        entrypoints: []
         workflows: []
         toolsets: []
         connectors:

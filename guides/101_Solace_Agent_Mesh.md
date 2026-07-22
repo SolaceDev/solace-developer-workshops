@@ -13,7 +13,7 @@
 
 ## What is Solace Agent Mesh
 
-Solace Agent Mesh is a Go-based, event-driven agent runtime for building, deploying, and operating AI agents at enterprise scale. It provides the runtime infrastructure, declarative configuration model, and entrypoint integrations to run agents as always-on workers embedded in your event-driven architecture, not just as conversational endpoints you call on demand.
+Solace Agent Mesh is a Go-based agent development and runtime platform for building, deploying, and operating AI agents at enterprise scale. It provides the runtime infrastructure, declarative configuration model, and entrypoint integrations to run agents as always-on workers embedded in your event-driven architecture, not just as conversational endpoints you call on demand.
 
 <div align="center">
   <img src="./img/runtimes.png" alt="runtimes" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
@@ -23,9 +23,9 @@ The platform is decomposed into three independently deployable process types:
 
 | Process | Role | Scales with |
 |---------|------|-------------|
-| Agent-Workflow Executor (AWE) | Hosts agents, workflows, and proxy adapters | LLM workload (memory, compute) |
-| Gateway Executor (GWE) | HTTP/SSE bridge from external clients to the agent mesh | Inbound connection count |
-| Secure Tool Runtime (STR) | Isolated subprocess execution for tools | Tool invocation throughput |
+| Agent-Workflow Executor | Hosts agents, workflows, and proxy adapters | LLM workload (memory, compute) |
+| Entrypoint Executor | HTTP/SSE bridge from external clients to the agent mesh | Inbound connection count |
+| Secure Tool Runtime | Isolated subprocess execution for tools | Tool invocation throughput |
 
 All three processes communicate through a Solace message broker. No component calls another directly over HTTP or gRPC. The broker is the coordination fabric enabling horizontal scaling, failure isolation, and event-driven agents made possible without application-level coordination code.
 

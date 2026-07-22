@@ -23,7 +23,7 @@ This workshop guides you through the Agent Development Lifecycle (ADLC): a six-s
 
 The ADLC is the methodology that underpins everything in this workshop. 
 
-Alongside the ADLC methodology, you will work with [Solace Agent Mesh](https://solace.com/lp/agent-mesh) directly. Agent Mesh is a Go-based, event-driven agent runtime built for enterprise scale. It provides:
+Alongside the ADLC methodology, you will work with [Solace Agent Mesh](https://solace.com/lp/agent-mesh) directly. Agent Mesh is a Go-based agent development and runtime platform built for enterprise implementation of agentic systems. It provides:
 1. Event-driven Runtime 
 1. CLI tooling
 1. Declarative configuration model

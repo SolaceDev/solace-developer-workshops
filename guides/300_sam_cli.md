@@ -36,7 +36,7 @@ A declarative config repository follows a standard layout. Each resource kind ha
 repo-root/
 ├─ manifests/     # entry points (one per environment: dev.yaml, prod.yaml)
 ├─ agents/        # agent definitions
-├─ gateways/      # HTTP, event mesh, Slack, email gateways
+├─ entrypoints/      # HTTP, event mesh, Slack, email
 ├─ models/        # LLM model configurations
 ├─ workflows/     # multi-step DAG processes
 ├─ toolsets/      # custom tool packages
@@ -56,8 +56,8 @@ resources:
     - default-model
   agents:
     - my-agent
-  gateways:
-    - http-gateway
+  entrypoints:
+    - email
 ```
 
 ### AI-Assisted Authoring
@@ -68,7 +68,7 @@ Because SAM ships schema-accurate skills for AI coding assistants, you can autho
 sam ai-assistance skill install
 ```
 
-your AI assistant understands the full structure of every SAM resource kind and documentation, including valid field names, required fields, and common patterns. This makes writing and reviewing YAML significantly faster, especially when building out agents, gateways, or workflows for the first time.
+your AI assistant understands the full structure of every SAM resource kind and documentation, including valid field names, required fields, and common patterns. This makes writing and reviewing YAML significantly faster, especially when building out agents, entrypoints, or workflows for the first time.
 
 ---
 
