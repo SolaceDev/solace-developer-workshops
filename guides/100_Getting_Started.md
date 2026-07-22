@@ -29,7 +29,9 @@ Alongside the ADLC methodology, you will work with [Solace Agent Mesh](https://s
 1. Declarative configuration model
 1. Entrypoints integrations that the ADLC stages depend on.
 
-![SAM Overview](./img/sam_overview.jpg)
+<div align="center">
+  <img src="./img/sam_overview.jpg" alt="SAM Overview" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+</div>
 
 
 ## Takeaways
@@ -46,7 +48,9 @@ By the end of this workshop you will be able to:
 
 ## Understanding the ADLC
 
-![ADLC](./img/adlc.png)
+<div align="center">
+  <img src="./img/adlc.png" alt="ADLC" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+</div>
 
 The Agent Development Lifecycle (ADLC) is the framework this workshop is built around. It provides a structured, repeatable path from agent conception to continuous improvement in production.
 
@@ -77,7 +81,9 @@ The software industry has adapted its methodology each time a new paradigm requi
 
 Agents behave differently from traditional software. The same input can produce different outputs. Testing a boolean condition is not sufficient. An agent can pass all unit tests and still give a user a wrong answer in production. A new methodology is required to handle this.
 
-![Why the industry needed a new development lifecycle](./img/adlc_evolution.svg)
+<div align="center">
+  <img src="./img/adlc_evolution.svg" alt="Why the industry needed a new development lifecycle" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+</div>
 
 The ADLC gives development teams a structured, repeatable, quality-based way to build and operate agents at enterprise scale.
 

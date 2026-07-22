@@ -15,7 +15,9 @@
 
 Solace Agent Mesh is a Go-based, event-driven agent runtime for building, deploying, and operating AI agents at enterprise scale. It provides the runtime infrastructure, declarative configuration model, and entrypoint integrations to run agents as always-on workers embedded in your event-driven architecture, not just as conversational endpoints you call on demand.
 
-![runtimes](./img/runtimes.png)
+<div align="center">
+  <img src="./img/runtimes.png" alt="runtimes" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+</div>
 
 The platform is decomposed into three independently deployable process types:
 
@@ -27,7 +29,9 @@ The platform is decomposed into three independently deployable process types:
 
 All three processes communicate through a Solace message broker. No component calls another directly over HTTP or gRPC. The broker is the coordination fabric enabling horizontal scaling, failure isolation, and event-driven agents made possible without application-level coordination code.
 
-![Tool types and agent core](./img/tool_types.svg)
+<div align="center">
+  <img src="./img/tool_types.svg" alt="Tool types and agent core" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+</div>
 
 Tools come in the following forms:
 
@@ -48,7 +52,9 @@ A companion CLI handles config scaffolding, declarative config push/pull to a ru
 
 The hard problems in agentic systems are no longer based in model quality. GPT-4+, Claude, and Gemini all produce good results on well-scoped tasks. The hard problems are operational, appearing the moment you move from a demo to a production deployment.
 
-![Operational challenges in agentic systems](./img/operational_challenges.svg)
+<div align="center">
+  <img src="./img/operational_challenges.svg" alt="Operational challenges in agentic systems" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+</div>
 
 <details>
     <summary>More details on Challenges</summary>
@@ -86,7 +92,9 @@ The argument for a dedicated message broker rather than HTTP, WebSockets, or a g
 
 Agents are not stateless services. A single agent task can span multiple LLM turns, multiple tool calls (some of which block for seconds waiting on external APIs), and multiple delegations to peer agents. The execution is non-linear and its duration is unpredictable. Coordinating this via synchronous HTTP means holding connections open for minutes, implementing retry logic at every layer, and accepting that a network partition anywhere in the chain can lose the task.
 
-![Non-linear agent task execution](./img/agent_task_nonlinear.svg)
+<div align="center">
+  <img src="./img/agent_task_nonlinear.svg" alt="Non-linear agent task execution" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+</div>
 
 A message broker solves this structurally. The publishing component sends a message and moves on. The subscribing component receives it when ready. Acknowledgment is decoupled from processing time. Delivery guarantees are a broker property, not application code that every team reimplements differently.
 
