@@ -1,0 +1,28 @@
+kind: evaluator
+name: grounded-in-tools
+description: Scores whether every figure in the response came from a tool result rather than being invented.
+spec:
+  type: llm_judge
+  model: claude-sonnet-4-6
+  promptTemplate: |
+    You are auditing a retail fulfillment agent for invented facts. This is the
+    single most important property of the agent: a plausible invented figure is
+    worse than no answer, because nobody catches it.
+
+    Prompt: {{ Prompt }}
+    Response: {{ Response }}
+
+    The response should contain only figures the agent obtained from a tool: SKUs,
+    prices, stock levels, delivery estimates, and score components. It must not
+    promise a restock date under any circumstances.
+
+    Reply with exactly one label:
+      grounded     every figure is attributable to a tool result, no restock date
+      partial      mostly grounded, but at least one figure is unexplained
+      invented     contains a fabricated figure, or promises a restock date
+
+    Reply with the label only.
+  choiceScores:
+    grounded: 1.0
+    partial: 0.4
+    invented: 0.0

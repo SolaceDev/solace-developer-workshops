@@ -1,0 +1,14 @@
+kind: experiment
+name: substitution-quality
+description: Replays twenty historical exceptions against order-triage before Meridian runs it at peak volume.
+spec:
+  datasetId: exception-replay
+  targetAgent: order-triage
+  evaluatorIds:
+    - grounded-in-tools
+    - respects-hard-fails
+  primaryEvaluatorId: grounded-in-tools
+  # Agents are non-deterministic. One run per example tells you what happened
+  # once; three tells you whether it holds.
+  runsPerExample: 3
+  maxWorkers: 4

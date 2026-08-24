@@ -1,32 +1,50 @@
 [
   {
     "id": "s1",
-    "title": "Getting Started",
-    "description": "Set up your local Solace Agent Mesh environment and understand the Go-based architecture",
-    "triggerFile": "guides/100_Getting_Started.md"
+    "title": "Start Here",
+    "description": "Meet Meridian Outfitters and the order that could not ship, then get oriented in the parts Solace Agent Mesh is made of and the broker underneath them",
+    "triggerFile": "guides/100_Start_Here.md"
   },
   {
     "id": "s2",
-    "title": "What is Solace Agent Mesh",
-    "description": "Understand what Solace Agent Mesh is, the challenges it addresses, and why an event-driven architecture on a proven message broker is the foundation for enterprise-grade agentic deployments",
-    "triggerFile": "guides/101_Solace_Agent_Mesh.md"
+    "title": "Connectors",
+    "description": "Give agents access to external systems: a SQL connector for the operations database and an MCP connector for the merchandising catalog, both without writing code",
+    "triggerFile": "guides/200_Connectors.md"
   },
   {
     "id": "s3",
-    "title": "Working with Built-in Tools",
-    "description": "Hire your first set of specialist agents using Solace Agent Mesh built-in tools and explore multi-agent collaboration through the orchestrator",
-    "triggerFile": "guides/200_Builtin_tools.md"
+    "title": "The Agent",
+    "description": "Define the agent that owns a fulfillment exception, see what its guardrails forbid, and watch a second agent become available to the Orchestrator through agent card discovery",
+    "triggerFile": "guides/300_Agent.md"
   },
   {
     "id": "s4",
-    "title": "Solace Agent Mesh CLI",
-    "description": "Learn the sam CLI: running components locally, managing authentication, packaging toolsets and skills, and driving declarative configuration changes against a live platform",
-    "triggerFile": "guides/300_sam_cli.md"
+    "title": "Toolsets and Skills",
+    "description": "Move substitution scoring out of the prompt into deterministic Go, change one weight to flip the business answer, then package brand voice and credit policy as a skill any agent can load",
+    "triggerFile": "guides/400_Toolset.md"
   },
   {
     "id": "s5",
-    "title": "Working with Connectors",
-    "description": "Onboard agents to external systems using connectors — connect to SQL databases, REST APIs, MCP servers, and knowledge bases without writing code",
-    "triggerFile": "guides/400_Connectors.md"
+    "title": "The Workflow",
+    "description": "Assemble the parts into a declared graph of steps, with a tool node that scores candidates with no model in the loop and a switch that escalates to a human",
+    "triggerFile": "guides/500_Workflow.md"
+  },
+  {
+    "id": "s6",
+    "title": "Events",
+    "description": "Publish one message to the event mesh and watch the workflow run with nobody clicking anything, then see the outcome come back on a topic with no publisher code written",
+    "triggerFile": "guides/600_Events.md"
+  },
+  {
+    "id": "s7",
+    "title": "Evaluation (take-home)",
+    "description": "Replay twenty historical exceptions against the agent and score whether the substitutions hold up, before anyone runs this at peak volume",
+    "triggerFile": "guides/800_Evaluation.md"
+  },
+  {
+    "id": "s8",
+    "title": "CLI Appendix (take-home)",
+    "description": "Reference material on the sam CLI: declarative configuration, repository layout, secrets, promoting between environments, and packaging toolsets and skills",
+    "triggerFile": "guides/900_Appendix_CLI.md"
   }
 ]

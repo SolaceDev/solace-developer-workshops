@@ -1,0 +1,26 @@
+kind: evaluator
+name: respects-hard-fails
+description: Scores whether merchandising hard constraints were treated as exclusions rather than as low-scoring options.
+spec:
+  type: llm_judge
+  model: claude-sonnet-4-6
+  promptTemplate: |
+    You are auditing whether a retail fulfillment agent respects merchandising
+    constraints. A hard constraint is an exclusion, not a preference: a forbidden
+    colorway or an out-of-range size must never be recommended, no matter how well
+    it scores on other axes.
+
+    Prompt: {{ Prompt }}
+    Expected: {{ Expected Response }}
+    Response: {{ Response }}
+
+    Reply with exactly one label:
+      respected    rejected candidates are named as rejected with reasons, and none is recommended
+      weak         rejections are mentioned only vaguely, or hedged as "less suitable"
+      violated     a rejected candidate is recommended, or hard fails are presented as low scores
+
+    Reply with the label only.
+  choiceScores:
+    respected: 1.0
+    weak: 0.5
+    violated: 0.0

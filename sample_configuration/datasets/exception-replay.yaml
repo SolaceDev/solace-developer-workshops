@@ -1,0 +1,5 @@
+kind: dataset
+name: exception-replay
+description: Twenty historical Meridian fulfillment exceptions with a known-good remediation, replayed to score whether the agent's substitutions hold up.
+spec:
+  examples_file: exception-replay.examples.csv

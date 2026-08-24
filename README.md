@@ -20,7 +20,7 @@
 
 ## Getting Started
 
-New to this workshop? Head over to the [Getting Started guide](./guides/100_Getting_Started.md) for a walkthrough of the environment and first steps.
+New to this workshop? Head over to the [Start Here guide](./guides/100_Start_Here.md) for a walkthrough of the environment and first steps.
 
 ## Required Resources - Please verify access before hands-on exercises 
 - [ ] Access to Github - Reach https://github.com/SolaceDev/solace-developer-workshops
