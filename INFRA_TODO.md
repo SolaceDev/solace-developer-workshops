@@ -96,21 +96,31 @@ It is deterministic, so output is byte-identical across runs.
 
 ## 3. Product catalog MCP server
 
-Not yet written. `mcp-servers/product-catalog/`, Python, HTTP transport on
-9100, `/health` endpoint, no auth. Reads the catalog-owned tables
-(`style_families`, `substitution_rules`, `product_copy`).
+**Built and tested.** `mcp-servers/product-catalog/`, Python, streamable HTTP on
+9100, backed by the catalog-owned tables.
 
-Three tools: `search_products(style_family, category, season)`,
-`get_product(sku)`, `get_substitution_rules(style_id)`.
+Verified locally against a seeded postgres: all three tools return correct data,
+and the full chain (catalog attributes joined to SQL availability, fed to the Go
+scorer) reproduces the documented `ORD-10428` outcomes at both weight settings.
 
-**Its output shape must match the toolset's input contract exactly.** See the
-`Product`, `Availability`, and `Rules` structs in
-`sample_configuration/toolsets/substitution-scoring/src/scoring.go`. A mismatch
-surfaces as an agent silently dropping candidates, which is close to
-undebuggable in a live room.
+`/health` returns 200 with the family count when queryable, 503 when postgres is
+unreachable or the catalog tables are empty. Verified by stopping the database
+mid-run: it reports unhealthy, then recovers on its own.
 
-Startup must not block container attach. Background it, and make the connector
-tolerant of a few seconds of unavailability.
+**Wire into `devcontainer.json`.** It backgrounds itself and waits on its own
+health check, so it belongs on the attach path alongside `sam run`:
+
+```jsonc
+"postAttachCommand": "sam run /etc/sam/configs & /bin/bash mcp-servers/product-catalog/start.sh & /bin/bash util/seed_prompts.sh",
+```
+
+Two things to confirm in a container:
+
+- `mcp` and `psycopg[binary]` install cleanly. `start.sh` pip-installs from
+  `requirements.txt` on each run, which is a few seconds warm but needs network
+  the first time. **Pre-bake both into the image** rather than relying on
+  conference wifi.
+- Port 9100 is free and forwarded.
 
 ## 4. Toolset build path
 

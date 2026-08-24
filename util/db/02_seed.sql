@@ -2686,25 +2686,25 @@ INSERT INTO order_lines (order_id, line_no, sku, qty, unit_price, status) VALUES
 -- ------------------------------------------------------------------
 
 INSERT INTO style_families (style_id, family_id, family_name) VALUES
-  ('CS', 'FAM-SHELL', 'Technical Shells'),
-  ('RD', 'FAM-SHELL', 'Technical Shells'),
-  ('AL', 'FAM-SHELL', 'Technical Shells'),
-  ('TW', 'FAM-SHELL', 'Technical Shells'),
-  ('SB', 'FAM-SHELL', 'Technical Shells'),
-  ('GL', 'FAM-SHELL', 'Technical Shells'),
-  ('HB', 'FAM-SHELL', 'Technical Shells'),
-  ('CV', 'FAM-SHELL', 'Technical Shells'),
-  ('SM', 'FAM-SHELL', 'Technical Shells'),
-  ('TR', 'FAM-CARRY', 'Carry Systems'),
-  ('BC', 'FAM-CARRY', 'Carry Systems'),
-  ('DP', 'FAM-CARRY', 'Carry Systems'),
-  ('SP', 'FAM-CARRY', 'Carry Systems'),
-  ('HL', 'FAM-CARRY', 'Carry Systems'),
-  ('TL', 'FAM-FOOT', 'Trail Footwear'),
-  ('SC', 'FAM-FOOT', 'Trail Footwear'),
-  ('TB', 'FAM-FOOT', 'Trail Footwear'),
-  ('RN', 'FAM-FOOT', 'Trail Footwear'),
-  ('CM', 'FAM-FOOT', 'Trail Footwear');
+  ('CS', 'FAM-SHELL', 'Waterproof Shells'),
+  ('RD', 'FAM-INSUL', 'Insulated Outerwear'),
+  ('AL', 'FAM-MIDLYR', 'Midlayers'),
+  ('TW', 'FAM-SHELL', 'Waterproof Shells'),
+  ('SB', 'FAM-SHELL', 'Waterproof Shells'),
+  ('GL', 'FAM-INSUL', 'Insulated Outerwear'),
+  ('HB', 'FAM-SNOW', 'Snow Bibs'),
+  ('CV', 'FAM-MIDLYR', 'Midlayers'),
+  ('SM', 'FAM-MIDLYR', 'Midlayers'),
+  ('TR', 'FAM-DAYPK', 'Daypacks'),
+  ('BC', 'FAM-HAUL', 'Haul Packs'),
+  ('DP', 'FAM-DAYPK', 'Daypacks'),
+  ('SP', 'FAM-HAUL', 'Haul Packs'),
+  ('HL', 'FAM-DUFFEL', 'Duffels'),
+  ('TL', 'FAM-BOOT', 'Hiking Boots'),
+  ('SC', 'FAM-TRAIL', 'Trail Shoes'),
+  ('TB', 'FAM-BOOT', 'Hiking Boots'),
+  ('RN', 'FAM-TRAIL', 'Trail Shoes'),
+  ('CM', 'FAM-CAMP', 'Camp Shoes');
 
 -- Merch-approved swap constraints. The CS rule is what rejects CS-MOS-M
 -- (forbidden color family) and CS-SLT-XL (size delta 2 exceeds max 1).

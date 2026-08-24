@@ -116,6 +116,8 @@ At Meridian that service speaks MCP. In your own organization it might be anythi
     curl -s localhost:9100/health
     ```
 
+    > Note: You should see `{"status":"healthy","style_families":19}`. The catalog reports unhealthy until it can actually query the database, so a healthy response means both are up.
+
 1. Create a new file, `sample_configuration/connectors/product-catalog.yaml`:
 
     ```
@@ -155,7 +157,15 @@ At Meridian that service speaks MCP. In your own organization it might be anythi
 
     > Note: The plan shows one create and one unchanged. Solace Agent Mesh reconciles to the state you declared, so re-applying something that already matches does nothing.
 
-1. Open the **Connectors** tab again. The MCP connector lists the three tools it discovered from the catalog server: `search_products`, `get_product`, and `get_substitution_rules`.
+1. Open the **Connectors** tab again. The MCP connector lists the three tools it discovered from the catalog server:
+
+    | Tool | Returns |
+    |---|---|
+    | `search_products` | Candidate SKUs in the same merchandising family |
+    | `get_product` | One SKU's attributes plus its marketing copy |
+    | `get_substitution_rules` | Forbidden color families and the maximum size delta |
+
+    > Note: Solace Agent Mesh fetched that list from the server at apply time. You did not declare the tools, and adding a fourth one to the catalog would surface it without touching this connector.
 
 ---
 

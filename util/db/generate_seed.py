@@ -87,10 +87,37 @@ COLORWAYS = [
     ("Ember",     "bright",  "EMB"),
 ]
 
-FAMILIES = {
-    "jackets":  ("FAM-SHELL", "Technical Shells"),
-    "packs":    ("FAM-CARRY", "Carry Systems"),
-    "footwear": ("FAM-FOOT",  "Trail Footwear"),
+# Merchandising families group styles that are genuinely interchangeable, not
+# everything in a category. A customer who wanted a waterproof shell will accept
+# another waterproof shell; they will not accept a fleece or a pair of bibs.
+# Getting this granularity right is what keeps the candidate list small enough
+# for an agent to reason about.
+STYLE_FAMILY = {
+    # Waterproof shells: same job, same weather, interchangeable.
+    "CS": ("FAM-SHELL",  "Waterproof Shells"),
+    "SB": ("FAM-SHELL",  "Waterproof Shells"),
+    "TW": ("FAM-SHELL",  "Waterproof Shells"),
+    # Insulated outerwear.
+    "RD": ("FAM-INSUL",  "Insulated Outerwear"),
+    "GL": ("FAM-INSUL",  "Insulated Outerwear"),
+    # Midlayers: worn under a shell, not instead of one.
+    "AL": ("FAM-MIDLYR", "Midlayers"),
+    "SM": ("FAM-MIDLYR", "Midlayers"),
+    "CV": ("FAM-MIDLYR", "Midlayers"),
+    # Snow bibs stand alone. Nothing else in the line substitutes for them.
+    "HB": ("FAM-SNOW",   "Snow Bibs"),
+    # Carry, split by how much it holds.
+    "DP": ("FAM-DAYPK",  "Daypacks"),
+    "TR": ("FAM-DAYPK",  "Daypacks"),
+    "BC": ("FAM-HAUL",   "Haul Packs"),
+    "SP": ("FAM-HAUL",   "Haul Packs"),
+    "HL": ("FAM-DUFFEL", "Duffels"),
+    # Footwear, split by whether it is a boot.
+    "TL": ("FAM-BOOT",   "Hiking Boots"),
+    "TB": ("FAM-BOOT",   "Hiking Boots"),
+    "SC": ("FAM-TRAIL",  "Trail Shoes"),
+    "RN": ("FAM-TRAIL",  "Trail Shoes"),
+    "CM": ("FAM-CAMP",   "Camp Shoes"),
 }
 
 
@@ -290,7 +317,7 @@ for s in GENERATED_STYLES:
 
 style_families = []
 for sid in all_styles:
-    fam_id, fam_name = FAMILIES[style_category[sid]]
+    fam_id, fam_name = STYLE_FAMILY[sid]
     style_families.append((sid, fam_id, fam_name))
 
 sub_rules = []
