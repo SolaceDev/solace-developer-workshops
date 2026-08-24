@@ -1,0 +1,5 @@
+# Vendored by `sam toolset init` / re-injected by the build pipeline.
+_sdk/
+# Build output and per-target build cache.
+dist/
+.sam-cache/

@@ -1,15 +1,16 @@
 kind: manifest
 name: local
-description: Local development environment (no auth)
+description: Meridian Outfitters fulfillment exception handling, local development
 target:
   url: http://localhost:8800
 resources:
   models: []
-  agents: 
-    - retail-analyst
-  entrypoints: []
-  workflows: []
+  # You add to these lists as you work through the workshop. Each guide tells
+  # you which resource to add, then has you run `sam config plan` to see the
+  # change before `sam config apply` makes it real.
+  connectors: []
   toolsets: []
-  connectors: 
-    - retail-postgres
   skills: []
+  agents: []
+  workflows: []
+  entrypoints: []

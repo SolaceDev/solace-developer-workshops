@@ -1,12 +1,12 @@
 kind: connector
 name: retail-postgres
-description: PostgreSQL connector for the retail database on AWS EC2 (us-east-2)
+description: Meridian Outfitters retail operations database. Orders, inventory positions, locations, and customers.
 spec:
   type: sql
   subtype: postgres
   values:
     database: retail
-    hostname: ec2-3-129-17-126.us-east-2.compute.amazonaws.com
+    hostname: localhost
     port: 5432
     username: postgres
     password: ${RETAIL_DB_PASSWORD}

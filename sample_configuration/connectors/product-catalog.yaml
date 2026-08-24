@@ -1,0 +1,18 @@
+kind: connector
+name: product-catalog
+description: Meridian Outfitters merchandising PIM. Style families, merch-approved substitution rules, and product copy.
+spec:
+  type: mcp
+  subtype: remote
+  values:
+    server_url: "http://localhost:9100/mcp"
+    connection_type: "streamable-http"
+    # No auth. The catalog service runs inside the workshop container.
+    auth_type: "none"
+    # The schema requires these keys even when auth_type is none. They are
+    # placeholders and are never read.
+    auth_apikey_location: "header"
+    auth_apikey_name: "x-api-key"
+    auth_http_scheme: "bearer"
+    auth_oauth_mode: "discovery"
+    auth_http_basic_username: "unused"

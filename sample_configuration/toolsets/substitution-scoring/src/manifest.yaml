@@ -1,0 +1,8 @@
+version: 1
+tools:
+  score_substitutes:
+    executable: ./substitution-scoring
+    timeout_seconds: 60
+    # restrictive isolates the network. This tool performs no I/O by design,
+    # so the sandbox profile enforces what the code already promises.
+    sandbox_profile: restrictive

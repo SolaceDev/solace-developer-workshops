@@ -1,0 +1,8 @@
+kind: toolset
+name: substitution-scoring
+description: Deterministic scoring of substitution candidates by size proximity, color match, price, margin, delivery distance, and inventory depth.
+spec:
+  # No config block. This toolset takes no secrets and calls no external
+  # service, which is the whole argument for it being a toolset: the scoring
+  # is reproducible arithmetic, not a model call.
+  config: {}

@@ -1,0 +1,70 @@
+kind: entrypoint
+name: order-exception-events
+description: "Listens on the event mesh for Meridian fulfillment exceptions and runs the remediation workflow, publishing the outcome back to the mesh."
+spec:
+  type: event_mesh
+  deploy: true
+  values:
+    # Empty on purpose. In a local or embedded instance an empty broker_url
+    # falls back to the built-in development broker, which is what the
+    # workshop container runs. Filling these in defeats that fallback, so
+    # supply real values only when pointing at an external broker:
+    #
+    #   broker_url: "tcps://broker.example.com:55443"
+    #   broker_vpn: "default"
+    #   broker_username: "solace-client"
+    #   broker_password: ${ORDER_EXCEPTION_EVENTS_BROKER_PASSWORD}
+    broker_url: ""
+    broker_vpn: ""
+    broker_username: ""
+    broker_password: ""
+    tls_skip_verify: "false"
+
+    event_rules:
+      - name: remediate_order_exception
+        # The topic hierarchy is a teaching asset, not an implementation
+        # detail. retail/order/exception/{region}/{store} means this one
+        # subscription catches every region and every store, and a later
+        # subscriber can narrow to a single region without anyone
+        # reconfiguring this rule.
+        subscriptions:
+          - topic: "retail/order/exception/>"
+        messageFormat: json
+
+        targetWorkflowName: order-exception-remediation
+        promptTemplate: |
+          A fulfillment exception arrived on topic {topic}.
+          Remediate order {payload.order.id}.
+
+        # RBAC and audit attribute the task to this identity. Do not leave it
+        # implicit for anything beyond a workshop.
+        defaultUserIdentity: order_event_user
+
+        # Acknowledge only once the workflow finishes. A dropped fulfillment
+        # exception is a customer who never hears back, so redelivery is
+        # preferable to losing the message.
+        acknowledgmentPolicy:
+          mode: on_completion
+          timeoutSeconds: 300
+
+        # The async return, and it is pure configuration. There is no
+        # publisher code anywhere in this workshop: successOutput plus the
+        # acknowledgment policy above is the entire mechanism.
+        #
+        # A dynamic topic is an expression template evaluated against the
+        # RESPONSE, not against the inbound message, so it reads order_id from
+        # the workflow's structured output rather than from the event payload.
+        successOutput:
+          enabled: true
+          topic: "retail/order/remediated/{order_id}"
+          topicType: dynamic
+          responseType: structured
+
+        # Errors carry no structured output to read an id from, so this one
+        # is static. Subscribers use the wildcard retail/order/escalated/> and
+        # read the id from the message body.
+        errorOutput:
+          enabled: true
+          topic: "retail/order/escalated"
+          topicType: static
+          responseType: error

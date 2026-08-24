@@ -1,0 +1,174 @@
+kind: workflow
+name: order-exception-remediation
+description: "Handles one Meridian Outfitters fulfillment exception end to end: establish the facts, find and score substitutes, then either draft the customer resolution or escalate the goodwill credit to a human."
+spec:
+  appConfig:
+    # The toolset is bound here so the scoring node can call it directly,
+    # without an agent in between. A custom toolset's tools are addressed as
+    # <toolset>__<tool>.
+    toolsets:
+      - substitution-scoring
+    display_name: Order Exception Remediation
+    description: >-
+      Remediate an order line that cannot be fulfilled as placed. Reads the
+      operational database and the merchandising catalog, scores substitutes
+      deterministically, and returns either a drafted customer resolution or an
+      escalation for human review.
+    version: "1.0.0"
+
+    input_schema:
+      type: object
+      properties:
+        order_id:
+          type: string
+          description: The order carrying the exception, for example ORD-10428.
+      required: [order_id]
+
+    output_schema:
+      type: object
+      properties:
+        order_id: { type: string }
+        outcome:  { type: string, description: "resolved or escalated" }
+        # The scoring result is the full ranked/rejected/weights_used object,
+        # not a sentence. Typing it as a string would fail output validation.
+        recommendation:   { type: object }
+        customer_message: { type: string }
+
+    nodes:
+      # --- 1. Establish the facts --------------------------------------
+      # What was ordered, which line failed, what stock exists and where,
+      # and who the customer is. Everything downstream is built on this.
+      - id: establish_facts
+        type: agent
+        agent_name: order-triage
+        instruction: >-
+          Establish the facts for this fulfillment exception. Query the order,
+          the line that failed, the customer and their loyalty tier, and the
+          current inventory position for the requested SKU across every
+          location. Report the SKU, its style, size ordinal, color family, list
+          price, unit cost, the quantity ordered, and the ship-to state and
+          region. Also state the goodwill credit this case would warrant under
+          the credit policy, as a plain number in USD. Do not recommend a
+          substitute yet.
+        input:
+          order_id: "{{workflow.input.order_id}}"
+        # The switch below compares proposed_credit_usd numerically and the
+        # scoring node reads these fields by name, so the shape is pinned
+        # rather than left to the model.
+        output_schema_override:
+          type: object
+          properties:
+            original:
+              type: object
+              properties:
+                sku:          { type: string }
+                style_id:     { type: string }
+                color:        { type: string }
+                color_family: { type: string }
+                size_ordinal: { type: integer }
+                list_price:   { type: number }
+                unit_cost:    { type: number }
+              required: [sku, style_id, color, color_family, size_ordinal, list_price, unit_cost]
+            qty:                  { type: integer }
+            ship_to_state:        { type: string }
+            ship_to_region:       { type: string }
+            loyalty_tier:         { type: string }
+            proposed_credit_usd:  { type: number }
+          required: [original, qty, ship_to_state, ship_to_region, proposed_credit_usd]
+
+      # --- 2. Find candidates ------------------------------------------
+      # Merchandising owns which styles may substitute for which. That is not
+      # in the operations database, so it comes from the catalog service.
+      - id: find_candidates
+        type: agent
+        agent_name: order-triage
+        depends_on: [establish_facts]
+        instruction: >-
+          Using the product catalog, find substitution candidates in the same
+          style family as the failed SKU, and retrieve the merchandising
+          substitution rules for that style. Then query inventory for each
+          candidate so every one carries its availability by location. Return
+          the candidate list with full attributes and availability, plus the
+          rules. Do not rank them.
+        input:
+          facts: "{{establish_facts.output}}"
+
+      # --- 3. Score candidates -----------------------------------------
+      # A tool node, not an agent node. No model is involved in the ranking.
+      # This is the point of the toolset: weighted arithmetic over money has
+      # to be reproducible, and hard constraints have to be exclusions rather
+      # than something an LLM can be talked out of.
+      - id: score_candidates
+        type: tool
+        # Both upstream nodes are listed because both outputs are read below.
+        # A transitive edge is not enough: referencing a node's output
+        # requires declaring the dependency.
+        depends_on: [establish_facts, find_candidates]
+        tool_name: substitution-scoring__score_substitutes
+        input:
+          original:       "{{establish_facts.output.original}}"
+          qty:            "{{establish_facts.output.qty}}"
+          ship_to_state:  "{{establish_facts.output.ship_to_state}}"
+          ship_to_region: "{{establish_facts.output.ship_to_region}}"
+          rules:          "{{find_candidates.output.rules}}"
+          candidates:     "{{find_candidates.output.candidates}}"
+
+      # --- 4. Branch on the credit ceiling -----------------------------
+      # Under $50 the agent resolves it. Over $50 a person decides. The
+      # threshold lives in the customer-comms skill and is enforced here.
+      - id: credit_gate
+        type: switch
+        depends_on: [score_candidates]
+        cases:
+          - condition: "{{establish_facts.output.proposed_credit_usd}} <= 50"
+            node: draft_resolution
+        default_case: escalate
+
+      # --- 5a. Draft the resolution ------------------------------------
+      - id: draft_resolution
+        type: agent
+        agent_name: order-triage
+        depends_on: [credit_gate, establish_facts, score_candidates]
+        instruction: >-
+          Draft the customer resolution using your customer communications
+          skill. Use the top-ranked substitute from the scoring result. Report
+          the scoring breakdown in your internal reasoning rather than
+          paraphrasing it, and never state a figure the tools did not return.
+          If the scoring result ranked nothing, use the cancel and refund
+          template instead. Set outcome to "resolved".
+        input:
+          facts:   "{{establish_facts.output}}"
+          scoring: "{{score_candidates.output}}"
+
+      # --- 5b. Escalate -------------------------------------------------
+      - id: escalate
+        type: agent
+        agent_name: order-triage
+        depends_on: [credit_gate, establish_facts, score_candidates]
+        instruction: >-
+          The goodwill credit this case needs exceeds the $50 automatic
+          authorization ceiling. Summarize the exception, the scoring result,
+          and the credit being requested, for a human reviewer. Do not draft a
+          customer message and do not authorize the credit. Set outcome to
+          "escalated".
+        input:
+          facts:   "{{establish_facts.output}}"
+          scoring: "{{score_candidates.output}}"
+
+    # coalesce picks whichever branch actually ran.
+    output_mapping:
+      order_id: "{{workflow.input.order_id}}"
+      # Whichever branch ran names the outcome. coalesce takes the first
+      # non-empty value, and only one branch of a switch executes.
+      outcome:
+        coalesce:
+          - "{{draft_resolution.output.outcome}}"
+          - "{{escalate.output.outcome}}"
+      recommendation: "{{score_candidates.output}}"
+      customer_message:
+        coalesce:
+          - "{{draft_resolution.output}}"
+          - "{{escalate.output}}"
+
+    workflow_timeout: "300s"
+    default_node_timeout: "90s"
