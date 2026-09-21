@@ -1,50 +1,68 @@
 [
   {
     "id": "s1",
-    "title": "Solace Agent Mesh Setup",
-    "description": "Setup Solace Agent Mesh in your environment",
-    "triggerFile": "solace-agent-mesh/guides/020-solace-agent-mesh-setup.md"
+    "title": "Getting started",
+    "description": "Set up your environment and learn how the cockpit works",
+    "triggerFile": "guides/00-getting-started.md"
   },
   {
     "id": "s2",
-    "title": "What is Solace Agent Mesh",
-    "description": "Learn the background of Solace Agent Mesh",
-    "triggerFile": "solace-agent-mesh/guides/021-what-is-sam.md"
+    "title": "Tour the broker",
+    "description": "Queues, client profiles and ACL profiles on a real broker",
+    "triggerFile": "guides/10-broker-tour.md"
   },
   {
     "id": "s3",
-    "title": "Adding Built in Agents",
-    "description": "Use the SAM CLI to add built-in agents to your mesh",
-    "triggerFile": "solace-agent-mesh/guides/100-adding-builtin-agents.md"
+    "title": "Publish and subscribe",
+    "description": "Topic hierarchies, wildcards and access control",
+    "triggerFile": "guides/20-pub-sub.md"
   },
   {
     "id": "s4",
-    "title": "Adding Built in Agents with GUI",
-    "description": "Add built in agents to Solace Agent Mesh using the GUI",
-    "triggerFile": "solace-agent-mesh/guides/101-adding-builtin-agents-gui.md"
+    "title": "Fan-out",
+    "description": "One event, many independent consumers",
+    "triggerFile": "guides/30-fan-out.md"
   },
   {
     "id": "s5",
-    "title": "Adding Prebuilt Agents",
-    "description": "Add prebuilt agents to Solace Agent Mesh",
-    "triggerFile": "solace-agent-mesh/guides/200-adding-prebuilt-agents.md"
+    "title": "Shock absorber",
+    "description": "Queues that absorb a surge, and partitions that keep order",
+    "triggerFile": "guides/40-shock-absorber.md"
   },
   {
     "id": "s6",
-    "title": "A2A Proxy Agents",
-    "description": "Adding A2A agents to Solace Agent Mesh via A2A proxy",
-    "triggerFile": "solace-agent-mesh/guides/300-a2a-proxy-agents.md"
+    "title": "Processor",
+    "description": "Consume, transform and republish through the broker",
+    "triggerFile": "guides/50-processor.md"
   },
   {
     "id": "s7",
-    "title": "MCP Server Agents",
-    "description": "Adding MCP Servers to Solace Agent Mesh",
-    "triggerFile": "solace-agent-mesh/guides/400-mcp-server-agents.md"
+    "title": "Command and query",
+    "description": "Split the side that changes state from the side that reads it",
+    "triggerFile": "guides/60-cqrs.md"
   },
   {
     "id": "s8",
+    "title": "Streaming",
+    "description": "Apply a rule to data in motion, while the decision matters",
+    "triggerFile": "guides/70-streaming.md"
+  },
+  {
+    "id": "s9",
+    "title": "Capstone: Surviving the Arrival",
+    "description": "Shock absorber, partitions and fan-out composed",
+    "triggerFile": "guides/80-capstone-arrival.md"
+  },
+  {
+    "id": "s10",
+    "title": "Capstone: Smart Shelf Pricing",
+    "description": "Streaming and a read model that emits only on change",
+    "triggerFile": "guides/90-capstone-smart-shelf.md"
+  },
+  {
+    "id": "s11",
     "title": "Cleanup",
-    "description": "Destroy your Solace Agent Mesh Setup",
-    "triggerFile": "solace-agent-mesh/guides/998-cleanup.md"
+    "description": "Tear down what you built",
+    "triggerFile": "guides/99-cleanup.md"
   }
 ]

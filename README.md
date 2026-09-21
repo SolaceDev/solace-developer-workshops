@@ -1,138 +1,109 @@
-# Solace Workshops
+# Solace Core Developer Workshop
+
+A hands-on introduction to event-driven architecture on Solace PubSub+. Nine
+sections, each one a working system you run, break and inspect: a broker
+configuration tour, publish and subscribe, the five patterns from the
+Real-Time Data Deep Dives series, and two capstones that compose them.
+
+Everything runs in a container. There is nothing to install and no account to
+create.
 
 <p align="center">
-  <a href="https://github.com/codespaces/new/SolaceDev/solace-developer-workshops?quickstart=1">
+  <a href="https://github.com/codespaces/new/Chaymee/solace-core-developer-workshops?quickstart=1">
     <img src="https://github.com/codespaces/badge.svg" alt="Open in GitHub Codespaces" width="600">
   </a>
 </p>
 
-## Table of Contents
+## Getting started
 
-- [Required Resources](#required-resources)
-- [To Start a codespace session](#to-start-a-codespace-session)
-- [Available Workshops](#available-workshops)
-- [Available tools and configurations in this workshop](#available-tools-and-configurations-in-this-workshop)
-- [Solace Broker](#solace-broker)
-  - [1. Local Solace Broker](#1-local-solace-broker)
-  - [2. Solace Cloud](#2-solace-cloud)
-- [Running locally with DevContainers and VsCode](#running-locally-with-devcontainers-and-vscode)
-- [Questions?](#questions)
+Open the repository in a Codespace with the button above, or locally in VS
+Code with the Dev Containers extension (**Reopen in Container**). Either way
+the container installs Go and Terraform, starts a Solace broker in Docker,
+and opens the workshop cockpit on port 3000.
 
-## Required Resources - Please verify access before hands-on exercises 
-- [ ] Access to Github - Reach https://github.com/SolaceDev/solace-developer-workshops
-- [ ] Github Account - Log in to https://github.com/login
-- [ ] Github Codespaces access - Can interact with 'New Codespace' here https://github.com/codespaces
-- [ ] Ability to reach AWS resources over the network (Some enterprises block AWS at a network level). - Access to https://us-east-2.signin.aws.amazon.com/
+First build takes a few minutes, mostly pulling the broker image. When it
+finishes, start at [Getting started](guides/00-getting-started.md).
 
-> [!NOTE]
-> *You do NOT need to have a log in to AWS for this workshop*
+## Sections
 
-### If you do not have the above - it is possible to run locally with the following
-- [ ] Docker or Podman
-- [ ] VSCode app
-- [ ] DevContainer plugin installed in VSCode
-### If either option above is not available 
-There are other options for running Solace Agent Mesh locally on your machine. We will address these scenarios on an individual basis.  
+| # | Section | What it covers |
+| --- | --- | --- |
+| 00 | [Getting started](guides/00-getting-started.md) | The cockpit, the broker, and how a section works |
+| 10 | [Tour the broker](guides/10-broker-tour.md) | Queues, client profiles, ACL profiles |
+| 20 | [Publish and subscribe](guides/20-pub-sub.md) | Topic hierarchies, wildcards, access control |
+| 30 | [Fan-out](guides/30-fan-out.md) | One event, many independent consumers |
+| 40 | [Shock absorber](guides/40-shock-absorber.md) | Absorbing a surge, competing consumers, redelivery, partitions |
+| 50 | [Processor](guides/50-processor.md) | Consume, transform, republish |
+| 60 | [Command and query](guides/60-cqrs.md) | Read models, and commands that survive a device being offline |
+| 70 | [Streaming](guides/70-streaming.md) | A stateful rule applied to data in motion |
+| 80 | [Surviving the Arrival](guides/80-capstone-arrival.md) | Capstone: absorber, partitions and fan-out together |
+| 90 | [Smart Shelf Pricing](guides/90-capstone-smart-shelf.md) | Capstone: streaming plus a read model that suppresses no-op writes |
+| 99 | [Cleanup](guides/99-cleanup.md) | Tearing it down |
 
+## What you get in the container
 
-## To Start a codespace session
-You can either click the "Open in Github Codespaces button above" or:
+| Thing | Where |
+| --- | --- |
+| Workshop cockpit | <http://localhost:3000> |
+| PubSub+ Manager | <http://localhost:8080>, `admin` / `admin` |
+| Broker messaging (SMF) | `localhost:55555` |
+| Solace PubSub+ Standard | Docker container `solace_10.8.1` |
 
-1. Navigate to the `<> Code` button at the top of the repo  
-1. Open the Codespaces tab    
-1. Click `Create codespaces on main`      
+Also installed: Go with a C toolchain (the Solace Go API wraps the native
+client library), Terraform with the Solace broker provider, Python for the
+cockpit, and the Solace Try-Me VS Code extension for poking at topics by
+hand.
 
-> [!NOTE]
-> If you do not have access to Codespaces, please refer to the [Running locally with DevContainers and VsCode](#running-locally-with-devcontainers-and-vscode) section
+## How it fits together
 
-## Available Workshops
+```
+Browser (port 3000)
+     |
+FastAPI cockpit  ──  scenarios/<id>/scenario.yaml   what the section does
+     |               scenarios/<id>/tf/*.tf         broker configuration
+     |               apps/                          one Go binary, all roles
+     v
+terraform + Go apps  ──>  Solace broker
+```
 
-1. [FAA Workshop](./faa-workshop/README.md)
-1. [Solace Agent Mesh Workshop](./solace-agent-mesh/README.md)
-1. [Solace Samples](./samples/README.md)
-1. [Solace Masterclass](./solace-masterclass/)
+- **`cockpit/`** is the control surface. Scenarios are data: a folder with a
+  `scenario.yaml`, terraform for its broker configuration, and a diagram
+  description. Adding a section means adding a folder.
+- **`cockpit/apps/`** is one Go module producing one binary, invoked as
+  `workshop <scenario> <role>`. The Solace Go API links the native client
+  through cgo, so one binary keeps the build to a single link step.
+- **`guides/`** is the written material, one file per section.
 
-## Available tools and configurations in this workshop
+`cockpit/README.md` has the details, including how to add a scenario of your
+own.
 
-1. Local Solace Software Broker 
-1. VSCode Solace extension
-1. Solace TryMe CLI tool `stm`
+## Running an app by hand
 
-## Solace Broker
+The cockpit runs commands you can also run yourself:
 
-You have two options for using a Solace Broker:
+```bash
+bash cockpit/apps/run.sh pubsub subscribe \
+  --role baggage --user svc-acme-air-baggage --sub "acme/air/baggage/>"
+```
 
-### 1. Local Solace Broker
-A codespace is initialized by default with a broker.
+Connection details come from the environment, with defaults matching
+`setup_broker.sh`, so this reaches the same broker the cockpit uses.
 
-Alternatively, you can:
+To check everything still lines up after editing a scenario:
 
-1. Run the `setup_broker.sh` script as follows
-   ```
-   ./setup_broker.sh
-   ```
+```bash
+python3 cockpit/scripts/check_scenarios.py
+```
 
-To confirm that the Solace broker is running:
+## Repository layout
 
-1. Navigate to the `PORTS` tab and click on the `Solace` link that exposes the `8080` port
-1. Enter `admin` `admin` as the username password credentials for the solace broker manager
-
-### 2. Solace Cloud
-To spin up a solace cloud broker, please follow the [Solace Cloud Signup guide](./solace-agent-mesh/solace-cloud-signup-workshop.md)
-
-## Running locally with DevContainers and VsCode
-
-### Setup
-If you do not have access to Codespaces (or Github), you can run the workshop locally on your machine with docker. To do this:
-
-1. Clone this repo
-
-  ```
-  git clone https://github.com/SolaceDev/solace-developer-workshops.git
-  ```
-  OR install the source code from [https://github.com/SolaceDev/solace-developer-workshops.git](https://github.com/SolaceDev/solace-developer-workshops.git) by clicking the `Download Zip`
-
-  <div align="center">
-     <img src="./img/download.png" alt="Use-cases" width="30%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
-  </div>
-
-2. Open the project with VsCode
-  <div align="center">
-     <img src="./img/vscode.png" alt="Use-cases" width="70%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
-  </div>
-
-3. Make sure you have Dev Container extension installed. To do this click on the Extensions tab and type `Dev Container` in the search
-
-  <div align="center">
-     <img src="./img/extension.png" alt="Use-cases" width="40%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
-  </div>
-
-4. Pull up the dev container pallet by typing `CMD + SHIFT + P` and search for `>Dev Containers: reopen in Container`
-
-  <div align="center">
-     <img src="./img/devcontainer.png" alt="Use-cases" width="40%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
-  </div>
-
-  > Click continue if prompted to do so
-
-At this point, you will have a local docker container running the workshop through VsCode. You can bring up the terminal and follow the steps in your target workshop
-
-  <div align="center">
-     <img src="./img/newterminal.png" alt="Use-cases" width="40%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
-  </div>
-
-### Cleanup
-5. To stop your remote session, pull up the remote explorer pallet by typing `CMD + SHIFT + P` and search for `>Remote Explorer: Focus on Dev Containers View`
-
-  <div align="center">
-     <img src="./img/remotexplorer.png" alt="Use-cases" width="40%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
-  </div>
-
-6. Remove the Dev Container
-
-  <div align="center">
-     <img src="./img/removecontainer.png" alt="Use-cases" width="40%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
-  </div>
-
-## Questions? 
-Reach out on the [Solace Community Forum](https://community.solace.com)
+```
+cockpit/           the workshop control surface
+  apps/            Go applications, one module and one binary
+  scenarios/       one folder per section: scenario.yaml + tf/
+  scripts/         shared reconcile and validation helpers
+guides/            the written workshop
+samples/           Solace API samples for several languages (submodules)
+util/              Codespace registration and the progress tracker
+setup_broker.sh    starts the broker in Docker
+```
