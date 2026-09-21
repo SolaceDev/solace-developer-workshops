@@ -1,0 +1,257 @@
+id: shock-absorber
+order: 40
+eyebrow: Patterns
+title: Shock Absorber
+summary: >
+  A bank of flights lands together and every bag scans at once. A queue
+  between the scanners and the workers turns that surge into a backlog that
+  drains, instead of back-pressure that spreads upstream. Add workers to go
+  faster, stop one to see its in-flight work handed to another, and switch to
+  a partitioned queue to keep per-belt order while still working in parallel.
+
+objectives:
+  - Watch a queue absorb a burst the consumers cannot keep up with
+  - Add and remove workers on one queue and see the work redistribute
+  - Stop a worker mid-flight and find its unacknowledged messages redelivered elsewhere
+  - Send poison messages to a dead message queue instead of blocking the queue behind them
+  - Keep ordering per partition key while several consumers work at once
+
+# One worker in the Play sequence, deliberately. The first thing an attendee
+# should see is a backlog forming, which needs the consumer to be slower than
+# the publisher. Workers two and three are started by hand afterwards.
+run:
+  - apply
+  - build
+  - worker-1
+  - scan
+
+diagram:
+  caption: >
+    Scanners publish faster than the workers consume. The queue holds the
+    difference, so the surge is absorbed rather than passed on. Messages a
+    worker has taken but not yet acknowledged go back to the queue if it stops.
+  duration: 2.2
+  liveWhen: scanner
+  nodes:
+    - id: scanner
+      label: Bag Scanners
+      sublabel: bursts of 200
+      kind: app
+      col: 0
+      action: scan
+      requires:
+        - label: svc-shock-scanner
+          semp: /msgVpns/{vpn}/clientUsernames/svc-shock-scanner
+    - id: queue
+      label: q.shock.scans
+      sublabel: the absorber
+      kind: broker
+      col: 1
+      action: apply
+      provides:
+        - label: q.shock.scans
+          semp: /msgVpns/{vpn}/queues/q.shock.scans
+        - label: q.shock.dmq
+          semp: /msgVpns/{vpn}/queues/q.shock.dmq
+        - label: q.shock.scans.partitioned
+          semp: /msgVpns/{vpn}/queues/q.shock.scans.partitioned
+    - id: worker1
+      label: Worker 1
+      sublabel: ~300ms per bag
+      kind: app
+      col: 2
+      action: worker-1
+      requires:
+        - label: svc-shock-worker
+          semp: /msgVpns/{vpn}/clientUsernames/svc-shock-worker
+    - id: worker2
+      label: Worker 2
+      sublabel: start to go faster
+      kind: app
+      col: 2
+      action: worker-2
+    - id: worker3
+      label: Worker 3
+      sublabel: start to go faster
+      kind: app
+      col: 2
+      action: worker-3
+    - id: dmq
+      label: q.shock.dmq
+      sublabel: gave up after 3 tries
+      kind: config
+      col: 2
+      action: worker-nack
+      requires:
+        - label: q.shock.dmq
+          semp: /msgVpns/{vpn}/queues/q.shock.dmq
+  flows:
+    - from: scanner
+      to: queue
+      label: burst
+      delay: 0
+    - from: scanner
+      to: queue
+      delay: 0.15
+    - from: scanner
+      to: queue
+      delay: 0.3
+    - from: queue
+      to: worker1
+      delay: 0.9
+    - from: queue
+      to: worker2
+      delay: 1.1
+    - from: queue
+      to: worker3
+      delay: 1.3
+    - from: queue
+      to: dmq
+      label: rejected
+      delay: 1.6
+
+actions:
+  - id: apply
+    label: Apply configuration
+    kind: terraform
+    command: apply
+    tf_dir: tf
+    variant: primary
+    description: >
+      Creates the shared queue, its dead message queue and a partitioned
+      variant, plus the client profile, ACL profile and usernames.
+
+  - id: build
+    label: Build the apps
+    kind: process
+    cmd: [bash, ../../apps/run.sh, build]
+    cwd: .
+    variant: secondary
+    description: >
+      Compiles the Go apps shared by every scenario. Only needed to rebuild
+      after a change.
+
+  - id: scan
+    label: Publish bag scans
+    kind: process
+    cmd: [bash, ../../apps/run.sh, shock, scan, --burst, "200", --every, 15s]
+    cwd: .
+    long_running: true
+    variant: primary
+    description: >
+      Publishes 200 scans as fast as it can, waits fifteen seconds, then does
+      it again. Each scan carries its belt as a partition key.
+
+  - id: worker-1
+    label: Start worker 1
+    kind: process
+    cmd: [bash, ../../apps/run.sh, shock, work, --role, worker-1, --ack-delay, 300ms]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Consumes from the shared queue, taking about 300ms per bag. One worker
+      cannot keep up with a burst, which is what makes the backlog visible.
+
+  - id: worker-2
+    label: Start worker 2
+    kind: process
+    cmd: [bash, ../../apps/run.sh, shock, work, --role, worker-2, --ack-delay, 300ms]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      A second consumer on the same queue. The broker shares the messages out,
+      so the backlog drains roughly twice as fast. Nothing else changes.
+
+  - id: worker-3
+    label: Start worker 3
+    kind: process
+    cmd: [bash, ../../apps/run.sh, shock, work, --role, worker-3, --ack-delay, 300ms]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      A third consumer. Stop this one during a burst and watch its in-flight
+      messages reappear in another worker's pane marked redelivered.
+
+  - id: worker-nack
+    label: Start failing worker
+    kind: process
+    cmd: [bash, ../../apps/run.sh, shock, work, --role, nacker, --ack-delay, 200ms, --fail-every, "7", --reject-every, "13"]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Settles every seventh message FAILED, so the broker redelivers it, and
+      every thirteenth REJECTED, so it goes straight to the dead message
+      queue. Watch q.shock.dmq start filling in Inspect.
+
+  - id: part-1
+    label: Start partition worker 1
+    kind: process
+    cmd: [bash, ../../apps/run.sh, shock, work, --role, part-1, --user, svc-shock-partition-worker, --queue, q.shock.scans.partitioned, --ack-delay, 100ms, --show-key]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Consumes the partitioned queue and prints each message's belt. Start
+      this and partition worker 2 together, wait a few seconds for the broker
+      to assign partitions, then publish.
+
+  - id: part-2
+    label: Start partition worker 2
+    kind: process
+    cmd: [bash, ../../apps/run.sh, shock, work, --role, part-2, --user, svc-shock-partition-worker, --queue, q.shock.scans.partitioned, --ack-delay, 100ms, --show-key]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      The second consumer on the partitioned queue. Compare the belts in the
+      two panes: no belt appears in both, and within a belt the sequence
+      numbers only ever increase. The split is rarely even, because keys are
+      hashed onto partitions rather than dealt out.
+
+  - id: reconcile
+    label: Reconcile with broker
+    kind: process
+    cmd: [bash, ../../scripts/reconcile.sh, shock-absorber]
+    cwd: .
+    variant: secondary
+    description: >
+      Use this if Play fails with "already exists". It imports objects that are
+      on the broker but missing from terraform state. The broker is not modified.
+
+  - id: destroy
+    label: Remove configuration
+    kind: terraform
+    command: destroy
+    tf_dir: tf
+    variant: danger
+    description: >
+      Deletes all three queues and the access control for this scenario.
+      Anything still spooled goes with them.
+
+inspect:
+  - label: Queues
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues?count=100
+    # msgSpoolUsage is the live backlog in bytes and returns to zero once a
+    # queue drains. spooledMsgCount is cumulative on this broker and never
+    # falls, so it would read as a permanent backlog. The gap between
+    # lastSpooledMsgId and highestAckedMsgId is how many messages are waiting.
+    columns: [queueName, accessType, msgSpoolUsage, lastSpooledMsgId, highestAckedMsgId, redeliveredMsgCount]
+    ui_hint: Manager → Queues
+  - label: Workers on the shared queue
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues/q.shock.scans/txFlows?count=10
+    columns: [clientName, ackedMsgCount, unackedMsgCount, redeliveredMsgCount]
+    ui_hint: Manager → Queues → q.shock.scans → Consumers
+  - label: Workers on the partitioned queue
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues/q.shock.scans.partitioned/txFlows?count=10
+    columns: [clientName, ackedMsgCount, unackedMsgCount, redeliveredMsgCount]
+    ui_hint: Manager → Queues → q.shock.scans.partitioned → Consumers

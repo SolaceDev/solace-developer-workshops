@@ -1,0 +1,246 @@
+id: fan-out
+order: 30
+eyebrow: Patterns
+title: Fan-Out
+summary: >
+  One publisher emits grocery order events and four consumers each receive
+  their own copy. The publisher names none of them. Two consumers subscribe
+  directly and two read from a queue, so the same single publish is delivered
+  at two different qualities of service, and the queued pair catch up on
+  everything they missed while they were stopped.
+
+objectives:
+  - See one published event delivered independently to several consumers
+  - Add a consumer while the publisher runs and confirm the publisher does not change
+  - Compare a direct subscription against a queue on the same event stream
+  - Read a wildcard subscription and predict which events it will match
+
+# Analytics is deliberately left out. An attendee starts it by hand once the
+# others have been running, and finds a backlog waiting: the clearest possible
+# demonstration that a queue's copy does not depend on being connected.
+run:
+  - apply
+  - build
+  - consume-finance
+  - consume-warehouse
+  - consume-loyalty
+  - publish
+
+diagram:
+  caption: >
+    One publish enters the broker and leaves four times. Finance and warehouse
+    take a direct copy; loyalty and analytics take theirs from a queue, which
+    holds it whether or not they are running.
+  duration: 2.4
+  liveWhen: pub
+  nodes:
+    - id: pub
+      label: Order Service
+      sublabel: schwarz/grocery/order/...
+      kind: app
+      col: 0
+      action: publish
+      requires:
+        - label: svc-fanout-publisher
+          semp: /msgVpns/{vpn}/clientUsernames/svc-fanout-publisher
+    - id: broker
+      label: PubSub+ Broker
+      sublabel: one copy in, four out
+      kind: broker
+      col: 1
+      action: apply
+      provides:
+        - label: cp-fanout
+          semp: /msgVpns/{vpn}/clientProfiles/cp-fanout
+        - label: acl-fanout
+          semp: /msgVpns/{vpn}/aclProfiles/acl-fanout
+        - label: q.fanout.loyalty
+          semp: /msgVpns/{vpn}/queues/q.fanout.loyalty
+        - label: q.fanout.analytics
+          semp: /msgVpns/{vpn}/queues/q.fanout.analytics
+    - id: finance
+      label: Finance
+      sublabel: direct, placed only
+      kind: app
+      col: 2
+      action: consume-finance
+      requires:
+        - label: svc-fanout-finance
+          semp: /msgVpns/{vpn}/clientUsernames/svc-fanout-finance
+    - id: warehouse
+      label: Warehouse
+      sublabel: direct, online only
+      kind: app
+      col: 2
+      action: consume-warehouse
+      requires:
+        - label: svc-fanout-warehouse
+          semp: /msgVpns/{vpn}/clientUsernames/svc-fanout-warehouse
+    - id: loyalty
+      label: Loyalty
+      sublabel: queue, every action
+      kind: app
+      col: 2
+      action: consume-loyalty
+      requires:
+        - label: q.fanout.loyalty
+          semp: /msgVpns/{vpn}/queues/q.fanout.loyalty
+    - id: analytics
+      label: Analytics
+      sublabel: queue, started late
+      kind: app
+      col: 2
+      action: consume-analytics
+      requires:
+        - label: q.fanout.analytics
+          semp: /msgVpns/{vpn}/queues/q.fanout.analytics
+  flows:
+    - from: pub
+      to: broker
+      label: 1 order
+      delay: 0
+    - from: broker
+      to: finance
+      label: placed/>
+      delay: 0.8
+    - from: broker
+      to: warehouse
+      label: online/>
+      delay: 1.0
+    - from: broker
+      to: loyalty
+      label: "*/v1/>"
+      delay: 1.2
+    - from: broker
+      to: analytics
+      label: grocery/>
+      delay: 1.4
+
+actions:
+  - id: apply
+    label: Apply configuration
+    kind: terraform
+    command: apply
+    tf_dir: tf
+    variant: primary
+    description: >
+      Creates the client profile, ACL profile, five client usernames and the
+      two queues, each with its own topic subscription.
+
+  - id: build
+    label: Build the apps
+    kind: process
+    cmd: [bash, ../../apps/run.sh, build]
+    cwd: .
+    variant: secondary
+    description: >
+      Compiles the Go apps shared by every scenario. Only needed to rebuild
+      after a change.
+
+  - id: consume-finance
+    label: Start finance consumer
+    kind: process
+    cmd: [bash, ../../apps/run.sh, fanout, consume, --role, finance, --user, svc-fanout-finance, --sub, "schwarz/grocery/order/placed/v1/>"]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Direct subscriber to placed orders in every channel. Its subscription
+      fixes the action, so cancellations never reach it.
+
+  - id: consume-warehouse
+    label: Start warehouse consumer
+    kind: process
+    cmd: [bash, ../../apps/run.sh, fanout, consume, --role, warehouse, --user, svc-fanout-warehouse, --sub, "schwarz/grocery/order/placed/v1/online/>"]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Direct subscriber to online orders only. One level deeper than finance,
+      so it sees roughly half as many events.
+
+  - id: consume-loyalty
+    label: Start loyalty consumer
+    kind: process
+    cmd: [bash, ../../apps/run.sh, fanout, consume, --role, loyalty, --user, svc-fanout-loyalty, --queue, q.fanout.loyalty]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Reads from a queue whose subscription wildcards the action, so this is
+      the only consumer that sees cancellations as well as placements.
+
+  - id: publish
+    label: Publish orders
+    kind: process
+    cmd: [bash, ../../apps/run.sh, fanout, publish]
+    cwd: .
+    long_running: true
+    variant: primary
+    description: >
+      Publishes one order every two seconds, alternating between the online
+      and in-store channels. Every fifth order is a cancellation rather than a
+      placement, so the subscriptions that wildcard the action can be told
+      apart from the ones that do not.
+
+  - id: consume-analytics
+    label: Start analytics consumer (late)
+    kind: process
+    cmd: [bash, ../../apps/run.sh, fanout, consume, --role, analytics, --user, svc-fanout-analytics, --queue, q.fanout.analytics]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      The new consumer. Start it after the others have been running: its queue
+      has been collecting events the whole time, and nothing about the
+      publisher changes to accommodate it.
+
+  - id: reconcile
+    label: Reconcile with broker
+    kind: process
+    cmd: [bash, ../../scripts/reconcile.sh, fan-out]
+    cwd: .
+    variant: secondary
+    description: >
+      Use this if Play fails with "already exists". It imports objects that are
+      on the broker but missing from terraform state. The broker is not modified.
+
+  - id: destroy
+    label: Remove configuration
+    kind: terraform
+    command: destroy
+    tf_dir: tf
+    variant: danger
+    description: >
+      Deletes the queues, client usernames, ACL profile and client profile.
+      Anything still spooled on the queues goes with them.
+
+inspect:
+  - label: Queues
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues?count=100
+    # msgSpoolUsage is the live backlog in bytes; it returns to zero once a
+    # queue drains. spooledMsgCount is cumulative on this broker and never
+    # falls, so it reads as a permanent backlog and is left out deliberately.
+    # The gap between lastSpooledMsgId and highestAckedMsgId is the count of
+    # messages still waiting.
+    columns: [queueName, accessType, msgSpoolUsage, lastSpooledMsgId, highestAckedMsgId]
+    ui_hint: Manager → Queues
+  - label: Queue Subscriptions
+    kind: semp
+    path: /msgVpns/{vpn}/queues/q.fanout.loyalty/subscriptions
+    columns: [queueName, subscriptionTopic]
+    ui_hint: Manager → Queues → q.fanout.loyalty → Subscriptions
+  - label: Loyalty Consumers
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues/q.fanout.loyalty/txFlows?count=10
+    columns: [clientName, ackedMsgCount, unackedMsgCount, redeliveredMsgCount]
+    ui_hint: Manager → Queues → q.fanout.loyalty → Consumers
+  - label: Connected Clients
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/clients?count=100
+    columns: [clientName, clientUsername, dataRxMsgCount, dataTxMsgCount]
+    ui_hint: Manager → Clients
