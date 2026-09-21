@@ -1,0 +1,15 @@
+# What the cqrs scenario owns on the broker.
+# Columns: terraform address <TAB> import id. {vpn} is substituted.
+
+solacebroker_msg_vpn_client_profile.cqrs	{vpn}/cp-cqrs
+solacebroker_msg_vpn_acl_profile.cqrs	{vpn}/acl-cqrs
+
+# The gateway's command inbox
+solacebroker_msg_vpn_queue.commands["gw4471"]	{vpn}/q.cqrs.gw4471.commands
+solacebroker_msg_vpn_queue_subscription.reboot["gw4471"]	{vpn}/q.cqrs.gw4471.commands/daimler%2FconnectedVehicle%2Fgateway%2Freboot%2Fv1%2Fgw4471
+solacebroker_msg_vpn_queue_subscription.update["gw4471"]	{vpn}/q.cqrs.gw4471.commands/daimler%2FconnectedVehicle%2Fgateway%2Fupdate%2Fv1%2Fgw4471
+
+# Client usernames
+solacebroker_msg_vpn_client_username.cqrs["operator"]	{vpn}/svc-cqrs-operator
+solacebroker_msg_vpn_client_username.cqrs["device"]	{vpn}/svc-cqrs-device
+solacebroker_msg_vpn_client_username.cqrs["twin"]	{vpn}/svc-cqrs-twin

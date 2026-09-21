@@ -1,0 +1,189 @@
+id: cqrs
+order: 60
+eyebrow: Patterns
+title: Command and Query
+summary: >
+  Asking a fleet what it is doing by polling every device melts the network
+  and gets worse as the fleet grows. Here devices publish what happened, a
+  read model keeps the current picture from that stream, and a query costs
+  one lookup and disturbs nothing. Commands travel the other way, addressed
+  to one device and held on its queue until it reconnects.
+
+objectives:
+  - Tell a command from an event by its verb, and see why the distinction matters
+  - Keep a read model current from a stream instead of polling the fleet
+  - Send a command to a device that is offline and watch it arrive on reconnect
+  - Understand why the read model is eventually consistent, and why that is usually fine
+
+# The device is started last, after the twin, so the read model is already
+# listening when the first telemetry arrives. Send a command while the device
+# is stopped to see the queue hold it.
+run:
+  - apply
+  - build
+  - twin
+  - device
+
+diagram:
+  caption: >
+    Two directions. Devices publish events and telemetry, which the read
+    model turns into the current picture. Commands go to a queue addressed to
+    one device, so one that is offline still receives them.
+  duration: 2.4
+  liveWhen: device
+  nodes:
+    - id: operator
+      label: Operator
+      sublabel: gateway/reboot/v1/gw4471
+      kind: app
+      col: 0
+      action: command
+      requires:
+        - label: svc-cqrs-operator
+          semp: /msgVpns/{vpn}/clientUsernames/svc-cqrs-operator
+    - id: queue
+      label: q.cqrs.gw4471.commands
+      sublabel: holds commands while offline
+      kind: broker
+      col: 1
+      action: apply
+      provides:
+        - label: q.cqrs.gw4471.commands
+          semp: /msgVpns/{vpn}/queues/q.cqrs.gw4471.commands
+        - label: cp-cqrs
+          semp: /msgVpns/{vpn}/clientProfiles/cp-cqrs
+    - id: device
+      label: Gateway gw4471
+      sublabel: obeys, then reports
+      kind: app
+      col: 2
+      action: device
+      requires:
+        - label: svc-cqrs-device
+          semp: /msgVpns/{vpn}/clientUsernames/svc-cqrs-device
+    - id: twin
+      label: Fleet Read Model
+      sublabel: connectedVehicle/*/*/v1/>
+      kind: app
+      col: 3
+      action: twin
+      requires:
+        - label: svc-cqrs-twin
+          semp: /msgVpns/{vpn}/clientUsernames/svc-cqrs-twin
+  flows:
+    - from: operator
+      to: queue
+      label: reboot
+      delay: 0
+    - from: queue
+      to: device
+      label: command
+      delay: 0.7
+    - from: device
+      to: twin
+      label: rebooted
+      delay: 1.4
+    - from: device
+      to: twin
+      label: battery
+      delay: 1.7
+
+actions:
+  - id: apply
+    label: Apply configuration
+    kind: terraform
+    command: apply
+    tf_dir: tf
+    variant: primary
+    description: >
+      Creates the gateway's command queue, subscribed to the imperative verbs
+      only, plus the client profile, ACL profile and three usernames.
+
+  - id: build
+    label: Build the apps
+    kind: process
+    cmd: [bash, ../../apps/run.sh, build]
+    cwd: .
+    variant: secondary
+    description: >
+      Compiles the Go apps shared by every scenario. Only needed to rebuild
+      after a change.
+
+  - id: twin
+    label: Start the read model
+    kind: process
+    cmd: [bash, ../../apps/run.sh, cqrs, twin]
+    cwd: .
+    long_running: true
+    variant: primary
+    description: >
+      Subscribes to everything the fleet publishes and keeps the current
+      picture, reprinting it whenever something changes. This is the query
+      side: it answers questions without reaching a single device.
+
+  - id: device
+    label: Start gateway gw4471
+    kind: process
+    cmd: [bash, ../../apps/run.sh, cqrs, device]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Binds the command queue, reports battery every three seconds, and
+      replies to each command with a past-tense event once it has acted.
+      Stop this to take the gateway offline.
+
+  - id: command
+    label: Send a reboot command
+    kind: process
+    cmd: [bash, ../../apps/run.sh, cqrs, command, --action, reboot]
+    cwd: .
+    variant: secondary
+    description: >
+      Sends one command and exits. Run it with the gateway stopped, watch the
+      queue depth rise in Inspect, then start the gateway: the command is
+      delivered on reconnect rather than lost or retried.
+
+  - id: reconcile
+    label: Reconcile with broker
+    kind: process
+    cmd: [bash, ../../scripts/reconcile.sh, cqrs]
+    cwd: .
+    variant: secondary
+    description: >
+      Use this if Play fails with "already exists". It imports objects that are
+      on the broker but missing from terraform state. The broker is not modified.
+
+  - id: destroy
+    label: Remove configuration
+    kind: terraform
+    command: destroy
+    tf_dir: tf
+    variant: danger
+    description: >
+      Deletes the command queue and the access control for this scenario. Any
+      command still waiting for the gateway goes with it.
+
+inspect:
+  - label: Command queue
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues?count=100
+    # With the gateway stopped, msgSpoolUsage on the command queue is the
+    # command waiting for it. It returns to zero once the device reconnects
+    # and acknowledges.
+    columns: [queueName, accessType, msgSpoolUsage, lastSpooledMsgId, highestAckedMsgId]
+    ui_hint: Manager → Queues
+  - label: What the queue accepts
+    kind: semp
+    path: /msgVpns/{vpn}/queues/q.cqrs.gw4471.commands/subscriptions
+    # Imperative verbs only. The past-tense events the device publishes must
+    # not land back in its own inbox.
+    columns: [queueName, subscriptionTopic]
+    ui_hint: Manager → Queues → q.cqrs.gw4471.commands → Subscriptions
+  - label: Connected Clients
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/clients?count=100
+    columns: [clientName, clientUsername, dataRxMsgCount, dataTxMsgCount]
+    ui_hint: Manager → Clients

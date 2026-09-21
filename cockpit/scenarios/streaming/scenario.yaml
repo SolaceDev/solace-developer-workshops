@@ -1,0 +1,188 @@
+id: streaming
+order: 70
+eyebrow: Patterns
+title: Streaming
+summary: >
+  Fraud caught in tonight's batch run is caught hours after the money left.
+  Here a rule runs against the payment stream while it moves: it keeps a
+  rolling ten-second window per card and flags any card authorized more than
+  three times inside it. A regional desk watches one slice of the same
+  stream and never sees the others.
+
+objectives:
+  - Apply a rule to events in motion rather than after they land in a database
+  - See why a stream processor holds state, and how that differs from a filter
+  - Select one slice of a stream with a subscription instead of filtering in code
+  - Consider what a second instance of a stateful processor would do to the window
+
+run:
+  - apply
+  - build
+  - watch
+  - fraud
+  - gateway
+
+diagram:
+  caption: >
+    Every authorization goes to the fraud rule's queue and out to whoever
+    subscribes. The rule publishes a flag back onto the same stream, so the
+    regional desk sees authorizations and flags through one subscription.
+  duration: 2.2
+  liveWhen: gateway
+  nodes:
+    - id: gateway
+      label: Payment Gateway
+      sublabel: payment/authorized
+      kind: app
+      col: 0
+      action: gateway
+      requires:
+        - label: svc-streaming-gateway
+          semp: /msgVpns/{vpn}/clientUsernames/svc-streaming-gateway
+    - id: broker
+      label: PubSub+ Broker
+      sublabel: the stream
+      kind: broker
+      col: 1
+      action: apply
+      provides:
+        - label: q.streaming.fraud
+          semp: /msgVpns/{vpn}/queues/q.streaming.fraud
+        - label: cp-streaming
+          semp: /msgVpns/{vpn}/clientProfiles/cp-streaming
+    - id: fraud
+      label: Fraud Rule
+      sublabel: 10s rolling window
+      kind: app
+      col: 2
+      action: fraud
+      requires:
+        - label: svc-streaming-fraud
+          semp: /msgVpns/{vpn}/clientUsernames/svc-streaming-fraud
+    - id: watch
+      label: US Desk
+      sublabel: payment/*/v1/us/>
+      kind: app
+      col: 2
+      action: watch
+      requires:
+        - label: svc-streaming-watch
+          semp: /msgVpns/{vpn}/clientUsernames/svc-streaming-watch
+  flows:
+    - from: gateway
+      to: broker
+      label: authorized
+      delay: 0
+    - from: gateway
+      to: broker
+      delay: 0.2
+    - from: broker
+      to: fraud
+      delay: 0.8
+    - from: broker
+      to: watch
+      label: us only
+      delay: 1.0
+    - from: fraud
+      to: broker
+      label: flagged
+      delay: 1.5
+
+actions:
+  - id: apply
+    label: Apply configuration
+    kind: terraform
+    command: apply
+    tf_dir: tf
+    variant: primary
+    description: >
+      Creates the fraud rule's queue, subscribed to every authorization, plus
+      the client profile, ACL profile and three client usernames.
+
+  - id: build
+    label: Build the apps
+    kind: process
+    cmd: [bash, ../../apps/run.sh, build]
+    cwd: .
+    variant: secondary
+    description: >
+      Compiles the Go apps shared by every scenario. Only needed to rebuild
+      after a change.
+
+  - id: gateway
+    label: Start the payment gateway
+    kind: process
+    cmd: [bash, ../../apps/run.sh, streaming, gateway]
+    cwd: .
+    long_running: true
+    variant: primary
+    description: >
+      Authorizes a payment every 400ms across forty cards and three regions.
+      One card is used far more often than the rest, so the rule has
+      something real to catch.
+
+  - id: fraud
+    label: Start the fraud rule
+    kind: process
+    cmd: [bash, ../../apps/run.sh, streaming, fraud]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Keeps a rolling ten-second window per card and publishes a flag when a
+      card crosses three authorizations inside it. The window is in memory,
+      so restarting this rebuilds it from the stream.
+
+  - id: watch
+    label: Start the US desk
+    kind: process
+    cmd: [bash, ../../apps/run.sh, streaming, watch]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Subscribes to one region with a wildcard that covers both authorized
+      and flagged events. Payments in the other two regions never reach this
+      app, without it filtering anything itself.
+
+  - id: reconcile
+    label: Reconcile with broker
+    kind: process
+    cmd: [bash, ../../scripts/reconcile.sh, streaming]
+    cwd: .
+    variant: secondary
+    description: >
+      Use this if Play fails with "already exists". It imports objects that are
+      on the broker but missing from terraform state. The broker is not modified.
+
+  - id: destroy
+    label: Remove configuration
+    kind: terraform
+    command: destroy
+    tf_dir: tf
+    variant: danger
+    description: >
+      Deletes the fraud queue and the access control for this scenario.
+
+inspect:
+  - label: Stream queue
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues?count=100
+    columns: [queueName, accessType, msgSpoolUsage, lastSpooledMsgId, highestAckedMsgId]
+    ui_hint: Manager → Queues
+  - label: Fraud rule consumers
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues/q.streaming.fraud/txFlows?count=10
+    # Start a second fraud rule and two rows appear here, each with its own
+    # share of the stream and its own partial window. That is the problem
+    # partitioning by card solves.
+    columns: [clientName, ackedMsgCount, unackedMsgCount, redeliveredMsgCount]
+    ui_hint: Manager → Queues → q.streaming.fraud → Consumers
+  - label: Connected Clients
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/clients?count=100
+    columns: [clientName, clientUsername, dataRxMsgCount, dataTxMsgCount]
+    ui_hint: Manager → Clients

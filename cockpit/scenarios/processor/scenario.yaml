@@ -1,0 +1,192 @@
+id: processor
+order: 50
+eyebrow: Patterns
+title: Processor
+summary: >
+  A processor consumes an event, changes it, and publishes the result on a
+  different topic. Here an enricher adds the model and shift, then a router
+  decides a region and puts it in the topic so downstream can subscribe to
+  the region it cares about. Both ends go through the broker, so a stage can
+  be added to a running pipeline without touching the stages either side.
+
+objectives:
+  - Follow one event through two stages and see what each adds
+  - Understand why a processor acknowledges its input only after its output is accepted
+  - Start a stage into a live pipeline and watch it drain the backlog its queue collected
+  - Turn a routing decision into a topic level, so downstream filters by subscription rather than by code
+
+# The router is left out on purpose. Start it by hand once vehicles are
+# flowing: its queue has been filling since Apply, so it drains a backlog and
+# joins the pipeline without the enricher or the sink changing.
+run:
+  - apply
+  - build
+  - sink
+  - enrich
+  - line
+
+diagram:
+  caption: >
+    Each stage reads from its own queue and publishes to a topic the next
+    stage subscribes to. Nothing points at the next stage directly, which is
+    why one can be replaced or added while the others keep running.
+  duration: 2.6
+  liveWhen: line
+  nodes:
+    - id: line
+      label: Assembly Line
+      sublabel: assembly/started
+      kind: app
+      col: 0
+      action: line
+      requires:
+        - label: svc-processor-line
+          semp: /msgVpns/{vpn}/clientUsernames/svc-processor-line
+    - id: enrich
+      label: Enricher
+      sublabel: adds model and shift
+      kind: app
+      col: 1
+      action: enrich
+      requires:
+        - label: q.processor.assembly
+          semp: /msgVpns/{vpn}/queues/q.processor.assembly
+    - id: route
+      label: Router
+      sublabel: start me late
+      kind: app
+      col: 2
+      action: route
+      requires:
+        - label: q.processor.router
+          semp: /msgVpns/{vpn}/queues/q.processor.router
+    - id: sink
+      label: EMEA Fulfilment
+      sublabel: routed/v1/emea/>
+      kind: app
+      col: 3
+      action: sink
+      requires:
+        - label: svc-processor-sink
+          semp: /msgVpns/{vpn}/clientUsernames/svc-processor-sink
+  flows:
+    - from: line
+      to: enrich
+      label: started
+      delay: 0
+    - from: enrich
+      to: route
+      label: enriched
+      delay: 0.8
+    - from: route
+      to: sink
+      label: routed/emea
+      delay: 1.6
+
+actions:
+  - id: apply
+    label: Apply configuration
+    kind: terraform
+    command: apply
+    tf_dir: tf
+    variant: primary
+    description: >
+      Creates one queue per stage with its subscription, plus the client
+      profile, ACL profile and four client usernames.
+
+  - id: build
+    label: Build the apps
+    kind: process
+    cmd: [bash, ../../apps/run.sh, build]
+    cwd: .
+    variant: secondary
+    description: >
+      Compiles the Go apps shared by every scenario. Only needed to rebuild
+      after a change.
+
+  - id: line
+    label: Start the assembly line
+    kind: process
+    cmd: [bash, ../../apps/run.sh, processor, line]
+    cwd: .
+    long_running: true
+    variant: primary
+    description: >
+      Publishes an assembly-started event every two seconds, alternating
+      between the Michigan and Bremen plants.
+
+  - id: enrich
+    label: Start the enricher
+    kind: process
+    cmd: [bash, ../../apps/run.sh, processor, enrich]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Consumes started events, adds the model and shift, and republishes them
+      as enriched. It acknowledges its input only once the broker has accepted
+      its output, so a failure means redelivery rather than a lost vehicle.
+
+  - id: route
+    label: Start the router (late)
+    kind: process
+    cmd: [bash, ../../apps/run.sh, processor, route]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      The stage to add while the pipeline runs. It maps the plant to a region
+      and writes that into the topic. Its queue has been collecting enriched
+      events since Apply, so it starts by draining them.
+
+  - id: sink
+    label: Start EMEA fulfilment
+    kind: process
+    cmd: [bash, ../../apps/run.sh, processor, sink]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Subscribes to routed events for one region only. Vehicles from the
+      Michigan plant are routed to namer and never reach this pane, without
+      this app filtering anything itself.
+
+  - id: reconcile
+    label: Reconcile with broker
+    kind: process
+    cmd: [bash, ../../scripts/reconcile.sh, processor]
+    cwd: .
+    variant: secondary
+    description: >
+      Use this if Play fails with "already exists". It imports objects that are
+      on the broker but missing from terraform state. The broker is not modified.
+
+  - id: destroy
+    label: Remove configuration
+    kind: terraform
+    command: destroy
+    tf_dir: tf
+    variant: danger
+    description: >
+      Deletes both stage queues and the access control for this scenario.
+
+inspect:
+  - label: Stage inboxes
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues?count=100
+    # msgSpoolUsage is the live backlog. Before the router starts, its queue
+    # is the only one with a non-zero figure.
+    columns: [queueName, accessType, msgSpoolUsage, lastSpooledMsgId, highestAckedMsgId]
+    ui_hint: Manager → Queues
+  - label: Router inbox consumers
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues/q.processor.router/txFlows?count=10
+    columns: [clientName, ackedMsgCount, unackedMsgCount, redeliveredMsgCount]
+    ui_hint: Manager → Queues → q.processor.router → Consumers
+  - label: Queue Subscriptions
+    kind: semp
+    path: /msgVpns/{vpn}/queues/q.processor.router/subscriptions
+    columns: [queueName, subscriptionTopic]
+    ui_hint: Manager → Queues → q.processor.router → Subscriptions
