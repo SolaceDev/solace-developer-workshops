@@ -1,0 +1,16 @@
+# What the capstone-arrival scenario owns on the broker.
+# Columns: terraform address <TAB> import id. {vpn} is substituted.
+
+solacebroker_msg_vpn_client_profile.arrival	{vpn}/cp-arrival
+solacebroker_msg_vpn_acl_profile.arrival	{vpn}/acl-arrival
+
+# Queues
+solacebroker_msg_vpn_queue.scans	{vpn}/q.arrival.scans
+solacebroker_msg_vpn_queue_subscription.scans	{vpn}/q.arrival.scans/acme%2Fair%2Fbaggage%2Fscanned%2Fv1%2F%3E
+solacebroker_msg_vpn_queue.status	{vpn}/q.arrival.status
+solacebroker_msg_vpn_queue_subscription.status	{vpn}/q.arrival.status/acme%2Fair%2Fbaggage%2Fstatus%2Fv1%2F%3E
+
+# Client usernames
+solacebroker_msg_vpn_client_username.arrival["scanner"]	{vpn}/svc-arrival-scanner
+solacebroker_msg_vpn_client_username.arrival["routing"]	{vpn}/svc-arrival-routing
+solacebroker_msg_vpn_client_username.arrival["passenger"]	{vpn}/svc-arrival-passenger

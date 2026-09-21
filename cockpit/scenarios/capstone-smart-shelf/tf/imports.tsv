@@ -1,0 +1,20 @@
+# What the capstone-smart-shelf scenario owns on the broker.
+# Columns: terraform address <TAB> import id. {vpn} is substituted.
+
+solacebroker_msg_vpn_client_profile.shelf	{vpn}/cp-shelf
+solacebroker_msg_vpn_acl_profile.shelf	{vpn}/acl-shelf
+
+# The pricing engine's inbox and its three input streams
+solacebroker_msg_vpn_queue.pricing	{vpn}/q.shelf.pricing
+solacebroker_msg_vpn_queue_subscription.pricing["scans"]	{vpn}/q.shelf.pricing/schwarz%2Fgrocery%2Fshelf%2Fscanned%2Fv1%2F%3E
+solacebroker_msg_vpn_queue_subscription.pricing["stock"]	{vpn}/q.shelf.pricing/schwarz%2Fgrocery%2Fstock%2Fupdated%2Fv1%2F%3E
+solacebroker_msg_vpn_queue_subscription.pricing["footfall"]	{vpn}/q.shelf.pricing/schwarz%2Fgrocery%2Ffootfall%2Fmeasured%2Fv1%2F%3E
+
+# The shelf tags
+solacebroker_msg_vpn_queue.labels	{vpn}/q.shelf.labels
+solacebroker_msg_vpn_queue_subscription.labels	{vpn}/q.shelf.labels/schwarz%2Fgrocery%2Fprice%2Fupdated%2Fv1%2F%3E
+
+# Client usernames
+solacebroker_msg_vpn_client_username.shelf["sensors"]	{vpn}/svc-shelf-sensors
+solacebroker_msg_vpn_client_username.shelf["pricing"]	{vpn}/svc-shelf-pricing
+solacebroker_msg_vpn_client_username.shelf["labels"]	{vpn}/svc-shelf-labels

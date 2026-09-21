@@ -1,0 +1,215 @@
+id: capstone-arrival
+order: 80
+eyebrow: Capstone
+title: Surviving the Arrival
+summary: >
+  A bank of flights lands inside twenty minutes and every bag scans at once.
+  Three patterns compose to survive it: a queue absorbs the surge, partitions
+  keep each belt in order while belts route in parallel, and a second queue
+  feeds the passenger app so that routing falling behind cannot take it down.
+  Watch the backlog climb and the passenger app hold its pace anyway.
+
+objectives:
+  - See three patterns solve one problem that none of them solves alone
+  - Watch a surge become a backlog instead of back-pressure that spreads
+  - Confirm each belt stays in scan order while belts are routed in parallel
+  - Understand why the passenger app has its own queue rather than sharing one
+
+# Consumers first, and with a pause before the surge: the broker needs a few
+# seconds to assign partitions between the two routing instances. The scanner
+# is last because it is the event the rest of the scenario responds to.
+run:
+  - apply
+  - build
+  - passenger
+  - routing-1
+  - routing-2
+  - scanner
+
+diagram:
+  caption: >
+    Scans go to a partitioned queue, where the surge waits to be routed. Each
+    routing instance owns a subset of belts. Bag statuses go to a queue of
+    their own, so the passenger app is paced by its own consumption rather
+    than by how far behind routing is.
+  duration: 2.4
+  liveWhen: scanner
+  nodes:
+    - id: scanner
+      label: Bag Scanners
+      sublabel: 500 bags at once
+      kind: app
+      col: 0
+      action: scanner
+      requires:
+        - label: svc-arrival-scanner
+          semp: /msgVpns/{vpn}/clientUsernames/svc-arrival-scanner
+    - id: scans
+      label: q.arrival.scans
+      sublabel: partitioned by belt
+      kind: broker
+      col: 1
+      action: apply
+      provides:
+        - label: q.arrival.scans
+          semp: /msgVpns/{vpn}/queues/q.arrival.scans
+        - label: q.arrival.status
+          semp: /msgVpns/{vpn}/queues/q.arrival.status
+    - id: routing1
+      label: Baggage Routing 1
+      sublabel: its share of belts
+      kind: app
+      col: 2
+      action: routing-1
+      requires:
+        - label: svc-arrival-routing
+          semp: /msgVpns/{vpn}/clientUsernames/svc-arrival-routing
+    - id: routing2
+      label: Baggage Routing 2
+      sublabel: the other belts
+      kind: app
+      col: 2
+      action: routing-2
+    - id: passenger
+      label: Passenger App
+      sublabel: q.arrival.status
+      kind: app
+      col: 3
+      action: passenger
+      requires:
+        - label: q.arrival.status
+          semp: /msgVpns/{vpn}/queues/q.arrival.status
+  flows:
+    - from: scanner
+      to: scans
+      label: surge
+      delay: 0
+    - from: scanner
+      to: scans
+      delay: 0.15
+    - from: scanner
+      to: scans
+      delay: 0.3
+    - from: scans
+      to: routing1
+      delay: 0.9
+    - from: scans
+      to: routing2
+      delay: 1.1
+    - from: routing1
+      to: passenger
+      label: bag status
+      delay: 1.7
+    - from: routing2
+      to: passenger
+      delay: 1.9
+
+actions:
+  - id: apply
+    label: Apply configuration
+    kind: terraform
+    command: apply
+    tf_dir: tf
+    variant: primary
+    description: >
+      Creates the partitioned scan queue and the separate status queue, plus
+      the client profile, ACL profile and three client usernames.
+
+  - id: build
+    label: Build the apps
+    kind: process
+    cmd: [bash, ../../apps/run.sh, build]
+    cwd: .
+    variant: secondary
+    description: >
+      Compiles the Go apps shared by every scenario. Only needed to rebuild
+      after a change.
+
+  - id: passenger
+    label: Start the passenger app
+    kind: process
+    cmd: [bash, ../../apps/run.sh, arrival, passenger]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Serves bag status from its own queue at a steady 50ms per lookup. This
+      is the pane to watch during the surge: its rate should not move.
+
+  - id: routing-1
+    label: Start baggage routing 1
+    kind: process
+    cmd: [bash, ../../apps/run.sh, arrival, routing, --role, routing-1]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Routes bags at roughly 120ms each, far slower than they arrive. Which
+      belts it owns is assigned by the broker when partitions are balanced.
+
+  - id: routing-2
+    label: Start baggage routing 2
+    kind: process
+    cmd: [bash, ../../apps/run.sh, arrival, routing, --role, routing-2]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      The second routing instance. Compare the belts named in the two panes
+      when they stop: no belt appears in both, and the split is uneven
+      because keys are hashed onto partitions rather than dealt out.
+
+  - id: scanner
+    label: Land a bank of flights
+    kind: process
+    cmd: [bash, ../../apps/run.sh, arrival, scanner, --burst, "500", --every, 90s]
+    cwd: .
+    long_running: true
+    variant: primary
+    description: >
+      Scans 500 bags as fast as it can, then waits ninety seconds and does it
+      again. Give the routing instances a few seconds to be assigned
+      partitions before starting this.
+
+  - id: reconcile
+    label: Reconcile with broker
+    kind: process
+    cmd: [bash, ../../scripts/reconcile.sh, capstone-arrival]
+    cwd: .
+    variant: secondary
+    description: >
+      Use this if Play fails with "already exists". It imports objects that are
+      on the broker but missing from terraform state. The broker is not modified.
+
+  - id: destroy
+    label: Remove configuration
+    kind: terraform
+    command: destroy
+    tf_dir: tf
+    variant: danger
+    description: >
+      Deletes both queues and the access control for this scenario. Any bags
+      still waiting to be routed go with them.
+
+inspect:
+  - label: Queues
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues?count=100
+    # During a surge msgSpoolUsage on q.arrival.scans climbs into the tens of
+    # thousands of bytes while q.arrival.status stays near zero: the backlog
+    # is held where it does no harm, not in front of the passenger app.
+    columns: [queueName, accessType, msgSpoolUsage, lastSpooledMsgId, highestAckedMsgId]
+    ui_hint: Manager → Queues
+  - label: Routing instances
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues/q.arrival.scans/txFlows?count=10
+    columns: [clientName, ackedMsgCount, unackedMsgCount, redeliveredMsgCount]
+    ui_hint: Manager → Queues → q.arrival.scans → Consumers
+  - label: Passenger app
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues/q.arrival.status/txFlows?count=10
+    columns: [clientName, ackedMsgCount, unackedMsgCount, redeliveredMsgCount]
+    ui_hint: Manager → Queues → q.arrival.status → Consumers

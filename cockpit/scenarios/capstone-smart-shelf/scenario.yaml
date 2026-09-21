@@ -1,0 +1,183 @@
+id: capstone-smart-shelf
+order: 90
+eyebrow: Capstone
+title: Smart Shelf Pricing
+summary: >
+  Electronic shelf labels that reprice through the day, without the polling
+  job that reads the whole estate every few minutes and rewrites every tag
+  whether or not its price moved. Scans, stock and footfall stream in, a
+  pricing engine holds a read-optimised view, and because it knows the
+  current price it emits an update only when one actually changes.
+
+objectives:
+  - Combine a live stream with a read model to replace a polling job
+  - See why holding current state is what makes change suppression possible
+  - Read the emitted-versus-evaluated figure as the cost polling would have paid
+  - Consider why the pricing engine's queue is exclusive rather than shared
+
+run:
+  - apply
+  - build
+  - labels
+  - pricing
+  - sensors
+
+diagram:
+  caption: >
+    Three input streams reach the pricing engine through one queue. It holds
+    the current price per shelf, so it can tell a real change from a reading
+    that changes nothing, and only the real ones reach the tags.
+  duration: 2.4
+  liveWhen: sensors
+  nodes:
+    - id: sensors
+      label: Store Sensors
+      sublabel: scans · stock · footfall
+      kind: app
+      col: 0
+      action: sensors
+      requires:
+        - label: svc-shelf-sensors
+          semp: /msgVpns/{vpn}/clientUsernames/svc-shelf-sensors
+    - id: queue
+      label: q.shelf.pricing
+      sublabel: three subscriptions
+      kind: broker
+      col: 1
+      action: apply
+      provides:
+        - label: q.shelf.pricing
+          semp: /msgVpns/{vpn}/queues/q.shelf.pricing
+        - label: q.shelf.labels
+          semp: /msgVpns/{vpn}/queues/q.shelf.labels
+    - id: pricing
+      label: Pricing Engine
+      sublabel: holds the price view
+      kind: app
+      col: 2
+      action: pricing
+      requires:
+        - label: svc-shelf-pricing
+          semp: /msgVpns/{vpn}/clientUsernames/svc-shelf-pricing
+    - id: labels
+      label: Shelf Tags
+      sublabel: changed prices only
+      kind: app
+      col: 3
+      action: labels
+      requires:
+        - label: q.shelf.labels
+          semp: /msgVpns/{vpn}/queues/q.shelf.labels
+  flows:
+    - from: sensors
+      to: queue
+      label: readings
+      delay: 0
+    - from: sensors
+      to: queue
+      delay: 0.2
+    - from: queue
+      to: pricing
+      delay: 0.8
+    - from: pricing
+      to: labels
+      label: only on change
+      delay: 1.6
+
+actions:
+  - id: apply
+    label: Apply configuration
+    kind: terraform
+    command: apply
+    tf_dir: tf
+    variant: primary
+    description: >
+      Creates the pricing engine's queue with its three input subscriptions,
+      the label queue, and the access control for this scenario.
+
+  - id: build
+    label: Build the apps
+    kind: process
+    cmd: [bash, ../../apps/run.sh, build]
+    cwd: .
+    variant: secondary
+    description: >
+      Compiles the Go apps shared by every scenario. Only needed to rebuild
+      after a change.
+
+  - id: labels
+    label: Start the shelf tags
+    kind: process
+    cmd: [bash, ../../apps/run.sh, smartshelf, labels]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Every line in this pane is one physical tag being rewritten, so the
+      count here is the battery cost of the design. Compare it with the
+      number of readings the sensors published.
+
+  - id: pricing
+    label: Start the pricing engine
+    kind: process
+    cmd: [bash, ../../apps/run.sh, smartshelf, pricing]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Keeps a price view per store and product, recomputes on every reading,
+      and publishes only when the result differs from what the tag shows. It
+      reports evaluated, emitted and suppressed every five seconds.
+
+  - id: sensors
+    label: Start the store sensors
+    kind: process
+    cmd: [bash, ../../apps/run.sh, smartshelf, sensors]
+    cwd: .
+    long_running: true
+    variant: primary
+    description: >
+      Publishes a scan, stock count or footfall reading every 300ms across
+      two stores and six products. Stock drifts down through the day with the
+      occasional restock, so prices move a few times rather than constantly.
+
+  - id: reconcile
+    label: Reconcile with broker
+    kind: process
+    cmd: [bash, ../../scripts/reconcile.sh, capstone-smart-shelf]
+    cwd: .
+    variant: secondary
+    description: >
+      Use this if Play fails with "already exists". It imports objects that are
+      on the broker but missing from terraform state. The broker is not modified.
+
+  - id: destroy
+    label: Remove configuration
+    kind: terraform
+    command: destroy
+    tf_dir: tf
+    variant: danger
+    description: >
+      Deletes both queues and the access control for this scenario.
+
+inspect:
+  - label: Readings in, changes out
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues?count=100
+    # lastSpooledMsgId on the two queues is the comparison worth making:
+    # q.shelf.pricing counts every reading, q.shelf.labels counts only the
+    # price changes. The difference is what polling would have written.
+    columns: [queueName, accessType, msgSpoolUsage, lastSpooledMsgId, highestAckedMsgId]
+    ui_hint: Manager → Queues
+  - label: What feeds the pricing engine
+    kind: semp
+    path: /msgVpns/{vpn}/queues/q.shelf.pricing/subscriptions
+    columns: [queueName, subscriptionTopic]
+    ui_hint: Manager → Queues → q.shelf.pricing → Subscriptions
+  - label: Connected Clients
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/clients?count=100
+    columns: [clientName, clientUsername, dataRxMsgCount, dataTxMsgCount]
+    ui_hint: Manager → Clients
