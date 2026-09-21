@@ -1,0 +1,52 @@
+// Command workshop is the single binary behind every cockpit scenario app.
+//
+// One binary rather than one per role: the Solace Go API links the native
+// client library through cgo, so each extra binary costs another copy of it
+// and another link step. Attendees wait for one build, once, and every
+// scenario's actions are served by the same artifact.
+//
+// Usage: workshop <scenario> <role> [flags]
+package main
+
+import (
+	"fmt"
+	"os"
+	"sort"
+
+	"solace-workshop/apps/scenarios/pubsub"
+)
+
+// roles maps "<scenario> <role>" to the function that runs it. Adding a
+// scenario means adding entries here and a package under scenarios/.
+var roles = map[string]func([]string){
+	"pubsub publish":   pubsub.Publish,
+	"pubsub subscribe": pubsub.Subscribe,
+}
+
+func main() {
+	if len(os.Args) < 3 {
+		usage()
+		os.Exit(2)
+	}
+	key := os.Args[1] + " " + os.Args[2]
+	run, ok := roles[key]
+	if !ok {
+		fmt.Fprintf(os.Stderr, "unknown scenario role: %s\n\n", key)
+		usage()
+		os.Exit(2)
+	}
+	run(os.Args[3:])
+}
+
+func usage() {
+	fmt.Fprintln(os.Stderr, "usage: workshop <scenario> <role> [flags]")
+	fmt.Fprintln(os.Stderr, "\nknown roles:")
+	keys := make([]string, 0, len(roles))
+	for k := range roles {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		fmt.Fprintf(os.Stderr, "  %s\n", k)
+	}
+}

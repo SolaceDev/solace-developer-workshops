@@ -10,6 +10,3 @@
 [submodule "samples/solace-samples-java"]
 	path = samples/solace-samples-java
 	url = https://github.com/SolaceSamples/solace-samples-java.git
-[submodule "solace-masterclass"]
-	path = solace-masterclass
-	url = https://github.com/SolaceLabs/solace-masterclass-code.git

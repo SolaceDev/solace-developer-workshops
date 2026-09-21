@@ -1,0 +1,184 @@
+id: broker-tour
+order: 10
+eyebrow: Foundations
+title: Broker Configuration Tour
+summary: >
+  Apply a realistic slice of configuration to an empty broker, then explore it in
+  the PubSub+ Manager. You will end up with queues, client profiles, ACL profiles
+  and client usernames that reference each other the way they would in a real
+  deployment.
+
+objectives:
+  - Understand what a queue is, and how access type and quota change its behaviour
+  - See that queues attract messages through topic subscriptions, not by name
+  - Separate what a client may do (client profile) from what topics it may touch (ACL profile)
+  - Trace how a client username joins those two profiles together
+
+# Run scenario applies the configuration and stops there. Preview and Reconcile
+# are diagnostics an attendee reaches for deliberately, not steps on the way to
+# the end state.
+run:
+  - apply
+
+diagram:
+  caption: >
+    Terraform applies queues, profiles and usernames to an empty broker, giving
+    the PubSub+ Manager something to explore.
+  duration: 2.2
+  nodes:
+    - id: tf
+      label: Terraform
+      sublabel: scenarios/broker-tour/tf
+      kind: app
+      col: 0
+      action: apply
+    - id: broker
+      label: PubSub+ Broker
+      sublabel: SEMP :8080
+      kind: broker
+      col: 1
+      action: apply
+    - id: queues
+      label: Queues
+      sublabel: 4 + subscriptions
+      kind: config
+      col: 2
+      requires:
+        - label: q.order.events
+          semp: /msgVpns/{vpn}/queues/q.order.events
+        - label: q.payment.requests
+          semp: /msgVpns/{vpn}/queues/q.payment.requests
+        - label: q.dead.letter
+          semp: /msgVpns/{vpn}/queues/q.dead.letter
+        - label: q.audit.log
+          semp: /msgVpns/{vpn}/queues/q.audit.log
+    - id: profiles
+      label: Client Profiles
+      sublabel: 3 capability sets
+      kind: config
+      col: 2
+      requires:
+        - label: cp-publisher
+          semp: /msgVpns/{vpn}/clientProfiles/cp-publisher
+        - label: cp-consumer
+          semp: /msgVpns/{vpn}/clientProfiles/cp-consumer
+        - label: cp-developer
+          semp: /msgVpns/{vpn}/clientProfiles/cp-developer
+    - id: acls
+      label: ACL Profiles
+      sublabel: 2 topic policies
+      kind: config
+      col: 2
+      requires:
+        - label: acl-order-service
+          semp: /msgVpns/{vpn}/aclProfiles/acl-order-service
+        - label: acl-analytics
+          semp: /msgVpns/{vpn}/aclProfiles/acl-analytics
+    - id: users
+      label: Client Usernames
+      sublabel: 4, one disabled
+      kind: config
+      col: 2
+      requires:
+        - label: svc-order
+          semp: /msgVpns/{vpn}/clientUsernames/svc-order
+        - label: svc-payment
+          semp: /msgVpns/{vpn}/clientUsernames/svc-payment
+        - label: svc-analytics
+          semp: /msgVpns/{vpn}/clientUsernames/svc-analytics
+        - label: svc-legacy-import
+          semp: /msgVpns/{vpn}/clientUsernames/svc-legacy-import
+  flows:
+    - from: tf
+      to: broker
+      label: SEMP config
+      delay: 0
+    - from: broker
+      to: queues
+      delay: 0.8
+    - from: broker
+      to: profiles
+      delay: 1.0
+    - from: broker
+      to: acls
+      delay: 1.2
+    - from: broker
+      to: users
+      delay: 1.4
+
+actions:
+  - id: apply
+    label: Apply configuration
+    kind: terraform
+    command: apply
+    tf_dir: tf
+    variant: primary
+    description: >
+      Creates four queues with their subscriptions, three client profiles, two ACL
+      profiles and four client usernames.
+
+  - id: plan
+    label: Preview changes
+    kind: terraform
+    command: plan
+    tf_dir: tf
+    variant: secondary
+    description: Show what would change without touching the broker.
+
+  # Terraform repairs drift on its own as long as it still has its state file:
+  # delete a queue by hand and the next apply recreates it. What it cannot do is
+  # create something that already exists but is absent from state -- a lost state
+  # file, or a broker someone else configured. That fails with ALREADY_EXISTS,
+  # and this action fixes it by importing the strays back into state.
+  - id: reconcile
+    label: Reconcile with broker
+    kind: process
+    cmd: [bash, ../../scripts/reconcile.sh, broker-tour]
+    cwd: .
+    variant: secondary
+    description: >
+      Use this if apply fails with "already exists". It imports objects that are
+      on the broker but missing from terraform state. The broker is not modified.
+
+  - id: destroy
+    label: Remove configuration
+    kind: terraform
+    command: destroy
+    tf_dir: tf
+    variant: danger
+    description: >
+      Deletes every queue, profile and username this scenario created. Any
+      messages spooled in those queues are discarded.
+
+inspect:
+  - label: Queues
+    kind: semp
+    path: /msgVpns/{vpn}/queues?count=100
+    columns: [queueName, accessType, maxMsgSpoolUsage, permission, egressEnabled]
+    ui_hint: Manager → Queues
+
+  - label: Client Profiles
+    kind: semp
+    path: /msgVpns/{vpn}/clientProfiles?count=100
+    columns:
+      - clientProfileName
+      - allowGuaranteedMsgSendEnabled
+      - allowGuaranteedMsgReceiveEnabled
+      - allowGuaranteedEndpointCreateEnabled
+    ui_hint: Manager → Access Control → Client Profiles
+
+  - label: ACL Profiles
+    kind: semp
+    path: /msgVpns/{vpn}/aclProfiles?count=100
+    columns:
+      - aclProfileName
+      - clientConnectDefaultAction
+      - publishTopicDefaultAction
+      - subscribeTopicDefaultAction
+    ui_hint: Manager → Access Control → ACL Profiles
+
+  - label: Client Usernames
+    kind: semp
+    path: /msgVpns/{vpn}/clientUsernames?count=100
+    columns: [clientUsername, enabled, clientProfileName, aclProfileName]
+    ui_hint: Manager → Access Control → Client Usernames

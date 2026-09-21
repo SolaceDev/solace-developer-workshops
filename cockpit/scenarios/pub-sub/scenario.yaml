@@ -1,0 +1,266 @@
+id: pub-sub
+order: 20
+eyebrow: Messaging
+title: Publish and Subscribe
+summary: >
+  Acme Air publishes flight, baggage and booking events to three topics. Four
+  subscribers listen, each connecting as its own client username with its own ACL
+  profile, and each receives only what it is authorised for. Every client shares
+  one client profile, so every difference in what they see comes from access
+  control rather than from the applications.
+
+objectives:
+  - See how a structured topic hierarchy lets one publisher serve several unrelated consumers
+  - Compare a multi-level wildcard (>) against single-level wildcards (*) on the same event stream
+  - Watch direct messaging reach only the subscribers connected at the moment of publish
+  - Separate one shared client profile from three distinct ACL profiles
+  - See the broker refuse a subscription outright when the ACL does not permit it
+
+# What "Run scenario" does, in order. Direct messaging means the subscribers
+# have to be listening before the publisher sends, so this cannot be inferred
+# from the action list -- it is stated explicitly.
+run:
+  - apply
+  - build
+  - sub-flight-ops
+  - sub-baggage
+  - sub-booking
+  - sub-audit
+  - publish
+
+# A looping picture of what Run scenario produces. Representative, not live:
+# the packets are on a timer, not tracking real broker traffic.
+diagram:
+  caption: >
+    One publisher, three topics, three subscribers. Each subscriber's ACL admits
+    exactly one domain, so the broker fans the events out along separate paths.
+  duration: 2.6
+  # Packets animate only while this node's process is running.
+  liveWhen: pub
+  nodes:
+    - id: pub
+      label: Acme Air Ops
+      sublabel: svc-acme-air-publisher
+      kind: app
+      col: 0
+      action: publish
+      requires:
+        - label: svc-acme-air-publisher
+          semp: /msgVpns/{vpn}/clientUsernames/svc-acme-air-publisher
+        - label: acl-acme-air-publisher
+          semp: /msgVpns/{vpn}/aclProfiles/acl-acme-air-publisher
+    - id: broker
+      label: PubSub+ Broker
+      sublabel: acme/air/>
+      kind: broker
+      col: 1
+      action: apply
+      provides:
+        - label: cp-acme-air-direct
+          semp: /msgVpns/{vpn}/clientProfiles/cp-acme-air-direct
+        - label: acl-acme-air-publisher
+          semp: /msgVpns/{vpn}/aclProfiles/acl-acme-air-publisher
+        - label: acl-acme-air-flight-ops
+          semp: /msgVpns/{vpn}/aclProfiles/acl-acme-air-flight-ops
+        - label: acl-acme-air-baggage
+          semp: /msgVpns/{vpn}/aclProfiles/acl-acme-air-baggage
+        - label: acl-acme-air-booking
+          semp: /msgVpns/{vpn}/aclProfiles/acl-acme-air-booking
+        - label: acl-acme-air-audit
+          semp: /msgVpns/{vpn}/aclProfiles/acl-acme-air-audit
+    - id: flight
+      label: Flight Ops
+      sublabel: svc-acme-air-flight-ops
+      kind: app
+      col: 2
+      action: sub-flight-ops
+      requires:
+        - label: svc-acme-air-flight-ops
+          semp: /msgVpns/{vpn}/clientUsernames/svc-acme-air-flight-ops
+        - label: acl-acme-air-flight-ops
+          semp: /msgVpns/{vpn}/aclProfiles/acl-acme-air-flight-ops
+    - id: baggage
+      label: Baggage
+      sublabel: svc-acme-air-baggage
+      kind: app
+      col: 2
+      action: sub-baggage
+      requires:
+        - label: svc-acme-air-baggage
+          semp: /msgVpns/{vpn}/clientUsernames/svc-acme-air-baggage
+        - label: acl-acme-air-baggage
+          semp: /msgVpns/{vpn}/aclProfiles/acl-acme-air-baggage
+    - id: booking
+      label: Booking
+      sublabel: svc-acme-air-booking
+      kind: app
+      col: 2
+      action: sub-booking
+      requires:
+        - label: svc-acme-air-booking
+          semp: /msgVpns/{vpn}/clientUsernames/svc-acme-air-booking
+        - label: acl-acme-air-booking
+          semp: /msgVpns/{vpn}/aclProfiles/acl-acme-air-booking
+    - id: audit
+      label: Audit
+      sublabel: acme/air/*/*/v1/AC8763
+      kind: app
+      col: 2
+      action: sub-audit
+      requires:
+        - label: svc-acme-air-audit
+          semp: /msgVpns/{vpn}/clientUsernames/svc-acme-air-audit
+        - label: acl-acme-air-audit
+          semp: /msgVpns/{vpn}/aclProfiles/acl-acme-air-audit
+  flows:
+    # Three packets on the same path in quick succession, so the publisher
+    # visibly emits a burst of three events rather than a single dot.
+    - from: pub
+      to: broker
+      label: 3 events
+      delay: 0
+    - from: pub
+      to: broker
+      delay: 0.22
+    - from: pub
+      to: broker
+      delay: 0.44
+    - from: broker
+      to: flight
+      label: flight/>
+      delay: 0.9
+    - from: broker
+      to: baggage
+      label: baggage/>
+      delay: 1.1
+    - from: broker
+      to: booking
+      label: booking/>
+      delay: 1.3
+    - from: broker
+      to: audit
+      label: "*/*/AC8763"
+      delay: 1.5
+
+actions:
+  - id: apply
+    label: Apply access control
+    kind: terraform
+    command: apply
+    tf_dir: tf
+    variant: primary
+    description: >
+      Creates one client profile, four ACL profiles and four client usernames:
+      a publisher plus one subscriber per domain.
+
+  - id: build
+    label: Build the apps
+    kind: process
+    cmd: [bash, ../../apps/run.sh, build]
+    cwd: .
+    variant: secondary
+    description: >
+      Compiles the Go publisher and subscriber into one binary shared by every
+      scenario. Runs automatically on first use, so this is only needed to
+      rebuild after a change. It takes about a second.
+
+  # Subscribers first. Direct messaging has no memory: a message published
+  # before a subscriber connects is gone, which is the behaviour this ordering
+  # is meant to teach.
+  - id: sub-flight-ops
+    label: Start flight ops subscriber
+    kind: process
+    cmd: [bash, ../../apps/run.sh, pubsub, subscribe, --role, flight-ops, --user, svc-acme-air-flight-ops, --sub, "acme/air/flight/>"]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: Authorised for acme/air/flight/> only.
+
+  - id: sub-baggage
+    label: Start baggage subscriber
+    kind: process
+    cmd: [bash, ../../apps/run.sh, pubsub, subscribe, --role, baggage, --user, svc-acme-air-baggage, --sub, "acme/air/baggage/>"]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: Authorised for acme/air/baggage/> only.
+
+  - id: sub-booking
+    label: Start booking subscriber
+    kind: process
+    cmd: [bash, ../../apps/run.sh, pubsub, subscribe, --role, booking, --user, svc-acme-air-booking, --sub, "acme/air/booking/>"]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: Authorised for acme/air/booking/> only.
+
+  - id: sub-audit
+    label: Start audit subscriber
+    kind: process
+    cmd: [bash, ../../apps/run.sh, pubsub, subscribe, --role, audit, --user, svc-acme-air-audit, --sub, "acme/air/*/*/v1/AC8763"]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Authorised for acme/air/*/*/v1/AC8763: every domain and every action, but
+      only for flight AC8763. Two single-level wildcards where the others use
+      one multi-level wildcard, so this pane shows the flight and baggage
+      events and not the booking, whose key is a record locator.
+
+  - id: publish
+    label: Publish events
+    kind: process
+    cmd: [bash, ../../apps/run.sh, pubsub, publish]
+    cwd: .
+    long_running: true
+    variant: primary
+    description: >
+      Publishes one flight, one baggage and one booking event every five seconds
+      until stopped. Repeating means a subscriber started late still sees traffic,
+      which direct messaging would otherwise deny it.
+
+  # Recovery for the case terraform cannot handle on its own: objects present
+  # on the broker but absent from state, which fails apply with ALREADY_EXISTS.
+  - id: reconcile
+    label: Reconcile with broker
+    kind: process
+    cmd: [bash, ../../scripts/reconcile.sh, pub-sub]
+    cwd: .
+    variant: secondary
+    description: >
+      Use this if Play fails with "already exists". It imports objects that are
+      on the broker but missing from terraform state. The broker is not modified.
+
+  - id: destroy
+    label: Remove configuration
+    kind: terraform
+    command: destroy
+    tf_dir: tf
+    variant: danger
+    description: >
+      Deletes the Acme Air client usernames, ACL profiles and client profile.
+      Cleanup stops the apps first, so nothing is disconnected mid-run.
+
+inspect:
+  - label: Client Usernames
+    kind: semp
+    path: /msgVpns/{vpn}/clientUsernames?count=100
+    columns: [clientUsername, enabled, clientProfileName, aclProfileName]
+    ui_hint: Manager → Access Control → Client Usernames
+
+  - label: ACL Profiles
+    kind: semp
+    path: /msgVpns/{vpn}/aclProfiles?count=100
+    columns:
+      - aclProfileName
+      - clientConnectDefaultAction
+      - publishTopicDefaultAction
+      - subscribeTopicDefaultAction
+    ui_hint: Manager → Access Control → ACL Profiles
+
+  - label: Connected Clients
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/clients?count=100
+    columns: [clientName, clientUsername, dataRxMsgCount, dataTxMsgCount]
+    ui_hint: Manager → Clients

@@ -1,0 +1,15 @@
+# Cockpit runtime state: terraform state, logs, virtualenv.
+# All of it is per-attendee and regenerated on demand.
+.state/
+.venv/
+__pycache__/
+*.pyc
+
+# Terraform working directories live beside the .tf files after init.
+scenarios/*/tf/.terraform/
+scenarios/*/tf/.terraform.lock.hcl
+scenarios/*/tf/*.tfstate
+scenarios/*/tf/*.tfstate.backup
+
+# Compiled Go workshop binary. Rebuilt by apps/build.sh on demand.
+.state/bin/

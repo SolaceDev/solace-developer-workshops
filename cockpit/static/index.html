@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en" data-mode="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Workshop Cockpit</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="stylesheet" href="/static/css/cockpit.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar__brand">
+        <img class="sidebar__logo" src="/static/ds/assets/logo/solace-white.png" alt="Solace">
+        <span class="sidebar__rule" aria-hidden="true"></span>
+        <span class="eyebrow">Cockpit</span>
+      </div>
+
+      <nav class="sidebar__nav" id="nav" aria-label="Workshop sections"></nav>
+
+      <div class="broker-status">
+        <div class="broker-status__label">Event broker</div>
+        <div class="broker-status__state">
+          <span class="dot" id="broker-dot" aria-hidden="true"></span>
+          <span id="broker-text">Checking&hellip;</span>
+        </div>
+        <a class="broker-status__link" id="broker-link" href="#" target="_blank" rel="noopener">
+          Open PubSub+ Manager
+        </a>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="crumbs">
+          <span>Workshop</span>
+          <span aria-hidden="true">/</span>
+          <span class="crumbs__current" id="crumb">Loading</span>
+        </div>
+        <div class="topbar__actions">
+          <span class="badge badge--running hidden" id="active-badge"></span>
+          <button class="btn btn--ghost btn--sm" id="stop-all">Stop everything</button>
+          <button class="btn btn--secondary btn--sm" id="refresh">Refresh</button>
+        </div>
+      </header>
+
+      <div class="content">
+        <div class="content__inner" id="view">
+          <div class="empty">Loading scenarios&hellip;</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/diagram.js"></script>
+  <script src="/static/js/cockpit.js"></script>
+</body>
+</html>

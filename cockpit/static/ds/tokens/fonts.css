@@ -1,0 +1,42 @@
+/* ============================================================
+   FONT FACES — Solace brand display serif
+   New Spirit (the real brand serif) — replaces the Newsreader
+   substitute. Files in assets/fonts/ (.otf).
+   Figtree + Space Mono ship via the Google Fonts @import in styles.css.
+   ============================================================ */
+
+@font-face {
+  font-family: "New Spirit";
+  src: url("../assets/fonts/NewSpirit-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "New Spirit";
+  src: url("../assets/fonts/NewSpirit-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "New Spirit";
+  src: url("../assets/fonts/NewSpirit-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "New Spirit";
+  src: url("../assets/fonts/NewSpirit-SemiBold.otf") format("opentype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "New Spirit";
+  src: url("../assets/fonts/NewSpirit-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

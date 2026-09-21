@@ -1,0 +1,72 @@
+/* ============================================================
+   COLORS — Solace Brand Book v2.9, §Identity / Color
+   Base palette values + semantic aliases.
+   ============================================================ */
+:root {
+  /* ---- Primary palette ---- */
+  --green-classic: #00C895;   /* 01 — the core Solace green */
+  --green-bright:  #ABFF88;   /* 02 — energetic light green */
+  --blue-deep:     #093B5F;   /* 03 — primary dark, text on light */
+  --blue-dark:     #03213B;   /* 04 — deepest blue, dark-mode bg */
+
+  /* ---- Secondary / accent palette ----
+     Rule: never combine two secondaries; always pair with a primary green. */
+  --green-spring:  #C7FFCB;   /* 06 */
+  --blue-sky:      #C2F7FF;   /* 07 */
+  --yellow-sunrise:#FFF7C2;   /* 08 */
+  --green-deep:    #009193;   /* 09 — teal/deep green */
+  --orange:        #FCA829;   /* 10 */
+
+  /* ---- Neutrals ---- */
+  --white:    #FFFFFF;
+  --gray-12:  #F4F4F4;        /* cool gray 12 — lightest surface */
+  --gray-13:  #EAEAEA;        /* cool gray 13 — borders / dividers */
+  --gray-14:  #D6D6D6;        /* cool gray 14 — disabled / hairlines */
+  /* extended neutrals derived for UI depth (kept in the blue-gray family) */
+  --gray-40:  #9AA6AE;
+  --gray-60:  #5E6E78;
+  --gray-80:  #2E3F4A;
+
+  /* ---- Accessible dark blue variant (per accessibility page) ---- */
+  --blue-dark-aa: #08223C;
+
+  /* ---- Brand gradients ---- */
+  --grad-lime:  linear-gradient(90deg, #ABFF88 0%, #00C895 100%); /* @kind color */
+  --grad-teal:  linear-gradient(90deg, #00C895 0%, #009193 100%); /* @kind color */
+  --grad-ocean: linear-gradient(90deg, #009193 0%, #093B5F 100%); /* @kind color */
+  --grad-hero:  linear-gradient(120deg, #ABFF88 0%, #00C895 45%, #009193 100%); /* @kind color */
+
+  /* ============================================================
+     SEMANTIC ALIASES (default = Light mode)
+     ============================================================ */
+  --text-strong:   var(--blue-deep);
+  --text-body:     #28333B;
+  --text-muted:    var(--gray-60);
+  --text-inverse:  var(--white);
+  --text-link:     var(--green-deep);
+
+  --surface-page:  var(--white);
+  --surface-card:  var(--white);
+  --surface-sunk:  var(--gray-12);
+  --surface-raised:var(--white);
+  --surface-inverse: var(--blue-dark);
+
+  --border-subtle: var(--gray-13);
+  --border-strong: var(--gray-14);
+  --border-focus:  var(--green-classic);
+
+  --accent:        var(--green-classic);
+  --accent-hover:  #00B385;
+  --accent-press:  #009E76;
+  --accent-contrast: var(--blue-deep);  /* text/icon on top of green */
+  --on-accent:     var(--blue-deep);
+
+  /* status — derived from the secondary palette, used sparingly */
+  --status-success: var(--green-classic);
+  --status-info:    var(--green-deep);
+  --status-warning: var(--orange);
+  --status-danger:  #E5484D;
+
+  /* focus ring */
+  --ring: 0 0 0 3px color-mix(in srgb, var(--green-classic) 45%, transparent);
+}

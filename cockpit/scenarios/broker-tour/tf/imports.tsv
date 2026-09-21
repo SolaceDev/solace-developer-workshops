@@ -1,0 +1,33 @@
+# What the broker-tour scenario owns on the broker.
+# Columns: terraform address <TAB> import id. {vpn} is substituted.
+
+# Queues
+solacebroker_msg_vpn_queue.order_events	{vpn}/q.order.events
+solacebroker_msg_vpn_queue.payment_requests	{vpn}/q.payment.requests
+solacebroker_msg_vpn_queue.dead_letter	{vpn}/q.dead.letter
+solacebroker_msg_vpn_queue.audit_log	{vpn}/q.audit.log
+
+# Queue subscriptions
+solacebroker_msg_vpn_queue_subscription.order_created	{vpn}/q.order.events/acme%2Forder%2Fcreated%2F%3E
+solacebroker_msg_vpn_queue_subscription.order_updated	{vpn}/q.order.events/acme%2Forder%2Fupdated%2F%3E
+solacebroker_msg_vpn_queue_subscription.order_cancelled	{vpn}/q.order.events/acme%2Forder%2Fcancelled%2F%3E
+solacebroker_msg_vpn_queue_subscription.payment_requested	{vpn}/q.payment.requests/acme%2Fpayment%2Frequested%2F%2A
+solacebroker_msg_vpn_queue_subscription.audit_everything	{vpn}/q.audit.log/acme%2F%3E
+
+# Client profiles
+solacebroker_msg_vpn_client_profile.publisher	{vpn}/cp-publisher
+solacebroker_msg_vpn_client_profile.consumer	{vpn}/cp-consumer
+solacebroker_msg_vpn_client_profile.developer	{vpn}/cp-developer
+
+# ACL profiles and their exceptions
+solacebroker_msg_vpn_acl_profile.order_service	{vpn}/acl-order-service
+solacebroker_msg_vpn_acl_profile.analytics	{vpn}/acl-analytics
+solacebroker_msg_vpn_acl_profile_publish_topic_exception.order_publish	{vpn}/acl-order-service/smf/acme%2Forder%2F%3E
+solacebroker_msg_vpn_acl_profile_subscribe_topic_exception.order_subscribe	{vpn}/acl-order-service/smf/acme%2Fpayment%2Fcompleted%2F%3E
+solacebroker_msg_vpn_acl_profile_subscribe_topic_exception.analytics_no_payments	{vpn}/acl-analytics/smf/acme%2Fpayment%2F%3E
+
+# Client usernames
+solacebroker_msg_vpn_client_username.order_service	{vpn}/svc-order
+solacebroker_msg_vpn_client_username.payment_worker	{vpn}/svc-payment
+solacebroker_msg_vpn_client_username.analytics	{vpn}/svc-analytics
+solacebroker_msg_vpn_client_username.legacy	{vpn}/svc-legacy-import

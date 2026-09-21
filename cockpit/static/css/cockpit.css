@@ -1,0 +1,1103 @@
+/* ============================================================
+   Workshop Cockpit
+   Built on the Solace Design System tokens (ds/styles.css).
+   Dark mode throughout, per the brand rule that developer tools
+   and code are always shown in dark mode.
+   ============================================================ */
+
+@import url("../ds/styles.css");
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--surface-page);
+  color: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------------------------------------------------- typography roles */
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--green-bright);
+  margin: 0;
+}
+
+h1, h2 {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display-light);
+  letter-spacing: var(--ls-display);
+  color: var(--text-strong);
+  margin: 0;
+}
+
+h1 { font-size: 2.25rem; line-height: var(--lh-snug); }
+h2 { font-size: 1.75rem; line-height: var(--lh-snug); }
+
+h3, h4, h5 {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-bold);
+  color: var(--text-strong);
+  margin: 0;
+}
+
+h3 { font-size: var(--fs-h4); }
+h4 { font-size: var(--fs-h5); }
+h5 { font-size: var(--fs-body); }
+
+p { margin: 0; }
+
+code, .mono {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+a { color: var(--text-link); }
+
+/* ----------------------------------------------------------------- app shell */
+
+.app {
+  display: grid;
+  grid-template-columns: 264px 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------------------ sidebar */
+
+.sidebar {
+  background: var(--surface-sunk);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-5) var(--space-4);
+  overflow-y: auto;
+}
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-2) var(--space-6);
+}
+
+.sidebar__logo { height: 22px; width: auto; }
+
+.sidebar__rule {
+  width: 1px;
+  height: 18px;
+  background: var(--border-strong);
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: var(--fw-medium);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-base) var(--ease-standard),
+              color var(--dur-base) var(--ease-standard);
+}
+
+.nav-item:hover { background: rgba(255, 255, 255, 0.05); }
+
+.nav-item[aria-current="true"] {
+  background: color-mix(in srgb, var(--green-classic) 16%, transparent);
+  color: var(--green-bright);
+  font-weight: var(--fw-semibold);
+}
+
+.nav-item__index {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  min-width: 1.4em;
+}
+
+.nav-item[aria-current="true"] .nav-item__index { color: var(--green-bright); }
+
+/* Broker status block, pinned to the bottom of the sidebar. */
+
+.broker-status {
+  margin-top: auto;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+}
+
+.broker-status__label {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.broker-status__state {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.85rem;
+  font-weight: var(--fw-semibold);
+  color: var(--text-strong);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-circle);
+  flex-shrink: 0;
+  background: var(--text-muted);
+}
+
+.dot--ready  { background: var(--green-classic); }
+.dot--wait   { background: var(--orange); animation: pulse 1.6s var(--ease-standard) infinite; }
+.dot--down   { background: var(--status-danger); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
+.broker-status__link {
+  display: inline-block;
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--green-bright);
+  text-decoration: none;
+}
+
+.broker-status__link:hover { text-decoration: underline; }
+
+/* -------------------------------------------------------------------- main */
+
+.main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.topbar {
+  height: 64px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: 0 var(--space-6);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-page);
+}
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.crumbs__current { color: var(--text-strong); }
+
+.topbar__actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+}
+
+.content__inner {
+  max-width: var(--container-lg);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ------------------------------------------------------------------ buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 36px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: var(--fw-semibold);
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--dur-base) var(--ease-standard),
+              border-color var(--dur-base) var(--ease-standard),
+              transform var(--dur-fast) var(--ease-standard);
+}
+
+.btn:focus-visible { outline: none; box-shadow: var(--ring); }
+.btn:active:not(:disabled) { transform: scale(0.98); }
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn--primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  border: 1.5px solid var(--accent);
+}
+.btn--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn--secondary {
+  background: transparent;
+  color: var(--text-strong);
+  border: 1.5px solid var(--border-strong);
+}
+.btn--secondary:hover:not(:disabled) { border-color: var(--accent); }
+
+/* Danger is drawn as an outline rather than a filled red button: destructive
+   actions should be findable but never the most eye-catching thing on screen. */
+.btn--danger {
+  background: transparent;
+  color: var(--status-danger);
+  border: 1.5px solid color-mix(in srgb, var(--status-danger) 45%, transparent);
+}
+.btn--danger:hover:not(:disabled) {
+  border-color: var(--status-danger);
+  background: color-mix(in srgb, var(--status-danger) 12%, transparent);
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--text-body);
+  border: 1.5px solid transparent;
+}
+.btn--ghost:hover:not(:disabled) { background: rgba(255, 255, 255, 0.06); }
+
+.btn--sm { height: 30px; padding: 0 var(--space-3); font-size: 0.8125rem; }
+
+/* -------------------------------------------------------------------- cards */
+
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-6);
+}
+
+.card--sunk {
+  background: var(--surface-sunk);
+  box-shadow: none;
+}
+
+/* ------------------------------------------------------------ scenario header */
+
+.scenario-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.scenario-header__summary {
+  font-size: var(--fs-body-lg);
+  color: var(--text-body);
+  max-width: 68ch;
+}
+
+.objectives {
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.objectives li {
+  position: relative;
+  padding-left: var(--space-6);
+  font-size: var(--fs-body-sm);
+  color: var(--text-body);
+}
+
+/* A small ring rather than a bullet: the brand's circle motif, and it reads as
+   a checklist without implying the items are already complete. */
+.objectives li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-circle);
+  border: 1.5px solid var(--green-classic);
+}
+
+/* ------------------------------------------------------------------ stat row */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-4);
+}
+
+.stat {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+}
+
+.stat__label {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+}
+
+.stat__value {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.stat__number {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display-bold);
+  font-size: 1.625rem;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat__unit {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------------- actions */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.section__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.action {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  transition: border-color var(--dur-base) var(--ease-standard);
+}
+
+.action[data-state="running"] { border-color: var(--green-classic); }
+.action[data-state="failed"]  { border-color: color-mix(in srgb, var(--status-danger) 55%, transparent); }
+
+.action__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.action__title {
+  font-size: 0.95rem;
+  font-weight: var(--fw-bold);
+  color: var(--text-strong);
+}
+
+.action__desc {
+  font-size: var(--fs-body-sm);
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.action__controls {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+/* -------------------------------------------------------------------- stage */
+
+/* Diagram and its node panel side by side. The panel is what a node click opens,
+   so the diagram narrows rather than being covered. */
+.stage {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.stage.is-open {
+  grid-template-columns: minmax(0, 1fr) 340px;
+}
+
+@media (max-width: 1100px) {
+  .stage.is-open { grid-template-columns: 1fr; }
+}
+
+.stage__diagram { min-width: 0; }
+
+.stage__panel:empty { display: none; }
+
+.stage__panel {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 520px;
+}
+
+.panel__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5) var(--space-3);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.panel__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 2px;
+}
+
+.panel__title {
+  font-size: var(--fs-body-lg);
+  color: var(--text-strong);
+}
+
+.panel__close {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 var(--space-1);
+}
+
+.panel__close:hover { color: var(--text-strong); }
+
+.panel__tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.panel__tab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.panel__tab.is-active {
+  color: var(--green-bright);
+  border-bottom-color: var(--green-classic);
+}
+
+.panel__body {
+  padding: var(--space-4) var(--space-5);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.panel__status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-body-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--text-strong);
+}
+
+.panel__meta,
+.panel__desc {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.panel__desc { font-family: var(--font-sans); font-size: var(--fs-caption); }
+
+.panel__section-title {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: var(--space-2);
+}
+
+.checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.checklist__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-body);
+}
+
+.checklist__mark { width: 1em; flex-shrink: 0; }
+
+.checklist__item.is-true  .checklist__mark { color: var(--green-bright); }
+.checklist__item.is-false .checklist__mark { color: var(--text-muted); }
+.checklist__item.is-false { color: var(--text-muted); }
+.checklist__item.is-unknown .checklist__mark { color: var(--orange); }
+
+.panel__actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-2);
+}
+
+.panel__log {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-body);
+  max-height: 380px;
+  overflow: auto;
+}
+
+.panel__log:empty::after {
+  content: "No output yet.";
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------------ diagram */
+
+/* A representative animation of what the scenario does. Packets loop on a timer
+   rather than tracking real traffic, so this reads the same before and after a
+   run -- it is a picture of the mechanism, not a monitor. */
+
+.dg-figure {
+  margin: 0;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+}
+
+.dg {
+  display: block;
+  width: 100%;
+  max-width: 820px;
+  height: auto;
+  margin: 0 auto;
+  color: var(--text-body);
+}
+
+.dg-caption {
+  margin-top: var(--space-3);
+  text-align: center;
+  font-size: var(--fs-body-sm);
+  color: var(--text-muted);
+}
+
+/* Nodes: hairline boxes on the card surface. Only the broker is filled, so the
+   eye lands on the thing the workshop is about. */
+.dg-node__box {
+  fill: var(--surface-sunk);
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+
+.dg-node.is-broker .dg-node__box {
+  fill: color-mix(in srgb, var(--green-classic) 14%, transparent);
+  stroke: var(--green-classic);
+  stroke-width: 1.5;
+}
+
+/* Configuration objects the scenario creates, as opposed to running apps.
+   Dashed to read as "this is broker state", not "this is a process". */
+.dg-node--config .dg-node__box {
+  fill: transparent;
+  stroke-dasharray: 4 3;
+}
+
+.dg-node__label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: var(--fw-semibold);
+  fill: var(--text-strong);
+}
+
+.dg-node__sub {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  fill: var(--text-muted);
+}
+
+/* Node status. The dot carries state so the box itself can keep meaning what it
+   means -- green for the broker, dashed for configuration. */
+.dg-node__dot { fill: var(--text-muted); opacity: 0.5; }
+
+.dg-node[data-status="running"] .dg-node__dot { fill: var(--green-bright); opacity: 1; }
+.dg-node[data-status="done"]    .dg-node__dot { fill: var(--green-classic); opacity: 1; }
+.dg-node[data-status="failed"]  .dg-node__dot { fill: var(--status-danger); opacity: 1; }
+.dg-node[data-status="missing"] .dg-node__dot { fill: var(--orange); opacity: 0.9; }
+
+.dg-node[data-status="running"] .dg-node__dot {
+  animation: dg-pulse 1.8s var(--ease-standard) infinite;
+}
+
+@keyframes dg-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+/* "3/5": how much of this node's configuration is actually on the broker. */
+.dg-node__check {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  fill: var(--text-muted);
+}
+
+.dg-node__check[data-complete="true"] { fill: var(--green-bright); }
+
+/* Per-node way into that node's logs, so nothing has to live down the page. */
+.dg-node__logbtn { cursor: pointer; }
+
+.dg-node__logbtn-box {
+  fill: transparent;
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+
+.dg-node__logbtn:hover .dg-node__logbtn-box { stroke: var(--green-classic); }
+
+.dg-node__logbtn-text {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  fill: var(--text-muted);
+}
+
+.dg-node__logbtn:hover .dg-node__logbtn-text { fill: var(--green-bright); }
+
+.dg-node.is-clickable { cursor: pointer; }
+
+.dg-node.is-clickable:hover .dg-node__box {
+  stroke: var(--green-classic);
+}
+
+.dg-node.is-selected .dg-node__box {
+  stroke: var(--green-bright);
+  stroke-width: 2;
+}
+
+.dg-node:focus { outline: none; }
+.dg-node:focus-visible .dg-node__box { stroke: var(--green-bright); stroke-width: 2; }
+
+/* Edges and their topic labels. */
+.dg-edge {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.25;
+  stroke-dasharray: 4 4;
+}
+
+.dg-arrowhead {
+  fill: var(--border-strong);
+}
+
+.dg-edge__label {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  fill: var(--text-muted);
+}
+
+/* The moving part. Packets are hidden when the publishing process is not
+   actually running, so the diagram can never imply traffic that is not there. */
+.dg-packet {
+  fill: var(--green-bright);
+}
+
+.dg.is-idle .dg-packet { opacity: 0; }
+
+/* Reduced motion is handled in diagram.js -- SMIL animation cannot be stopped
+   from CSS -- which parks each packet midway along its path. This only softens
+   the parked dots so they read as markers rather than as stalled traffic. */
+@media (prefers-reduced-motion: reduce) {
+  .dg-packet { opacity: 0.6; }
+}
+
+/* ---------------------------------------------------------------- transport */
+
+/* Play / Pause / Cleanup and the steps behind them. This is the primary way to
+   drive a scenario, so it sits above the individual action cards. */
+.transport {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--green-classic) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--green-classic) 26%, transparent);
+}
+
+.transport__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.transport__status {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-left: var(--space-2);
+}
+
+.transport__status.is-failed {
+  color: #FF9A9D;
+}
+
+.transport__tasks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-5);
+}
+
+.tasks__title {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+}
+
+/* Numbered because order matters: subscribers have to be listening before the
+   publisher sends. */
+.tasks__list {
+  margin: 0;
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tasks__list li {
+  font-size: var(--fs-body-sm);
+  color: var(--text-body);
+}
+
+.tasks__list li::marker {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--green-bright);
+}
+
+.tasks__note {
+  margin-top: var(--space-2);
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+}
+
+/* -------------------------------------------------------------------- badge */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 22px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.badge--idle {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  border-color: var(--border-subtle);
+}
+.badge--running {
+  background: color-mix(in srgb, var(--green-classic) 18%, transparent);
+  color: var(--green-bright);
+  border-color: color-mix(in srgb, var(--green-classic) 40%, transparent);
+}
+.badge--succeeded {
+  background: color-mix(in srgb, var(--green-classic) 18%, transparent);
+  color: var(--green-bright);
+  border-color: color-mix(in srgb, var(--green-classic) 40%, transparent);
+}
+.badge--failed {
+  background: color-mix(in srgb, var(--status-danger) 16%, transparent);
+  color: #FF9A9D;
+  border-color: color-mix(in srgb, var(--status-danger) 42%, transparent);
+}
+.badge--stopped {
+  background: color-mix(in srgb, var(--orange) 16%, transparent);
+  color: var(--orange);
+  border-color: color-mix(in srgb, var(--orange) 40%, transparent);
+}
+
+/* --------------------------------------------------------------- log console */
+
+.console {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-sunk);
+  overflow: hidden;
+}
+
+.console__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.console__title {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.console__body {
+  max-height: 340px;
+  overflow: auto;
+  padding: var(--space-3) var(--space-4);
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-body);
+}
+
+.console__body:empty::after {
+  content: "No output yet.";
+  color: var(--text-muted);
+}
+
+.line--stderr { color: #FFB4B6; }
+.line--system { color: var(--green-bright); }
+
+/* -------------------------------------------------------------------- tables */
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-body-sm);
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-sunk);
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: var(--fw-bold);
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-body);
+  white-space: nowrap;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: rgba(255, 255, 255, 0.03); }
+
+td.is-mono { font-family: var(--font-mono); font-size: 0.75rem; }
+td.is-true  { color: var(--green-bright); }
+td.is-false { color: var(--text-muted); }
+
+/* ---------------------------------------------------------------- inspect box */
+
+.inspect {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.inspect__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.inspect__hint {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.empty {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--fs-body-sm);
+}
+
+/* --------------------------------------------------------------------- toast */
+
+.toasts {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  z-index: 50;
+}
+
+.toast {
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--fs-body-sm);
+  color: var(--text-strong);
+  max-width: 380px;
+  animation: toast-in var(--dur-base) var(--ease-out);
+}
+
+.toast--error { border-color: color-mix(in srgb, var(--status-danger) 55%, transparent); }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ------------------------------------------------------------------- utility */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.muted { color: var(--text-muted); }
+.hidden { display: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}

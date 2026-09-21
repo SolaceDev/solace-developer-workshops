@@ -1,0 +1,40 @@
+/* ============================================================
+   SPACING & RADII — 4px base grid
+   (Not specified in brand book; a sensible system that suits the
+   warm, breathable Solace layouts — "let it breathe".)
+   ============================================================ */
+:root {
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* Corner radii — Solace UI uses soft, friendly rounding */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+
+  /* Container widths */
+  --container-sm: 640px;  /* @kind other */
+  --container-md: 960px;  /* @kind other */
+  --container-lg: 1200px; /* @kind other */
+  --container-xl: 1320px; /* @kind other */
+
+  /* Layout */
+  --gutter: var(--space-6);
+  --section-y: var(--space-24);
+}

@@ -1,0 +1,24 @@
+# What the pub-sub scenario owns on the broker.
+# Columns: terraform address <TAB> import id. {vpn} is substituted.
+
+solacebroker_msg_vpn_client_profile.acme_air_direct	{vpn}/cp-acme-air-direct
+
+solacebroker_msg_vpn_acl_profile.ops_publisher	{vpn}/acl-acme-air-publisher
+solacebroker_msg_vpn_acl_profile_publish_topic_exception.ops_publish	{vpn}/acl-acme-air-publisher/smf/acme%2Fair%2F%3E
+solacebroker_msg_vpn_client_username.publisher	{vpn}/svc-acme-air-publisher
+
+solacebroker_msg_vpn_acl_profile.subscriber["flight-ops"]	{vpn}/acl-acme-air-flight-ops
+solacebroker_msg_vpn_acl_profile_subscribe_topic_exception.subscriber["flight-ops"]	{vpn}/acl-acme-air-flight-ops/smf/acme%2Fair%2Fflight%2F%3E
+solacebroker_msg_vpn_client_username.subscriber["flight-ops"]	{vpn}/svc-acme-air-flight-ops
+
+solacebroker_msg_vpn_acl_profile.subscriber["baggage"]	{vpn}/acl-acme-air-baggage
+solacebroker_msg_vpn_acl_profile_subscribe_topic_exception.subscriber["baggage"]	{vpn}/acl-acme-air-baggage/smf/acme%2Fair%2Fbaggage%2F%3E
+solacebroker_msg_vpn_client_username.subscriber["baggage"]	{vpn}/svc-acme-air-baggage
+
+solacebroker_msg_vpn_acl_profile.subscriber["booking"]	{vpn}/acl-acme-air-booking
+solacebroker_msg_vpn_acl_profile_subscribe_topic_exception.subscriber["booking"]	{vpn}/acl-acme-air-booking/smf/acme%2Fair%2Fbooking%2F%3E
+solacebroker_msg_vpn_client_username.subscriber["booking"]	{vpn}/svc-acme-air-booking
+
+solacebroker_msg_vpn_acl_profile.subscriber["audit"]	{vpn}/acl-acme-air-audit
+solacebroker_msg_vpn_acl_profile_subscribe_topic_exception.subscriber["audit"]	{vpn}/acl-acme-air-audit/smf/acme%2Fair%2F%2A%2F%2A%2Fv1%2FAC8763
+solacebroker_msg_vpn_client_username.subscriber["audit"]	{vpn}/svc-acme-air-audit

@@ -1,0 +1,61 @@
+/* ============================================================
+   MODES — Light, Bright, Dark
+   Per brand book: select ONE color per category (text, primary
+   background, secondary fill, accent outline) for each mode.
+   "Developer tools and code should always be displayed in dark mode."
+   Apply with: <div data-mode="bright"> … </div>  (or "dark")
+   Light mode is the :root default (see colors.css).
+   ============================================================ */
+
+/* ---- BRIGHT MODE — green background, deep-blue text ---- */
+[data-mode="bright"] {
+  --surface-page:  var(--green-classic);
+  --surface-card:  var(--white);
+  --surface-sunk:  color-mix(in srgb, var(--green-classic) 88%, white);
+  --surface-inverse: var(--blue-dark);
+
+  --text-strong:  var(--blue-deep);
+  --text-body:    var(--blue-deep);
+  --text-muted:   color-mix(in srgb, var(--blue-deep) 70%, transparent);
+  --text-inverse: var(--white);
+  --text-link:    var(--blue-deep);
+
+  --accent:       var(--blue-deep);
+  --accent-hover: #0c4d7c;
+  --accent-press: var(--blue-dark);
+  --on-accent:    var(--white);
+  --accent-contrast: var(--white);
+
+  --border-subtle: color-mix(in srgb, var(--blue-deep) 16%, transparent);
+  --border-strong: color-mix(in srgb, var(--blue-deep) 28%, transparent);
+}
+
+/* ---- DARK MODE — deep/dark blue background, green text & accents ---- */
+[data-mode="dark"] {
+  --surface-page:  var(--blue-dark);
+  --surface-card:  var(--blue-deep);
+  --surface-sunk:  #02192e;
+  --surface-raised:#0c4567;
+  --surface-inverse: var(--white);
+
+  --text-strong:  var(--white);
+  --text-body:    #D7E2EA;
+  --text-muted:   #7E94A3;
+  --text-inverse: var(--blue-deep);
+  --text-link:    var(--green-bright);
+
+  --accent:       var(--green-classic);
+  --accent-hover: var(--green-bright);
+  --accent-press: #00B385;
+  --on-accent:    var(--blue-dark);
+  --accent-contrast: var(--blue-dark);
+
+  --border-subtle: rgba(255,255,255,0.12);
+  --border-strong: rgba(255,255,255,0.22);
+  --border-focus:  var(--green-bright);
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.45);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.5);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--green-bright) 45%, transparent);
+}

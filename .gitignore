@@ -236,4 +236,12 @@ node_modules/
 # Temporary folders
 tmp/
 temp/
-solace-agent-mesh/IMPLEMENTATION-PLAN.md
+
+# Cloned at container create time by util/tracker_extension.sh
+util/workshop-participation-tracking/
+
+# Playwright MCP session artifacts
+.playwright-mcp/
+
+# Tracker extension is rebuilt by the devcontainer onCreate step
+.devcontainer/extensions/*.vsix

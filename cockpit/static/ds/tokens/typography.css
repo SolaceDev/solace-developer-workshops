@@ -1,0 +1,47 @@
+/* ============================================================
+   TYPOGRAPHY — Solace Brand Book v2.9, §Identity / Type
+   Display serif  → New Spirit  (the real brand serif, local .otf)
+   Sans / UI / body → Figtree    (exact brand font)
+   Mono / eyebrow / code → Space Mono (exact brand font)
+   ============================================================ */
+:root {
+  --font-display: "New Spirit", Georgia, "Times New Roman", serif;
+  --font-sans:    "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono:    "Space Mono", "Cascadia Mono", ui-monospace, "SF Mono", monospace;
+
+  /* Weights */
+  --fw-display-light: 300;   /* @kind font */ /* New Spirit Light — big headlines */
+  --fw-display-bold:  600;   /* @kind font */
+  --fw-regular: 400;         /* @kind font */
+  --fw-medium:  500;         /* @kind font */
+  --fw-semibold:600;         /* @kind font */
+  --fw-bold:    700;         /* @kind font */
+
+  /* Type scale (rem, 16px base) — display set in --font-display, rest in Figtree */
+  --fs-display-1: 4.5rem;   /* 72 — hero H1, ITC Souvenir Light, title case */
+  --fs-display-2: 3.25rem;  /* 52 — H2 */
+  --fs-h3: 2rem;            /* 32 — Figtree Bold */
+  --fs-h4: 1.5rem;          /* 24 */
+  --fs-h5: 1.25rem;         /* 20 */
+  --fs-body-lg: 1.125rem;   /* 18 */
+  --fs-body: 1rem;          /* 16 */
+  --fs-body-sm: 0.875rem;   /* 14 */
+  --fs-caption: 0.75rem;    /* 12 */
+  --fs-eyebrow: 0.8125rem;  /* 13 — Space Mono, ALL CAPS, tracked */
+
+  /* Line heights */
+  --lh-tight: 1.05;   /* @kind other */ /* display */
+  --lh-snug: 1.2;     /* @kind other */ /* headings */
+  --lh-normal: 1.55;  /* @kind other */ /* body */
+
+  /* Letter spacing */
+  --ls-display: -0.01em; /* @kind other */
+  --ls-tight: -0.02em;   /* @kind other */
+  --ls-eyebrow: 0.14em;  /* @kind other */ /* tracked Space Mono eyebrows */
+  --ls-normal: 0;        /* @kind other */
+
+  /* Semantic roles */
+  --text-eyebrow-font: var(--font-mono);
+  --text-heading-font: var(--font-display);
+  --text-ui-font: var(--font-sans);
+}

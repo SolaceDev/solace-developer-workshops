@@ -1,9 +1,11 @@
 {
   "name": "Solace Developer Workshop",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-  "onCreateCommand": "/bin/bash ${containerWorkspaceFolder}/util/tracker_extension.sh",
+  "onCreateCommand": "/bin/bash ${containerWorkspaceFolder}/.devcontainer/onCreate.sh",
   "waitFor": "onCreateCommand",
+  "updateContentCommand": "/bin/bash cockpit/apps/build.sh",
   "postCreateCommand": "/bin/bash .devcontainer/configureEnv.sh",
+  "postAttachCommand": "/bin/bash cockpit/start_cockpit.sh",
   "hostRequirements": {
    "cpus": 4,
    "memory": "16gb",
@@ -14,6 +16,29 @@
       "version": "latest",
       "enableNonRootDocker": "true",
       "moby": "true"
+    },
+    "ghcr.io/devcontainers/features/terraform:1": {
+      "version": "latest",
+      "tflint": "none",
+      "terragrunt": "none"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12",
+      "installTools": false
+    },
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "latest"
+    }
+  },
+  "forwardPorts": [3000, 8080],
+  "portsAttributes": {
+    "3000": {
+      "label": "Workshop Cockpit",
+      "onAutoForward": "openPreview"
+    },
+    "8080": {
+      "label": "PubSub+ Manager",
+      "onAutoForward": "silent"
     }
   },
   "customizations": {
@@ -21,12 +46,12 @@
       "extensions": [
         "${containerWorkspaceFolder}/.devcontainer/extensions/workshop-tracker.vsix",
         "solace-tools.solace-try-me-vsc-extension",
-        "barnim.markdown-code-copy-button"
-        
+        "barnim.markdown-code-copy-button",
+        "golang.go"
       ],
        "settings": {
         "workshopTracker.webhookUrl": "https://u1odlsl6d9.execute-api.us-east-2.amazonaws.com/default/DAWorkshopTracker",
-        "workshopTracker.workshopName": "aprilSAMWorkshop2026",
+        "workshopTracker.workshopName": "AugCoreWorkshop2026",
         "files.autoSave": "afterDelay",
         "markdown.preview.openPreviewToSide": true,
         "workbench.editorAssociations": {

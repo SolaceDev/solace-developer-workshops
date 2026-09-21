@@ -12,11 +12,26 @@ sudo apt-get install -y nodejs
 echo "Node.js LTS installation complete"
 node --version
 npm --version
-cd util
-git clone https://github.com/Chaymee/workshop-participation-tracking.git
-cd workshop-participation-tracking/
+# Resolve the repo root from this script's own location rather than hardcoding
+# a workspace path: the folder name follows the repository, so a hardcoded one
+# breaks the moment the repo is renamed or forked.
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+EXT_DIR="$REPO_ROOT/.devcontainer/extensions"
+TRACKER_DIR="$REPO_ROOT/util/workshop-participation-tracking"
+
+mkdir -p "$EXT_DIR"
+
+# Idempotent: a rebuild reuses the existing checkout instead of failing on clone.
+if [ -d "$TRACKER_DIR/.git" ]; then
+  git -C "$TRACKER_DIR" fetch origin
+else
+  rm -rf "$TRACKER_DIR"
+  git clone https://github.com/Chaymee/workshop-participation-tracking.git "$TRACKER_DIR"
+fi
+
+cd "$TRACKER_DIR"
 git checkout origin/auto-tracking
 npm i
 npm run compile
 yes | npx @vscode/vsce package --allow-missing-repository
-mv ./workshop-tracker-*.vsix /workspaces/solace-developer-workshops/.devcontainer/extensions/workshop-tracker.vsix
+mv ./workshop-tracker-*.vsix "$EXT_DIR/workshop-tracker.vsix"

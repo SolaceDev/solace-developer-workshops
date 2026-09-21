@@ -1,0 +1,36 @@
+/* ============================================================
+   EFFECTS — shadows, borders, motion
+   Shadows are tinted with Deep Blue (per illustration guidance:
+   "shadows are always rendered in Deep Blue ... bold and
+   intentional ... flat illustration style"). Kept subtle for UI.
+   ============================================================ */
+:root {
+  /* Deep-blue-tinted elevation */
+  --shadow-xs: 0 1px 2px rgba(9, 59, 95, 0.06);
+  --shadow-sm: 0 1px 3px rgba(9, 59, 95, 0.08), 0 1px 2px rgba(9, 59, 95, 0.06);
+  --shadow-md: 0 4px 12px rgba(9, 59, 95, 0.10), 0 2px 4px rgba(9, 59, 95, 0.06);
+  --shadow-lg: 0 12px 32px rgba(9, 59, 95, 0.14), 0 4px 8px rgba(9, 59, 95, 0.06);
+  --shadow-xl: 0 24px 56px rgba(9, 59, 95, 0.18);
+
+  /* Flat "brand shadow" — offset solid, no blur (illustration style) */
+  --shadow-flat: 8px 8px 0 var(--blue-deep);
+  --shadow-flat-green: 6px 6px 0 var(--green-classic);
+
+  /* Borders */
+  --border-width: 1px; /* @kind spacing */
+  --border-width-strong: 1.5px; /* @kind spacing */
+  --border-hairline: 1px solid var(--border-subtle); /* @kind other */
+
+  /* Motion — calm, confident, no bounce. Quick fades + ease. */
+  --ease-standard: cubic-bezier(0.4, 0.0, 0.2, 1); /* @kind other */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);       /* @kind other */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);           /* @kind other */
+  --dur-fast: 120ms; /* @kind other */
+  --dur-base: 200ms; /* @kind other */
+  --dur-slow: 320ms; /* @kind other */
+  --transition-base: all var(--dur-base) var(--ease-standard); /* @kind other */
+
+  /* Blur / glass — used sparingly on imagery overlays */
+  --blur-sm: blur(6px);  /* @kind other */
+  --blur-md: blur(14px); /* @kind other */
+}

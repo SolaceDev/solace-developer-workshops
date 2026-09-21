@@ -1,0 +1,15 @@
+/* ============================================================
+   Solace Design System — cockpit entry point
+   Vendored from the Solace Brand Book Design System (v2.9).
+   Webfonts are served locally so the cockpit renders correctly
+   in an offline or network-restricted devcontainer.
+   ============================================================ */
+
+@import "assets/fonts/web/google-fonts.css";
+
+@import "tokens/fonts.css";
+@import "tokens/colors.css";
+@import "tokens/typography.css";
+@import "tokens/spacing.css";
+@import "tokens/effects.css";
+@import "tokens/modes.css";
