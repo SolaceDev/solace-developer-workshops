@@ -170,7 +170,10 @@ beneath them so nothing is a mystery box:
 - **Cleanup** stops everything, then runs the `cleanup:` sequence to remove the
   configuration from the broker. It asks for confirmation first.
 
-The individual action buttons stay below for running a single step on its own.
+Below the diagram, the Actions section draws every action as a flowchart: the
+`run:` sequence under Play, the `cleanup:` sequence under Cleanup, and anything
+in neither under Optional. Each step's dot shows its run state. Clicking a step
+opens its description with Run and Stop for that step alone.
 
 ```yaml
 run:                      # Play, in order

@@ -432,33 +432,6 @@ a { color: var(--text-link); }
   gap: var(--space-4);
 }
 
-.action-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-4);
-}
-
-.action {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-5);
-  border-radius: var(--radius-md);
-  background: var(--surface-card);
-  border: 1px solid var(--border-subtle);
-  transition: border-color var(--dur-base) var(--ease-standard);
-}
-
-.action[data-state="running"] { border-color: var(--green-classic); }
-.action[data-state="failed"]  { border-color: color-mix(in srgb, var(--status-danger) 55%, transparent); }
-
-.action__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
 .action__title {
   font-size: 0.95rem;
   font-weight: var(--fw-bold);
@@ -475,6 +448,177 @@ a { color: var(--text-link); }
   display: flex;
   gap: var(--space-2);
   align-items: center;
+}
+
+/* -------------------------------------------------------------- action flow */
+
+/* The flowchart form of the Actions section: one line of steps, with a single
+   detail area underneath for whichever step is open. */
+.aflow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.aflow__chart {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3) var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+}
+
+.aflow__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.aflow__group--optional {
+  margin-left: auto;
+  padding-left: var(--space-4);
+  border-left: 1px dashed var(--border-subtle);
+}
+
+.aflow__title {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.aflow__steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.aflow__step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-sunk);
+  color: var(--text-body);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: var(--fw-semibold);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color var(--dur-base) var(--ease-standard),
+    background var(--dur-base) var(--ease-standard);
+}
+
+.aflow__step:hover { border-color: var(--accent); }
+.aflow__step:focus-visible { outline: none; box-shadow: var(--ring); }
+.aflow__step.is-open {
+  border-color: var(--green-classic);
+  background: color-mix(in srgb, var(--green-classic) 12%, transparent);
+}
+
+.aflow__num {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--green-bright);
+  border: 1px solid color-mix(in srgb, var(--green-classic) 55%, transparent);
+}
+
+.aflow__step--danger .aflow__num {
+  color: #FF9A9D;
+  border-color: color-mix(in srgb, var(--status-danger) 55%, transparent);
+}
+
+/* The dot is the step's run state, so the chart doubles as a status line. */
+.aflow__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.5;
+}
+.aflow__step[data-state="running"] .aflow__dot {
+  background: var(--green-bright);
+  opacity: 1;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--green-classic) 30%, transparent);
+}
+.aflow__step[data-state="succeeded"] .aflow__dot { background: var(--green-classic); opacity: 1; }
+.aflow__step[data-state="failed"] .aflow__dot    { background: var(--status-danger); opacity: 1; }
+.aflow__step[data-state="stopped"] .aflow__dot   { background: var(--orange); opacity: 1; }
+.aflow__step[data-state="running"] { border-color: var(--green-classic); }
+.aflow__step[data-state="failed"]  { border-color: color-mix(in srgb, var(--status-danger) 55%, transparent); }
+
+.aflow__chev {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  transition: transform var(--dur-base) var(--ease-standard);
+}
+.aflow__step.is-open .aflow__chev { transform: rotate(180deg); }
+
+/* An arrow and the step it points at wrap as one unit. The longer arrow runs
+   from Play into Cleanup. Drawn in CSS so they scale with the chart. */
+.aflow__hop {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.aflow__arrow {
+  position: relative;
+  flex: none;
+  width: 18px;
+  height: 1px;
+  background: var(--border-subtle);
+}
+.aflow__arrow--long { width: 32px; }
+.aflow__arrow::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: -3px;
+  border: 3.5px solid transparent;
+  border-left: 5px solid var(--border-subtle);
+  border-right: 0;
+}
+
+.aflow__detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  border: 1px solid var(--green-classic);
+}
+.aflow__detail[hidden] { display: none; }
+
+.aflow__detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+@media (max-width: 720px) {
+  .aflow__group--optional {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: 0;
+  }
 }
 
 /* -------------------------------------------------------------------- stage */

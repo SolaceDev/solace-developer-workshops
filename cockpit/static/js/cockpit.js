@@ -18,6 +18,11 @@
     panel: null,
     panelSocket: null,
     diagramState: null,
+    /* Last run status per "<scenario>:<action>", so a flow step opened between
+       polls paints its badge and buttons straight away. */
+    runStatus: new Map(),
+    // The one flow step whose detail is expanded, if any.
+    openStep: null,
   };
 
   const el = {
@@ -123,8 +128,8 @@
         const current = state.scenarios.find((s) => s.id === state.activeId);
         if (current) refreshDiagramState(current);
 
-        /* Action cards used to be repainted by their own log sockets. With logs
-           moved into the node panel, the run list is what keeps them honest. */
+        /* The action flow has no log socket of its own, so the run list is
+           what keeps its steps honest. */
         for (const r of runs || []) {
           const [sid, aid] = r.key.split(":");
           if (sid === state.activeId) paintStatus(sid, aid, r);
@@ -157,10 +162,11 @@
     state.sockets.clear();
   }
 
-  /* One place that paints run state, so the action card's badge, the console's
-     badge, the card's border and the button pair can never disagree. */
+  /* One place that paints run state, so a flow step's dot, the open step's
+     badge and its Run and Stop buttons can never disagree. */
   function paintStatus(scenarioId, actionId, status) {
     const key = `${scenarioId}:${actionId}`;
+    state.runStatus.set(key, status);
     const stateName = status?.state || "idle";
     const label = STATE_LABEL[status?.state] || "Not run";
 
@@ -180,45 +186,133 @@
     if (stop) stop.disabled = !running;
   }
 
-  /* -------------------------------------------------------- action cards */
+  /* ---------------------------------------------------------- action flow */
 
-  function makeAction(scenario, action, runStatus) {
-    const key = `${scenario.id}:${action.id}`;
+  /* Every action drawn as a flowchart: what Play runs, then what Cleanup runs,
+     then anything in neither as optional tools. Each step is one line until
+     clicked, when a single detail area underneath shows its description and
+     its own Run and Stop. */
+  function makeActionFlow(scenario) {
+    const byId = (id) => scenario.actions.find((a) => a.id === id);
+    const play = scenario.runSequence.map(byId).filter(Boolean);
+    const cleanup = scenario.cleanupSequence.map(byId).filter(Boolean);
+    const sequenced = new Set([...scenario.runSequence, ...scenario.cleanupSequence]);
+    const optional = scenario.actions.filter((a) => !sequenced.has(a.id));
 
-    const runBtn = h("button", {
-      class: `btn btn--${action.variant} btn--sm`,
-      id: `run-${key}`,
-      text: action.label,
-      onClick: () => startAction(scenario, action),
-    });
+    state.openStep = null;
+    for (const a of scenario.actions) {
+      state.runStatus.set(`${scenario.id}:${a.id}`, scenario.runs?.[a.id]);
+    }
 
-    const stopBtn = h("button", {
-      class: "btn btn--ghost btn--sm",
-      id: `stop-${key}`,
-      text: "Stop",
-      disabled: true,
-      onClick: () => stopAction(scenario, action),
-    });
+    let n = 0;
+    const step = (action, numbered) =>
+      h(
+        "button",
+        {
+          class: `aflow__step aflow__step--${action.variant}`,
+          id: `action-${scenario.id}:${action.id}`,
+          "data-step": action.id,
+          "data-state": scenario.runs?.[action.id]?.state || "idle",
+          "aria-expanded": "false",
+          "aria-controls": "aflow-detail",
+          onClick: () => toggleStep(scenario, action),
+        },
+        numbered && h("span", { class: "aflow__num", text: String(++n) }),
+        h("span", { class: "aflow__dot", "aria-hidden": "true" }),
+        h("span", { class: "aflow__label", text: action.label }),
+        h("span", { class: "aflow__chev", "aria-hidden": "true", text: "\u25BE" })
+      );
 
-    const card = h(
+    const arrow = (long) =>
+      h("span", { class: `aflow__arrow${long ? " aflow__arrow--long" : ""}`, "aria-hidden": "true" });
+
+    /* Steps in a sequence are joined by arrows; optional tools stand alone.
+       Each arrow is bound to the step it points at, so a long sequence wraps
+       between steps and never leaves an arrow dangling at the end of a line.
+       `lead` draws the arrow from Play into the first Cleanup step. */
+    const group = (title, actions, { sequence = true, lead = false, cls = "" } = {}) =>
+      actions.length
+        ? h(
+            "div",
+            { class: `aflow__group ${cls}`, role: "group", "aria-label": title },
+            h("span", { class: "aflow__title", text: title }),
+            h(
+              "div",
+              { class: "aflow__steps" },
+              actions.map((a, i) =>
+                sequence && (i > 0 || lead)
+                  ? h("span", { class: "aflow__hop" }, arrow(i === 0), step(a, true))
+                  : step(a, sequence)
+              )
+            )
+          )
+        : null;
+
+    return h(
       "div",
-      { class: "action", id: `action-${key}`, "data-state": runStatus?.state || "idle" },
+      { class: "aflow" },
       h(
         "div",
-        { class: "action__head" },
+        { class: "aflow__chart" },
+        group("Play", play),
+        group("Cleanup", cleanup, { lead: play.length > 0 }),
+        group("Optional", optional, { sequence: false, cls: "aflow__group--optional" })
+      ),
+      h("div", { class: "aflow__detail", id: "aflow-detail", hidden: true })
+    );
+  }
+
+  function toggleStep(scenario, action) {
+    const detail = document.getElementById("aflow-detail");
+    if (!detail) return;
+    state.openStep = state.openStep === action.id ? null : action.id;
+
+    for (const node of document.querySelectorAll(".aflow__step")) {
+      const open = node.dataset.step === state.openStep;
+      node.classList.toggle("is-open", open);
+      node.setAttribute("aria-expanded", String(open));
+    }
+
+    if (!state.openStep) {
+      detail.hidden = true;
+      detail.replaceChildren();
+      return;
+    }
+
+    const key = `${scenario.id}:${action.id}`;
+    const status = state.runStatus.get(key);
+    detail.replaceChildren(
+      h(
+        "div",
+        { class: "aflow__detail-head" },
         h("span", { class: "action__title", text: action.label }),
         h("span", {
-          class: `badge badge--${runStatus?.state || "idle"}`,
+          class: `badge badge--${status?.state || "idle"}`,
           id: `badge-${key}`,
-          text: STATE_LABEL[runStatus?.state] || "Not run",
+          text: STATE_LABEL[status?.state] || "Not run",
         })
       ),
       action.description && h("p", { class: "action__desc", text: action.description }),
-      h("div", { class: "action__controls" }, runBtn, stopBtn)
+      h(
+        "div",
+        { class: "action__controls" },
+        h("button", {
+          class: `btn btn--${action.variant} btn--sm`,
+          id: `run-${key}`,
+          text: action.label,
+          onClick: () => startAction(scenario, action),
+        }),
+        h("button", {
+          class: "btn btn--ghost btn--sm",
+          id: `stop-${key}`,
+          text: "Stop",
+          disabled: true,
+          onClick: () => stopAction(scenario, action),
+        })
+      )
     );
-
-    paintStatus(scenario.id, action.id, runStatus);
-    return card;
+    detail.hidden = false;
+    paintStatus(scenario.id, action.id, status);
   }
 
   async function startAction(scenario, action) {
@@ -362,8 +456,8 @@
 
     const stats = h("section", { class: "stats", id: "stats" });
 
-    /* Transport controls: the primary way to drive a scenario. The individual
-       action buttons stay below for anyone who wants one step on its own. */
+    /* Transport controls: the primary way to drive a scenario. The action flow
+       below is for anyone who wants one step on its own. */
     const transport = makeTransport(scenario);
 
     const actions = h(
@@ -379,11 +473,7 @@
           onClick: () => resetScenario(scenario),
         })
       ),
-      h(
-        "div",
-        { class: "action-grid" },
-        scenario.actions.map((a) => makeAction(scenario, a, scenario.runs[a.id]))
-      )
+      makeActionFlow(scenario)
     );
 
     const inspect = h(
