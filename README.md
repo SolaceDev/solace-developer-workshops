@@ -104,6 +104,6 @@ cockpit/           the workshop control surface
   scripts/         shared reconcile and validation helpers
 guides/            the written workshop
 samples/           Solace API samples for several languages (submodules)
-util/              Codespace registration and the progress tracker
+util/              Codespace registration
 setup_broker.sh    starts the broker in Docker
 ```

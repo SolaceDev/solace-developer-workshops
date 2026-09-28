@@ -1,7 +1,6 @@
 #!/bin/bash
 #
-# Container create step: install what the workshop apps need to compile, then
-# build the progress-tracker extension.
+# Container create step: install what the workshop apps need to compile.
 #
 # Runs before postCreateCommand and is included in Codespaces prebuilds, so
 # everything here is paid for once when the image is built rather than by each
@@ -16,7 +15,3 @@ echo "Installing build dependencies..."
 # with "cgo: C compiler not found".
 sudo apt-get update -qq
 sudo apt-get install -y --no-install-recommends build-essential
-
-# Best effort: a failed tracker build should not stop the workshop.
-/bin/bash "$(dirname "${BASH_SOURCE[0]}")/../util/tracker_extension.sh" \
-  || echo "Tracker extension build failed; continuing without it."
