@@ -25,7 +25,10 @@ fi
 # skips creation and fails on the missing pip. Treat "no pip" as "not a venv".
 # This happens on base images that ship python3 without the python3-venv package
 # (ensurepip), where `python3 -m venv` still produces a bin/ directory.
-if [ ! -x "$VENV/bin/pip" ]; then
+# The venv also lives in the workspace, so it outlives a container rebuild: one
+# made against an interpreter the new image no longer has still looks present
+# but cannot run. Treat "interpreter will not start" as "not a venv" too.
+if [ ! -x "$VENV/bin/pip" ] || ! "$VENV/bin/python" -c "" >/dev/null 2>&1; then
   if [ -d "$VENV" ]; then
     echo "Recreating incomplete cockpit virtualenv..."
     rm -rf "$VENV"
