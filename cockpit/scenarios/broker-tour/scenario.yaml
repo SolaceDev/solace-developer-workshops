@@ -4,7 +4,7 @@ eyebrow: Foundations
 title: Broker Configuration Tour
 summary: >
   Apply a realistic slice of configuration to an empty broker, then explore it in
-  the PubSub+ Manager. You will end up with queues, client profiles, ACL profiles
+  the Solace Broker Manager. You will end up with queues, client profiles, ACL profiles
   and client usernames that reference each other the way they would in a real
   deployment.
 
@@ -22,8 +22,10 @@ run:
 
 diagram:
   caption: >
-    Terraform applies queues, profiles and usernames to an empty broker, giving
-    the PubSub+ Manager something to explore.
+    Terraform applies configuration to the broker over its SEMP management
+    API. The dotted boxes are the objects it creates, drawn inside the broker
+    because that is where they live. No applications run in this section and
+    no messages move.
   duration: 2.2
   nodes:
     - id: tf
@@ -32,79 +34,69 @@ diagram:
       kind: app
       col: 0
       action: apply
+    # The broker holds what terraform creates rather than pointing at it.
+    # Each entry in `contains` is a dotted box inside this node, and its count
+    # comes from the `group` on the matching checklist items below.
     - id: broker
-      label: PubSub+ Broker
+      label: Solace Broker
       sublabel: SEMP :8080
       kind: broker
       col: 1
       action: apply
-    - id: queues
-      label: Queues
-      sublabel: 4 + subscriptions
-      kind: config
-      col: 2
-      requires:
+      contains:
+        - id: queues
+          label: Queues
+        - id: profiles
+          label: Client Profiles
+        - id: acls
+          label: ACL Profiles
+        - id: users
+          label: Client Usernames
+      provides:
         - label: q.order.events
+          group: queues
           semp: /msgVpns/{vpn}/queues/q.order.events
         - label: q.payment.requests
+          group: queues
           semp: /msgVpns/{vpn}/queues/q.payment.requests
         - label: q.dead.letter
+          group: queues
           semp: /msgVpns/{vpn}/queues/q.dead.letter
         - label: q.audit.log
+          group: queues
           semp: /msgVpns/{vpn}/queues/q.audit.log
-    - id: profiles
-      label: Client Profiles
-      sublabel: 3 capability sets
-      kind: config
-      col: 2
-      requires:
         - label: cp-publisher
+          group: profiles
           semp: /msgVpns/{vpn}/clientProfiles/cp-publisher
         - label: cp-consumer
+          group: profiles
           semp: /msgVpns/{vpn}/clientProfiles/cp-consumer
         - label: cp-developer
+          group: profiles
           semp: /msgVpns/{vpn}/clientProfiles/cp-developer
-    - id: acls
-      label: ACL Profiles
-      sublabel: 2 topic policies
-      kind: config
-      col: 2
-      requires:
         - label: acl-order-service
+          group: acls
           semp: /msgVpns/{vpn}/aclProfiles/acl-order-service
         - label: acl-analytics
+          group: acls
           semp: /msgVpns/{vpn}/aclProfiles/acl-analytics
-    - id: users
-      label: Client Usernames
-      sublabel: 4, one disabled
-      kind: config
-      col: 2
-      requires:
         - label: svc-order
+          group: users
           semp: /msgVpns/{vpn}/clientUsernames/svc-order
         - label: svc-payment
+          group: users
           semp: /msgVpns/{vpn}/clientUsernames/svc-payment
         - label: svc-analytics
+          group: users
           semp: /msgVpns/{vpn}/clientUsernames/svc-analytics
         - label: svc-legacy-import
+          group: users
           semp: /msgVpns/{vpn}/clientUsernames/svc-legacy-import
   flows:
     - from: tf
       to: broker
-      label: SEMP config
+      label: terraform apply
       delay: 0
-    - from: broker
-      to: queues
-      delay: 0.8
-    - from: broker
-      to: profiles
-      delay: 1.0
-    - from: broker
-      to: acls
-      delay: 1.2
-    - from: broker
-      to: users
-      delay: 1.4
 
 actions:
   - id: apply

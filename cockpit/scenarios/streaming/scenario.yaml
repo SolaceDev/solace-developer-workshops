@@ -40,7 +40,7 @@ diagram:
         - label: svc-streaming-gateway
           semp: /msgVpns/{vpn}/clientUsernames/svc-streaming-gateway
     - id: broker
-      label: PubSub+ Broker
+      label: Solace Broker
       sublabel: the stream
       kind: broker
       col: 1

@@ -4,7 +4,10 @@
   "onCreateCommand": "/bin/bash ${containerWorkspaceFolder}/.devcontainer/onCreate.sh",
   "waitFor": "onCreateCommand",
   "updateContentCommand": "/bin/bash cockpit/apps/build.sh",
-  "postCreateCommand": "/bin/bash .devcontainer/configureEnv.sh",
+  "postCreateCommand": {
+    "environment": "/bin/bash .devcontainer/configureEnv.sh",
+    "cockpit": "/bin/bash cockpit/start_cockpit.sh"
+  },
   "postAttachCommand": "/bin/bash cockpit/start_cockpit.sh",
   "hostRequirements": {
    "cpus": 4,
@@ -37,7 +40,7 @@
       "onAutoForward": "openPreview"
     },
     "8080": {
-      "label": "PubSub+ Manager",
+      "label": "Solace Broker Manager",
       "onAutoForward": "silent"
     }
   },

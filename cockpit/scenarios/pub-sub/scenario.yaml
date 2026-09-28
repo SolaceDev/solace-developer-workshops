@@ -50,7 +50,7 @@ diagram:
         - label: acl-acme-air-publisher
           semp: /msgVpns/{vpn}/aclProfiles/acl-acme-air-publisher
     - id: broker
-      label: PubSub+ Broker
+      label: Solace Broker
       sublabel: acme/air/>
       kind: broker
       col: 1

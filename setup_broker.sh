@@ -65,7 +65,7 @@ done
 
 # Print access information
 echo ""
-echo "Solace PubSub+ broker is ready!"
+echo "Solace Broker is ready!"
 echo "Management UI: http://localhost:8080"
 echo "Username: admin"
 echo "Password: admin"

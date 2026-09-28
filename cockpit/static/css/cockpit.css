@@ -705,6 +705,33 @@ a { color: var(--text-link); }
   stroke-dasharray: 4 3;
 }
 
+/* Configuration drawn inside the node that holds it. Dotted for the same
+   reason a config node is dashed -- this is broker state, not a process --
+   and nested because an object on the broker is part of the broker rather
+   than somewhere messages are sent. */
+.dg-node__child-box {
+  fill: color-mix(in srgb, var(--surface-raised) 60%, transparent);
+  stroke: var(--border-strong);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.dg-node__child-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--text-default);
+}
+
+.dg-node__child-count {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  fill: var(--text-muted);
+}
+
+/* Complete reads green, matching the node-level check, so "everything this
+   box stands for is on the broker" is legible at a glance. */
+.dg-node__child-count[data-complete="true"] { fill: var(--green-bright); }
+
 .dg-node__label {
   font-family: var(--font-sans);
   font-size: 13px;

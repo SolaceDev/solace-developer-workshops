@@ -22,6 +22,22 @@ const Diagram = (() => {
   const PAD_X = 18;
   const PAD_Y = 22;
 
+  /* A node may contain configuration objects rather than point at them.
+     Drawing a queue as a box inside the broker says "this lives on the
+     broker" structurally, where an arrow to a box outside it says "messages
+     travel here" -- which is wrong for something that was merely created. */
+  const CHILD_H = 26;
+  const CHILD_GAP = 6;
+  const CHILD_INSET = 12;
+  // Space above the first child: status dot, label and sublabel.
+  const CHILD_TOP = 60;
+  /* Bottom strip left clear below the last child, for the node's own count
+     and its logs button. Without it the last box sits underneath both. */
+  const CHILD_BOTTOM = 28;
+  /* A node holding configuration needs more width than a plain one: each
+     child carries a label and a count on the same line. */
+  const NODE_W_WIDE = 210;
+
   function el(name, attrs = {}, ...children) {
     const node = document.createElementNS(SVG_NS, name);
     for (const [k, v] of Object.entries(attrs)) {
@@ -38,6 +54,17 @@ const Diagram = (() => {
   /* Place every node on a grid: x from its column, y from its position within
      that column, with each column centred vertically against the tallest one so
      a single broker sits level with three subscribers rather than at the top. */
+  // How tall one node needs to be, given whatever it contains.
+  function nodeHeight(n) {
+    const kids = n.contains?.length ?? 0;
+    if (!kids) return NODE_H;
+    return CHILD_TOP + kids * CHILD_H + (kids - 1) * CHILD_GAP + CHILD_BOTTOM;
+  }
+
+  function nodeWidth(n) {
+    return n.contains?.length ? NODE_W_WIDE : NODE_W;
+  }
+
   function layout(nodes) {
     const columns = new Map();
     for (const n of nodes) {
@@ -47,27 +74,51 @@ const Diagram = (() => {
     }
 
     const colIndexes = [...columns.keys()].sort((a, b) => a - b);
-    const tallest = Math.max(...colIndexes.map((c) => columns.get(c).length));
-    const canvasH = PAD_Y * 2 + tallest * NODE_H + (tallest - 1) * ROW_GAP;
+
+    /* Column height is the sum of its nodes' own heights, not a count times a
+       constant, because a node holding configuration is taller than one that
+       does not. */
+    const colHeight = (c) => {
+      const m = columns.get(c);
+      return m.reduce((t, n) => t + nodeHeight(n), 0) + (m.length - 1) * ROW_GAP;
+    };
+    const canvasH = PAD_Y * 2 + Math.max(...colIndexes.map(colHeight));
+
+    /* Column width is set by its widest member, so a column containing the
+       broker and its configuration is wider than one holding subscribers,
+       and every node in a column still lines up on the left. */
+    const colWidth = (c) => Math.max(...columns.get(c).map(nodeWidth));
+
+    // Left edge of each column, accumulated so widths can differ.
+    const colX = new Map();
+    let x = PAD_X;
+    colIndexes.forEach((col) => {
+      colX.set(col, x);
+      x += colWidth(col) + COL_GAP;
+    });
 
     const placed = new Map();
-    colIndexes.forEach((col, i) => {
+    colIndexes.forEach((col) => {
       const members = columns.get(col);
-      const blockH = members.length * NODE_H + (members.length - 1) * ROW_GAP;
-      const top = (canvasH - blockH) / 2;
-      members.forEach((n, row) => {
+      const top = (canvasH - colHeight(col)) / 2;
+      let y = top;
+      members.forEach((n) => {
+        const h = nodeHeight(n);
+        const w = nodeWidth(n);
         placed.set(n.id, {
           ...n,
-          x: PAD_X + i * (NODE_W + COL_GAP),
-          y: top + row * (NODE_H + ROW_GAP),
-          w: NODE_W,
-          h: NODE_H,
+          // Centre a narrow node within a wide column so a column of mixed
+          // widths reads as a column rather than a ragged edge.
+          x: colX.get(col) + (colWidth(col) - w) / 2,
+          y,
+          w,
+          h,
         });
+        y += h + ROW_GAP;
       });
     });
 
-    const canvasW = PAD_X * 2 + colIndexes.length * NODE_W
-      + (colIndexes.length - 1) * COL_GAP;
+    const canvasW = x - COL_GAP + PAD_X;
     return { placed, canvasW, canvasH };
   }
 
@@ -110,6 +161,34 @@ const Diagram = (() => {
         x: cx, y: n.y + 48, class: "dg-node__sub", "text-anchor": "middle",
       }, n.sublabel));
     }
+
+    /* Configuration this node holds, drawn as dotted boxes inside it. Nesting
+       is the whole point: an object on the broker is part of the broker, not
+       a separate destination something is sent to. */
+    (n.contains || []).forEach((child, i) => {
+      const cyTop = n.y + CHILD_TOP + i * (CHILD_H + CHILD_GAP);
+      const kid = el("g", { class: "dg-node__child", "data-child": child.id || "" });
+
+      kid.append(el("rect", {
+        x: n.x + CHILD_INSET, y: cyTop,
+        width: n.w - CHILD_INSET * 2, height: CHILD_H,
+        rx: 5, class: "dg-node__child-box",
+      }));
+      kid.append(el("text", {
+        x: n.x + CHILD_INSET + 8, y: cyTop + 17,
+        class: "dg-node__child-label", "text-anchor": "start",
+      }, child.label));
+
+      /* The count is filled in from SEMP on each poll, like the node-level
+         check, so a box reads as present or missing rather than assumed. */
+      kid.append(el("text", {
+        x: n.x + n.w - CHILD_INSET - 8, y: cyTop + 17,
+        class: "dg-node__child-count", "text-anchor": "end",
+        "data-child-count": child.id || "",
+      }, ""));
+
+      g.append(kid);
+    });
 
     /* Bottom row: how much of this node's config exists, and a way into its
        logs. Both are per-node so nothing has to live further down the page. */
@@ -305,12 +384,26 @@ const Diagram = (() => {
       node.setAttribute("data-status", status);
 
       // "3/5" reads faster than a list, and the panel has the detail.
+      const list = s.checklist || [];
       const check = node.querySelector(".dg-node__check");
       if (check) {
-        const list = s.checklist || [];
         const present = list.filter((c) => c.present).length;
         check.textContent = list.length ? `${present}/${list.length}` : "";
         check.setAttribute("data-complete", String(list.length > 0 && present === list.length));
+      }
+
+      /* Contained configuration gets its own count, so each dotted box says
+         whether the objects it stands for are actually on the broker. A child
+         claims the checklist entries whose group matches its id, which is how
+         one node's flat checklist is split across several boxes. */
+      for (const countEl of node.querySelectorAll("[data-child-count]")) {
+        const childId = countEl.getAttribute("data-child-count");
+        if (!childId) continue;
+        const mine = list.filter((c) => c.group === childId);
+        if (!mine.length) continue;
+        const present = mine.filter((c) => c.present).length;
+        countEl.textContent = `${present}/${mine.length}`;
+        countEl.setAttribute("data-complete", String(present === mine.length));
       }
     }
 

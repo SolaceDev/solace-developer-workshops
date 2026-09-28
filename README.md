@@ -1,6 +1,6 @@
 # Solace Core Developer Workshop
 
-A hands-on introduction to event-driven architecture on Solace PubSub+. Nine
+A hands-on introduction to event-driven architecture on the Solace Broker. Nine
 sections, each one a working system you run, break and inspect: a broker
 configuration tour, publish and subscribe, the five patterns from the
 Real-Time Data Deep Dives series, and two capstones that compose them.
@@ -45,9 +45,9 @@ finishes, start at [Getting started](guides/00-getting-started.md).
 | Thing | Where |
 | --- | --- |
 | Workshop cockpit | <http://localhost:3000> |
-| PubSub+ Manager | <http://localhost:8080>, `admin` / `admin` |
+| Solace Broker Manager | <http://localhost:8080>, `admin` / `admin` |
 | Broker messaging (SMF) | `localhost:55555` |
-| Solace PubSub+ Standard | Docker container `solace_10.8.1` |
+| Solace Broker | Docker container `solace_10.8.1` |
 
 Also installed: Go with a C toolchain (the Solace Go API wraps the native
 client library), Terraform with the Solace broker provider, Python for the

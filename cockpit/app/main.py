@@ -336,9 +336,13 @@ async def scenario_state(scenario_id: str):
         action_id = node.get("action")
         run = manager.get(f"{scenario_id}:{action_id}") if action_id else None
 
+        # `group` ties an item to one of the node's contained boxes, so a
+        # broker holding four kinds of configuration can show a count per kind
+        # rather than one total for everything on it.
         checklist = [
             {"label": item.get("label", item.get("semp", "")),
-             "present": found.get(item.get("semp"))}
+             "present": found.get(item.get("semp")),
+             "group": item.get("group")}
             for item in (node.get("requires", []) + node.get("provides", []))
         ]
 

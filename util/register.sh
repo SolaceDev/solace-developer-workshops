@@ -2,6 +2,7 @@
 
 # Registration script with SecG
 echo "Codespace Registration..."
-IP_ADDR=$(curl -s ifconfig.me)
-curl -s "https://u1odlsl6d9.execute-api.us-east-2.amazonaws.com/default/CodespacesOnboarding?IP_ADDR=${IP_ADDR}&GITHUB_USER=${GITHUB_USER}"
+# Bounded so a slow or unreachable endpoint cannot hold up the rest of setup.
+IP_ADDR=$(curl -s --max-time 10 ifconfig.me)
+curl -s --max-time 10 "https://u1odlsl6d9.execute-api.us-east-2.amazonaws.com/default/CodespacesOnboarding?IP_ADDR=${IP_ADDR}&GITHUB_USER=${GITHUB_USER}"
 echo ""

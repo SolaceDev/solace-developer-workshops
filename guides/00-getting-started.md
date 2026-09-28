@@ -37,7 +37,7 @@ subscriptions, connected clients and message counts, read live.
 
 ## The broker's own UI
 
-PubSub+ Manager is at <http://localhost:8080>, username `admin`, password
+Solace Broker Manager is at <http://localhost:8080>, username `admin`, password
 `admin`. Every Inspect view names where to find the same thing there, so you
 can check the cockpit against the real interface whenever you want to.
 

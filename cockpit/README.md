@@ -133,7 +133,7 @@ diagram:
         - label: svc-acme-air-baggage
           semp: /msgVpns/{vpn}/clientUsernames/svc-acme-air-baggage
     - id: broker
-      label: PubSub+ Broker
+      label: Solace Broker
       kind: broker
       col: 1
       action: apply
@@ -206,7 +206,7 @@ before the first apply.
 ### `broker-tour`
 
 Applies a realistic slice of configuration to an empty broker so there is
-something to explore in PubSub+ Manager: four queues with contrasting access
+something to explore in Solace Broker Manager: four queues with contrasting access
 types and quotas, topic subscriptions using both `>` and `*` wildcards, a dead
 message queue, three client profiles, two ACL profiles, and four client
 usernames that join them together. One username is deliberately disabled.

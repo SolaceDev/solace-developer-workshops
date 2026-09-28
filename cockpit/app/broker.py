@@ -6,6 +6,8 @@ out of client-side JavaScript, and gives us one place to turn "connection
 refused" into a message that tells an attendee the broker is still booting.
 """
 
+import asyncio
+
 import httpx
 
 from .config import MSG_VPN, SEMP_BASE_URL, SEMP_MONITOR_BASE_URL, SEMP_PASSWORD, SEMP_USER
@@ -70,12 +72,17 @@ async def overview() -> dict:
         "aclProfiles": "/msgVpns/{vpn}/aclProfiles?count=100",
         "clientUsernames": "/msgVpns/{vpn}/clientUsernames?count=100",
     }
-    for key, path in probes.items():
+
+    # Concurrent, not serial: while the broker boots each call can sit on the
+    # full read timeout, and four of those in a row stall the status strip.
+    async def probe(key: str, path: str) -> None:
         try:
             data = await semp_get(path)
             out[key] = len(data.get("data", []))
         except Exception:
             pass
+
+    await asyncio.gather(*(probe(k, p) for k, p in probes.items()))
     return out
 
 

@@ -44,7 +44,7 @@ diagram:
         - label: svc-fanout-publisher
           semp: /msgVpns/{vpn}/clientUsernames/svc-fanout-publisher
     - id: broker
-      label: PubSub+ Broker
+      label: Solace Broker
       sublabel: one copy in, four out
       kind: broker
       col: 1
