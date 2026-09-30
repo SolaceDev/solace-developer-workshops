@@ -8,6 +8,7 @@
     "environment": "/bin/bash .devcontainer/configureEnv.sh",
     "cockpit": "/bin/bash cockpit/start_cockpit.sh"
   },
+  "postStartCommand": "/bin/bash setup_broker.sh",
   "postAttachCommand": "/bin/bash cockpit/start_cockpit.sh",
   "hostRequirements": {
    "cpus": 4,
@@ -37,7 +38,7 @@
   "portsAttributes": {
     "3000": {
       "label": "Solace Workshop Dashboard",
-      "onAutoForward": "openPreview"
+      "onAutoForward": "openBrowser"
     },
     "8080": {
       "label": "Solace Broker Manager",

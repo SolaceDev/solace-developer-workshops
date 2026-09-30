@@ -5,8 +5,13 @@
 
 echo "Setting up Solace broker..."
 
-# Check if Docker is working
+# Check if Docker is working. On a Codespace that is resuming, this runs while
+# the docker-in-docker daemon is still starting, so give it a moment first.
 echo "Checking if Docker is accessible..."
+for _ in $(seq 1 30); do
+  docker info > /dev/null 2>&1 && break
+  sleep 2
+done
 if ! docker info > /dev/null 2>&1; then
   echo "Error: Docker is not accessible. Please rebuild your codespace with the updated devcontainer.json"
   echo "To rebuild: Command Palette (F1) -> Codespaces: Rebuild Container"
@@ -35,7 +40,7 @@ else
     echo "Installing Solace broker..."
     docker run -d -p 8080:8080 -p 55555:55555 -p 1443:1443 -p 8008:8008 \
       -p 1883:1883 -p 5672:5672 -p 9000:9000 -p 2223:2222 \
-      --shm-size=2g \
+      --shm-size=2g --restart unless-stopped \
       --env username_admin_globalaccesslevel=admin \
       --env username_admin_password=admin \
       --name="$BROKER_NAME" "$BROKER_IMAGE"

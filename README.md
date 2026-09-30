@@ -44,8 +44,8 @@ finishes, start at [Getting started](guides/00-getting-started.md).
 
 | Thing | Where |
 | --- | --- |
-| Solace Workshop Dashboard | <http://localhost:3000> |
-| Solace Broker Manager | <http://localhost:8080>, `admin` / `admin` |
+| Solace Workshop Dashboard | Port 3000 (the **Ports** tab in a Codespace, <http://localhost:3000> locally) |
+| Solace Broker Manager | Port 8080, `admin` / `admin`, or the link in the dashboard sidebar |
 | Broker messaging (SMF) | `localhost:55555` |
 | Solace Broker | Docker container `solace_10.8.1` |
 
@@ -98,7 +98,7 @@ python3 cockpit/scripts/check_scenarios.py
 ## Repository layout
 
 ```
-cockpit/           the workshop control surface
+cockpit/           the Solace Workshop Dashboard
   apps/            Go applications, one module and one binary
   scenarios/       one folder per section: scenario.yaml + tf/
   scripts/         shared reconcile and validation helpers
@@ -107,3 +107,10 @@ samples/           Solace API samples for several languages (submodules)
 util/              Codespace registration
 setup_broker.sh    starts the broker in Docker
 ```
+
+## Contributing
+
+[CONTRIBUTING.md](CONTRIBUTING.md) explains how the setup works behind the
+scenes, how scenarios are defined and run, and how to add, reorder, rename or
+remove scenarios for a particular workshop. [CLAUDE.md](CLAUDE.md) gives Claude
+Code the same map, so it can modify scenarios or build new ones for you.

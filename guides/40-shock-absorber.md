@@ -11,7 +11,7 @@ about 300ms per bag.
 
 ## Watch the backlog form and drain
 
-Open **Queues** in Inspect during a burst. On `q.shock.scans`:
+Open **Queues** under **On the broker** during a burst. On `q.shock.scans`:
 
 - `msgSpoolUsage` climbs as the burst lands and falls as the worker catches
   up. This is the live backlog.
@@ -31,7 +31,7 @@ queue, the broker shares messages between them, and the backlog drains about
 three times faster. No configuration changed and the publisher did not
 notice.
 
-Open **Workers on the shared queue** in Inspect to see the three consumers
+Open **Workers on the shared queue** under **On the broker** to see the three consumers
 and how many each has acknowledged.
 
 ## Stop one mid-flight
@@ -51,7 +51,7 @@ Start **Start failing worker**. It settles every seventh message `FAILED`,
 which puts it back on the queue to be tried again, and every thirteenth
 `REJECTED`, which sends it straight to `q.shock.dmq`.
 
-Watch the dead message queue grow in Inspect. A message that can never
+Watch the dead message queue grow under **On the broker**. A message that can never
 succeed moves aside rather than blocking the queue behind it, and it is kept
 rather than dropped so someone can look at it.
 
@@ -80,7 +80,7 @@ parallelism across keys, but not an even distribution of work.
 
 ## Break it
 
-With Play running, scroll to **Break it** in the cockpit. Each card causes one
+With Play running, scroll to **Break it** in the dashboard. Each card causes one
 failure on purpose. Press **Break it**, read the app's output and what the
 card tells you to look for, then press **Reset**. The card stays open after
 the reset so you can see the recovery, and **Why this breaks** explains the

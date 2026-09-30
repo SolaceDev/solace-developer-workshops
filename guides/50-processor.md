@@ -42,8 +42,7 @@ consumers should tolerate a repeat.
 ## Add a stage to a running pipeline
 
 The router is not in the Play sequence. Its queue has been subscribed to the
-enriched topic since you pressed Apply, so look at `q.processor.router` in
-Inspect: it has a backlog.
+enriched topic since you pressed Play, so look at `q.processor.router` under **On the broker**: it has a backlog.
 
 Start **Start the router (late)**. It drains that backlog, then keeps pace.
 Neither the enricher nor the sink was restarted or reconfigured.
@@ -65,7 +64,7 @@ consumer requires no change to the router.
 
 ## Break it
 
-With Play running, scroll to **Break it** in the cockpit. Each card causes one
+With Play running, scroll to **Break it** in the dashboard. Each card causes one
 failure on purpose. Press **Break it**, read the app's output and what the
 card tells you to look for, then press **Reset**. The card stays open after
 the reset so you can see the recovery, and **Why this breaks** explains the

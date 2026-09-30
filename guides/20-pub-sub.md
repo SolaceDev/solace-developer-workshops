@@ -91,7 +91,7 @@ This is why the Play sequence starts the subscribers before the publisher.
 
 - Give the audit subscriber `acme/air/*/*/v1/>` instead. Predict what changes
   before you run it.
-- Check **Connected Clients** in Inspect while everything runs, and watch the
+- Check **Connected Clients** under **On the broker** while everything runs, and watch the
   message counts diverge between the four subscribers.
 
 Next: [Fan-out](30-fan-out.md).

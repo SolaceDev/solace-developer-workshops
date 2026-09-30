@@ -4,7 +4,8 @@ No applications in this section. It puts a realistic slice of configuration
 on an empty broker so there is something to look at, and so the vocabulary
 the rest of the workshop uses means something.
 
-Press **Play**, then open <http://localhost:8080> alongside the cockpit.
+Press **Play**, then open Solace Broker Manager alongside the dashboard with
+**Open Solace Broker Manager** in the sidebar (`admin` / `admin`).
 
 ## What was created
 
@@ -54,7 +55,7 @@ A **client username** joins one of each together.
 
 ## Break it
 
-Once the configuration is applied, scroll to **Break it** in the cockpit. Each
+Once the configuration is applied, scroll to **Break it** in the dashboard. Each
 card causes one failure on purpose. Press **Break it**, read the app's output
 and what the card tells you to look for, then press **Reset**. The card stays
 open after the reset so you can see the recovery, and **Why this breaks**

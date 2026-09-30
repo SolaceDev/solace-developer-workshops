@@ -39,7 +39,7 @@ The passenger app is slow in absolute terms, deliberately: 50ms per lookup.
 The point is not that it is fast, but that its performance is determined by
 its own consumption and not by how overwhelmed the system beside it is.
 
-Compare the two queues in Inspect during a bank. `q.arrival.scans` carries a
+Compare the two queues under **On the broker** during a bank. `q.arrival.scans` carries a
 large backlog; `q.arrival.status` stays near zero. The surge is held where it
 does no harm.
 
@@ -56,7 +56,7 @@ problems stay with the slow consumer.
 
 ## Break it
 
-With Play running, scroll to **Break it** in the cockpit. Each card causes one
+With Play running, scroll to **Break it** in the dashboard. Each card causes one
 failure on purpose. Press **Break it**, read the app's output and what the
 card tells you to look for, then press **Reset**. The card stays open after
 the reset so you can see the recovery, and **Why this breaks** explains the

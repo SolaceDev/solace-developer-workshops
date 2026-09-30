@@ -36,7 +36,7 @@ After a minute or so, suppression settles around 80 to 90 percent. Those
 suppressed updates are the writes a polling design would have sent: the
 database reads it would have made and the tag batteries it would have spent.
 
-Confirm it independently in Inspect. Compare `lastSpooledMsgId` on
+Confirm it independently under **On the broker**. Compare `lastSpooledMsgId` on
 `q.shelf.pricing` (every reading) with `q.shelf.labels` (only real changes).
 The gap is the same story from the broker's side.
 
@@ -45,7 +45,7 @@ times a minute. Most readings simply do not move them.
 
 ## Three streams, one queue
 
-Look at **What feeds the pricing engine** in Inspect. One queue carries three
+Look at **What feeds the pricing engine** under **On the broker**. One queue carries three
 subscriptions: scans, stock counts and footfall.
 
 One queue rather than three because the engine needs all of them to decide a
@@ -65,7 +65,7 @@ store, so each instance owns a complete view of the shelves it prices.
 
 ## Break it
 
-With Play running, scroll to **Break it** in the cockpit. Each card causes one
+With Play running, scroll to **Break it** in the dashboard. Each card causes one
 failure on purpose. Press **Break it**, read the app's output and what the
 card tells you to look for, then press **Reset**. The card stays open after
 the reset so you can see the recovery, and **Why this breaks** explains the

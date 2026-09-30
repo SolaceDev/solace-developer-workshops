@@ -1305,9 +1305,22 @@
     select(target.id);
   }
 
+  // The server only knows the broker as localhost, which is wrong for any
+  // browser outside the container. Codespaces forwards each port to its own
+  // host (name-3000.app.github.dev), so swap our port for the SEMP one; a
+  // browser on localhost, as with a local devcontainer, keeps the server's URL.
+  function brokerUiUrl(env) {
+    const { protocol, hostname, port } = location;
+    if (hostname === "localhost" || hostname === "127.0.0.1") return env.brokerUiUrl;
+    const [first, ...rest] = hostname.split(".");
+    const forwarded = !port && first.match(/^(.+)-\d+$/);
+    if (forwarded) return `${protocol}//${forwarded[1]}-${env.sempPort}.${rest.join(".")}`;
+    return `${protocol}//${hostname}:${env.sempPort}`;
+  }
+
   async function init() {
     state.env = await API.env();
-    el.brokerLink.href = state.env.brokerUiUrl;
+    el.brokerLink.href = brokerUiUrl(state.env);
 
     if (!state.env.terraformAvailable) {
       toast("Terraform is not installed in this container; terraform actions will fail.", true);

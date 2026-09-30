@@ -57,7 +57,7 @@ by card, and every authorization for one card reaches the same instance.
 
 ## Break it
 
-With Play running, scroll to **Break it** in the cockpit. Each card causes one
+With Play running, scroll to **Break it** in the dashboard. Each card causes one
 failure on purpose. Press **Break it**, read the app's output and what the
 card tells you to look for, then press **Reset**. The card stays open after
 the reset so you can see the recovery, and **Why this breaks** explains the

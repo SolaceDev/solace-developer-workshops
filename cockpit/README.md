@@ -23,8 +23,8 @@ terraform / sample apps  -->  Solace broker (docker, SEMP 8080)
 
 Three decisions shape everything else:
 
-**Subprocesses, not threads.** Terraform is a binary and a Java sample app is a
-JVM, so both have to be subprocesses regardless. Treating a Python publisher the
+**Subprocesses, not threads.** Terraform and the Go sample apps are separate
+binaries, so both have to be subprocesses regardless. Treating any other tool the
 same way means one code path for every language, real cancellation via signals,
 and crash isolation, so a hung consumer can never take the dashboard down with it.
 
@@ -107,13 +107,13 @@ A scenario with a `diagram:` block renders it as the main surface, below the
 transport controls. Nodes are not illustrations: each carries live status, a
 checklist of the configuration it depends on, and a way into its own logs.
 
-- **Status dot** -- idle, running, done, failed, or missing configuration.
+- **Status dot:** idle, running, done, failed, or missing configuration.
   Driven by the real process state and by SEMP, not by a timer.
-- **`3/5` badge** -- how much of that node's configuration actually exists on
+- **`3/5` badge:** how much of that node's configuration actually exists on
   the broker right now.
-- **`logs` button** -- opens that node's log stream in the side panel.
-- **Click the node** -- apps start or stop; every node opens its detail panel.
-- **Packets** -- animate only while the process named by `liveWhen` is running,
+- **`logs` button:** opens that node's log stream in the side panel.
+- **Click the node:** apps start or stop; every node opens its detail panel.
+- **Packets:** animate only while the process named by `liveWhen` is running,
   so a stopped publisher cannot leave the picture implying traffic. They are
   representative rather than per-message.
 
@@ -184,8 +184,8 @@ cleanup:                  # Cleanup, in order. Defaults to the destructive
   - destroy               # actions, which is usually just the destroy step.
 ```
 
-Order cannot be inferred -- `pub-sub` has to start its subscribers before it
-publishes -- so it is stated explicitly. Without a `run:` block the default is
+Order cannot be inferred (`pub-sub` has to start its subscribers before it
+publishes), so it is stated explicitly. Without a `run:` block the default is
 every non-destructive action in declaration order.
 
 A `long_running` step is given a few seconds to connect and then left running
@@ -258,13 +258,13 @@ No publishers or subscribers: this scenario is purely about configuration.
 
 ### `pub-sub`
 
-Acme Air publishes flight, baggage and booking events to three topics; three
-JCSMP subscribers each receive only the domain they are authorised for. All four
-clients share one client profile and differ only in their ACL profile, so every
-difference in what they see comes from access control rather than application code.
+Acme Air publishes flight, baggage and booking events; four Go subscribers each
+receive only what they are authorised for. Every client shares one client
+profile and differs only in its ACL profile, so every difference in what they
+see comes from access control rather than application code.
 
 The publisher repeats all three events every five seconds until stopped, so a
-subscriber started late still sees traffic -- it simply misses everything sent
+subscriber started late still sees traffic. It simply misses everything sent
 while it was away, since direct messaging has no replay. Stop one subscriber,
 restart it, and compare message counts to see that plainly. Point a subscriber at
 another domain's topic and the broker refuses the subscription with a 403.
@@ -272,10 +272,9 @@ another domain's topic and the broker refuses the subscription with a 403.
 Like `broker-tour`, it ships a **Reconcile with broker** action for the case where
 terraform's state is lost while the broker keeps the objects.
 
-The Java apps build into a single jar on first run (Maven, JCSMP 10.27.2). The
-"Build the apps" action is only needed to rebuild after a change -- and avoid
-pressing it while subscribers are running, since replacing the jar underneath a
-live JVM is not something the JVM enjoys.
+Every app is one Go binary, built by `apps/build.sh` when the container is
+created and again by Play. The "Build the apps" action is only needed to
+rebuild after changing the Go code.
 
 ## When state and broker drift apart
 

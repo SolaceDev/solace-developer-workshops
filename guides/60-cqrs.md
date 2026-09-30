@@ -49,7 +49,7 @@ real trade rather than a detail.
 Stop the gateway from its diagram node.
 
 Now run **Send a reboot command**. The command is published to a queue, so
-look at `q.cqrs.gw4471.commands` in Inspect: `msgSpoolUsage` is no longer
+look at `q.cqrs.gw4471.commands` under **On the broker**: `msgSpoolUsage` is no longer
 zero. The command is waiting.
 
 Start the gateway again. It binds its queue, receives the command it missed,
@@ -60,7 +60,7 @@ what makes control reliable over links that are not.
 
 ## Why the queue subscribes to verbs by name
 
-Look at **What the queue accepts** in Inspect. The command queue subscribes
+Look at **What the queue accepts** under **On the broker**. The command queue subscribes
 to `reboot` and `update` explicitly rather than wildcarding the verb.
 
 If it wildcarded, the `rebooted` event the device publishes in reply would
@@ -69,7 +69,7 @@ command. Naming the imperative verbs keeps the two directions apart.
 
 ## Break it
 
-With Play running, scroll to **Break it** in the cockpit. Each card causes one
+With Play running, scroll to **Break it** in the dashboard. Each card causes one
 failure on purpose. Press **Break it**, read the app's output and what the
 card tells you to look for, then press **Reset**. The card stays open after
 the reset so you can see the recovery, and **Why this breaks** explains the
