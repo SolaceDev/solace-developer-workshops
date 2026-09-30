@@ -63,6 +63,20 @@ The sink contains no filtering logic. A routing decision became a topic level,
 and selecting on it became someone else's subscription. Adding a `namer`
 consumer requires no change to the router.
 
+## Break it
+
+With Play running, scroll to **Break it** in the cockpit. Each card causes one
+failure on purpose. Press **Break it**, read the app's output and what the
+card tells you to look for, then press **Reset**. The card stays open after
+the reset so you can see the recovery, and **Why this breaks** explains the
+cause and where you would meet it in production.
+
+1. **A queued stage goes down.** With the router running, the enricher stops
+   while the assembly line keeps publishing.
+2. **The direct subscriber at the end goes down.** With the router running,
+   EMEA fulfilment stops. It is the one stage that subscribes directly instead
+   of reading from a queue.
+
 ## Try this
 
 - Stop the enricher for thirty seconds. Watch `q.processor.assembly` hold the

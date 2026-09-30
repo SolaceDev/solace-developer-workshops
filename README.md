@@ -19,7 +19,7 @@ create.
 Open the repository in a Codespace with the button above, or locally in VS
 Code with the Dev Containers extension (**Reopen in Container**). Either way
 the container installs Go and Terraform, starts a Solace broker in Docker,
-and opens the workshop cockpit on port 3000.
+and opens the Solace Workshop Dashboard on port 3000.
 
 First build takes a few minutes, mostly pulling the broker image. When it
 finishes, start at [Getting started](guides/00-getting-started.md).
@@ -28,7 +28,7 @@ finishes, start at [Getting started](guides/00-getting-started.md).
 
 | # | Section | What it covers |
 | --- | --- | --- |
-| 00 | [Getting started](guides/00-getting-started.md) | The cockpit, the broker, and how a section works |
+| 00 | [Getting started](guides/00-getting-started.md) | The dashboard, the broker, and how a section works |
 | 10 | [Tour the broker](guides/10-broker-tour.md) | Queues, client profiles, ACL profiles |
 | 20 | [Publish and subscribe](guides/20-pub-sub.md) | Topic hierarchies, wildcards, access control |
 | 30 | [Fan-out](guides/30-fan-out.md) | One event, many independent consumers |
@@ -44,14 +44,14 @@ finishes, start at [Getting started](guides/00-getting-started.md).
 
 | Thing | Where |
 | --- | --- |
-| Workshop cockpit | <http://localhost:3000> |
+| Solace Workshop Dashboard | <http://localhost:3000> |
 | Solace Broker Manager | <http://localhost:8080>, `admin` / `admin` |
 | Broker messaging (SMF) | `localhost:55555` |
 | Solace Broker | Docker container `solace_10.8.1` |
 
 Also installed: Go with a C toolchain (the Solace Go API wraps the native
 client library), Terraform with the Solace broker provider, Python for the
-cockpit, and the Solace Try-Me VS Code extension for poking at topics by
+dashboard, and the Solace Try-Me VS Code extension for poking at topics by
 hand.
 
 ## How it fits together
@@ -59,7 +59,7 @@ hand.
 ```
 Browser (port 3000)
      |
-FastAPI cockpit  ──  scenarios/<id>/scenario.yaml   what the section does
+FastAPI dashboard ── scenarios/<id>/scenario.yaml   what the section does
      |               scenarios/<id>/tf/*.tf         broker configuration
      |               apps/                          one Go binary, all roles
      v
@@ -79,7 +79,7 @@ own.
 
 ## Running an app by hand
 
-The cockpit runs commands you can also run yourself:
+The dashboard runs commands you can also run yourself:
 
 ```bash
 bash cockpit/apps/run.sh pubsub subscribe \
@@ -87,7 +87,7 @@ bash cockpit/apps/run.sh pubsub subscribe \
 ```
 
 Connection details come from the environment, with defaults matching
-`setup_broker.sh`, so this reaches the same broker the cockpit uses.
+`setup_broker.sh`, so this reaches the same broker the dashboard uses.
 
 To check everything still lines up after editing a scenario:
 

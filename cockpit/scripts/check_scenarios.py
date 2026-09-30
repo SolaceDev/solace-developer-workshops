@@ -4,9 +4,10 @@
 A scenario.yaml is data, so a typo in it is not caught by any compiler and
 usually surfaces as a button that does nothing while an attendee is watching.
 This checks the references that have to line up: run and cleanup steps naming
-real actions, diagram nodes pointing at real actions, process commands whose
-scripts exist, terraform directories that are present, and an imports.tsv for
-every scenario offering a reconcile action.
+real actions, diagram nodes pointing at real actions, diagram flows that go
+through the one broker, failure modes naming real actions, process commands
+whose scripts exist, terraform directories that are present, and an
+imports.tsv for every scenario offering a reconcile action.
 
 Run from anywhere:  python3 cockpit/scripts/check_scenarios.py
 """
@@ -44,6 +45,41 @@ def check(path: pathlib.Path) -> list[str]:
         for end in ("from", "to"):
             if flow.get(end) not in node_ids:
                 bad.append(f"diagram flow {end} {flow.get(end)!r} is not a node")
+
+    # Events always go through the broker: one broker per diagram, and every
+    # flow either arrives at it or leaves it. An app that consumes and then
+    # publishes draws one flow in from the broker and one flow back.
+    nodes = spec.get("diagram", {}).get("nodes", [])
+    brokers = {n["id"] for n in nodes if n.get("kind") == "broker"}
+    if nodes and len(brokers) != 1:
+        bad.append(f"diagram has {len(brokers)} broker nodes, expected exactly 1")
+    for flow in spec.get("diagram", {}).get("flows", []):
+        if brokers and not ({flow.get("from"), flow.get("to")} & brokers):
+            bad.append(f"diagram flow {flow.get('from')!r} -> {flow.get('to')!r} bypasses the broker")
+
+    # A failure mode is steps on actions that must exist, plus an optional
+    # diagram node to mark while it is in effect.
+    for mode in spec.get("failure_modes", []):
+        mid = mode.get("id", "?")
+        for key in ("id", "title", "trigger", "reset"):
+            if not mode.get(key):
+                bad.append(f"failure mode {mid!r} has no {key}")
+        for phase in ("trigger", "reset"):
+            for op in mode.get(phase, []) or []:
+                verb, target = next(iter(op.items())) if len(op) == 1 else (None, None)
+                if verb not in ("start", "stop", "run"):
+                    bad.append(f"failure mode {mid!r} {phase} step {op!r} is not start:, stop: or run:")
+                elif target not in actions:
+                    bad.append(f"failure mode {mid!r} {phase} names missing action {target!r}")
+        for doc in mode.get("docs", []) or []:
+            if not doc.get("label") or not str(doc.get("url", "")).startswith("https://"):
+                bad.append(f"failure mode {mid!r} has a docs entry without a label and https url")
+        if mode.get("logs") and mode["logs"] not in actions:
+            bad.append(f"failure mode {mid!r} logs names missing action {mode['logs']!r}")
+        if mode.get("needs", "running") not in ("running", "applied"):
+            bad.append(f"failure mode {mid!r} needs {mode['needs']!r}, expected running or applied")
+        if mode.get("node") and mode["node"] not in node_ids:
+            bad.append(f"failure mode {mid!r} marks missing diagram node {mode['node']!r}")
 
     live = spec.get("diagram", {}).get("liveWhen")
     if live and live not in node_ids:

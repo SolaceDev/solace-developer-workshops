@@ -63,6 +63,19 @@ picture, which is the same problem the streaming section raises about running
 two fraud rules. If this needed to scale, the answer would be partitioning by
 store, so each instance owns a complete view of the shelves it prices.
 
+## Break it
+
+With Play running, scroll to **Break it** in the cockpit. Each card causes one
+failure on purpose. Press **Break it**, read the app's output and what the
+card tells you to look for, then press **Reset**. The card stays open after
+the reset so you can see the recovery, and **Why this breaks** explains the
+cause and where you would meet it in production.
+
+1. **The pricing engine goes down.** The pricing engine stops while the store
+   sensors keep sending readings.
+2. **The shelf tags go offline.** The shelf tags stop while the pricing engine
+   keeps publishing changes.
+
 ## Try this
 
 - Stop the pricing engine for a minute, then restart it. It rebuilds its view

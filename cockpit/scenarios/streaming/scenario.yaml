@@ -54,6 +54,8 @@ diagram:
       label: Fraud Rule
       sublabel: 10s rolling window
       kind: app
+      # Drawn as a hexagon: in at the top point, out at the bottom one.
+      shape: processor
       col: 2
       action: fraud
       requires:
@@ -163,6 +165,73 @@ actions:
     variant: danger
     description: >
       Deletes the fraud queue and the access control for this scenario.
+
+# Ways to break the scenario on purpose. Each names the steps that cause it
+# and the steps that put things back; see pub-sub for the full shape.
+failure_modes:
+  - id: fraud-down
+    title: The fraud rule goes down
+    breaks: >
+      The fraud rule stops while the payment gateway keeps authorizing.
+    watch: >
+      Open Stream queue under On the broker: q.streaming.fraud climbs as
+      authorizations wait. Reset starts the rule again and watch its log as it
+      works through the backlog: it can flag cards that were never really
+      used that fast, and any genuine flag arrives late.
+    why: >
+      The fraud rule reads from a queue, so every authorization published
+      while it is down is spooled for it and none is lost. But the rule times
+      each authorization when it processes it, not when it happened. Catching
+      up squeezes minutes of authorizations into a few seconds, so a card used
+      a few times over those minutes can suddenly look like it was used three
+      times in ten seconds.
+    real_world: >
+      A fraud or risk engine restarts during a busy period. The queue means it
+      misses nothing, but any rule built on time windows has to use the time
+      an event happened, carried in the event, not the time it was processed,
+      or every outage is followed by a burst of false alarms. Queue depth on a
+      stream consumer is effectively its lag, and worth alerting on.
+    docs:
+      - label: "Go API: consuming persistent messages and acknowledgments"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Subscribe.htm
+      - label: "Broker: guaranteed messages"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Guaranteed-Messages.htm
+    node: fraud
+    logs: fraud
+    trigger:
+      - stop: fraud
+    reset:
+      - start: fraud
+
+  - id: desk-offline
+    title: The US desk goes offline
+    breaks: >
+      The US desk stops while authorizations and flags keep flowing.
+    watch: >
+      The fraud rule keeps flagging and the gateway keeps publishing. Reset
+      after a few events: the desk picks up from the next one, and whatever
+      was published while it was down never reaches it.
+    why: >
+      The desk subscribes directly to payment/*/v1/us/>, which only exists
+      while it is connected. Authorizations and flags published while it is
+      down are matched by the fraud rule's queue but not by the desk, so the
+      desk's copies are never made.
+    real_world: >
+      A monitoring screen or operator console restarts and comes back without
+      the alerts raised in the meantime. For a live view that is often fine.
+      For anything someone has to act on, like a fraud flag, it is not: those
+      belong on a queue so they are waiting when the desk returns.
+    docs:
+      - label: "Go API: consuming direct messages"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-DM-Subscribe.htm
+      - label: "Broker: direct messages"
+        url: https://docs.solace.com/Messaging/Direct-Msg/Direct-Messages.htm
+    node: watch
+    logs: watch
+    trigger:
+      - stop: watch
+    reset:
+      - start: watch
 
 inspect:
   - label: Stream queue

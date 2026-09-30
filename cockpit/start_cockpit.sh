@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Start the workshop cockpit.
+# Start the Solace Workshop Dashboard.
 #
 # Idempotent by design: an attendee can run this as many times as they like,
 # and the devcontainer can call it on every attach without stacking processes.
@@ -17,7 +17,7 @@ mkdir -p "$COCKPIT_DIR/.state"
 
 # Already listening? Leave it alone.
 if curl -sf "http://localhost:$PORT/api/env" >/dev/null 2>&1; then
-  echo "Cockpit already running at http://localhost:$PORT"
+  echo "Dashboard already running at http://localhost:$PORT"
   exit 0
 fi
 
@@ -30,10 +30,10 @@ fi
 # but cannot run. Treat "interpreter will not start" as "not a venv" too.
 if [ ! -x "$VENV/bin/pip" ] || ! "$VENV/bin/python" -c "" >/dev/null 2>&1; then
   if [ -d "$VENV" ]; then
-    echo "Recreating incomplete cockpit virtualenv..."
+    echo "Recreating incomplete dashboard virtualenv..."
     rm -rf "$VENV"
   else
-    echo "Creating cockpit virtualenv..."
+    echo "Creating dashboard virtualenv..."
   fi
 
   if ! python3 -m venv "$VENV" 2>/dev/null || [ ! -x "$VENV/bin/pip" ]; then
@@ -56,7 +56,7 @@ if [ ! -x "$VENV/bin/pip" ] || ! "$VENV/bin/python" -c "" >/dev/null 2>&1; then
   fi
 
   if [ ! -x "$VENV/bin/pip" ]; then
-    echo "Could not create a working Python environment for the cockpit." >&2
+    echo "Could not create a working Python environment for the dashboard." >&2
     echo "Install python3-venv in the container, then run this script again." >&2
     exit 1
   fi
@@ -64,28 +64,33 @@ fi
 
 # Quiet unless something is actually missing, so repeated attaches stay fast.
 if ! "$VENV/bin/python" -c "import fastapi, uvicorn, httpx, yaml" >/dev/null 2>&1; then
-  echo "Installing cockpit dependencies..."
+  echo "Installing dashboard dependencies..."
   "$VENV/bin/pip" install --quiet --upgrade pip
   "$VENV/bin/pip" install --quiet -r "$COCKPIT_DIR/requirements.txt"
 fi
 
-echo "Starting cockpit on port $PORT..."
+echo "Starting the Solace Workshop Dashboard on port $PORT..."
 cd "$REPO_ROOT"
+# The graceful-shutdown timeout matters because the page holds log websockets
+# open. Without it a stopped cockpit waits on them forever: it stops listening
+# but keeps running, and a browser tab still connected to it can start apps
+# the new cockpit never sees.
 nohup "$VENV/bin/python" -m uvicorn cockpit.app.main:app \
   --host "${COCKPIT_HOST:-0.0.0.0}" --port "$PORT" \
+  --timeout-graceful-shutdown 3 \
   >> "$LOG" 2>&1 &
 
 # Give uvicorn a moment, then confirm rather than claiming success blindly.
 for _ in $(seq 1 20); do
   if curl -sf "http://localhost:$PORT/api/env" >/dev/null 2>&1; then
     echo ""
-    echo "Cockpit is ready:  http://localhost:$PORT"
-    echo "Logs:              $LOG"
+    echo "Dashboard is ready: http://localhost:$PORT"
+    echo "Logs:               $LOG"
     exit 0
   fi
   sleep 0.5
 done
 
-echo "Cockpit did not come up. Last 20 log lines:" >&2
+echo "Dashboard did not come up. Last 20 log lines:" >&2
 tail -20 "$LOG" >&2
 exit 1

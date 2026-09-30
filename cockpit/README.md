@@ -1,4 +1,4 @@
-# Workshop Cockpit
+# Solace Workshop Dashboard
 
 The control surface attendees use to drive the workshop. It applies broker
 configuration, runs sample applications, streams their output back live, and
@@ -11,7 +11,7 @@ Browser (port 3000)          static HTML/CSS/JS, no build step
      |
      |  REST (control)  +  WebSocket (log streams)
      v
-FastAPI cockpit              one uvicorn process
+FastAPI dashboard            one uvicorn process
      |
      +-- ProcessManager       asyncio subprocesses, one per action
      +-- SEMP client          httpx, proxies broker reads
@@ -26,9 +26,9 @@ Three decisions shape everything else:
 **Subprocesses, not threads.** Terraform is a binary and a Java sample app is a
 JVM, so both have to be subprocesses regardless. Treating a Python publisher the
 same way means one code path for every language, real cancellation via signals,
-and crash isolation, so a hung consumer can never take the cockpit down with it.
+and crash isolation, so a hung consumer can never take the dashboard down with it.
 
-**No frontend framework.** The cockpit is cards, forms, and log panes. A build
+**No frontend framework.** The dashboard is cards, forms, and log panes. A build
 step would cost container boot time and add a failure mode during a live
 workshop without buying anything. Attendees who open devtools see the code we
 wrote.
@@ -52,7 +52,7 @@ Configuration comes from the environment, with defaults matching
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `COCKPIT_PORT` | `3000` | Port the cockpit listens on |
+| `COCKPIT_PORT` | `3000` | Port the dashboard listens on |
 | `SOLACE_HOST` | `localhost` | Broker host |
 | `SOLACE_SEMP_PORT` | `8080` | SEMP / Manager port |
 | `SOLACE_SEMP_USER` | `admin` | Management username |
@@ -154,7 +154,7 @@ than a running process), `app` is the default.
 
 `{vpn}` in a `semp:` path is substituted with the configured message VPN. A
 missing object is reported by SEMP as HTTP 400 with `NOT_FOUND`, which the
-cockpit reads as absent rather than as an error.
+dashboard reads as absent rather than as an error.
 
 Logs live in the node panel rather than in a section further down the page: every
 action's output is reachable from the thing that produces it.
@@ -203,6 +203,46 @@ Terraform state is written to `COCKPIT_STATE_DIR/<scenario-id>/` rather than
 beside the `.tf` files, so resetting a scenario is a directory delete and the
 repo stays clean for the next attendee. `terraform init` runs automatically
 before the first apply.
+
+### Failure modes
+
+A scenario page is laid out in numbered parts: **Run it** (the transport and
+diagram), **Step through it** (the Actions flowchart), **Break it**, and **On the
+broker** (the Inspect views, each a closed shade until opened).
+
+**Break it** holds one card per entry in `failure_modes:`. A card is locked until
+the scenario is running, or until its configuration is applied for a mode marked
+`needs: applied`. **Break it** runs the `trigger` steps, marks the diagram node,
+and streams the `logs` step's output into the card and behind that node's logs
+button. **Reset** runs the `reset` steps and leaves the card open on the
+restarted app's log, so the recovery can be watched too. One failure is in effect
+at a time.
+
+```yaml
+failure_modes:
+  - id: subscriber-offline
+    title: A subscriber goes offline
+    breaks: One line on what goes wrong.
+    watch: What to look for once it has.
+    why: Why it breaks. Shown in a closed shade on the card.
+    real_world: Where you would meet this in production. Same shade.
+    docs:                          # links at the bottom of the card
+      - label: "Go API: consuming direct messages"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-DM-Subscribe.htm
+    node: baggage                  # diagram node to mark while in effect
+    logs: sub-baggage              # action whose output tells the story
+    needs: running                 # or applied, for a scenario with no apps
+    trigger:                       # start: and stop: return at once;
+      - stop: sub-baggage          # run: waits for the step to finish
+    reset:
+      - start: sub-baggage
+```
+
+A start of a step that is already running is skipped, so a trigger can make sure
+something is up first. An action that exists only to cause a failure is marked
+`failure_only: true`, which keeps it out of the Actions flowchart.
+`scripts/check_scenarios.py` checks that every step, node, `logs` action and docs
+link in a failure mode is valid.
 
 ## Scenarios
 
@@ -258,10 +298,17 @@ the same shape, or document destroy-then-apply as the recovery path.
 ## Teardown
 
 Attendees jump between sections out of order, and a stale process from an
-earlier section is the most confusing failure mode in a workshop like this. Two
-escape hatches exist:
+earlier section is the most confusing failure mode in a workshop like this.
+Three escape hatches exist:
 
-- **Stop everything** in the top bar terminates every running process.
+- **Stop everything** in the top bar terminates every running process and
+  cancels any Play still working through its steps.
+- **Clear broker config** in the top bar stops everything, then deletes every
+  queue, client profile, ACL profile and client username that any scenario
+  lists in its `tf/imports.tsv`, and removes every scenario's terraform state.
+  It works whether or not terraform still has its state, and leaves broker
+  defaults and anything created by hand alone. Pressing Play on a scenario sets
+  it up again from scratch.
 - **Reset this scenario** stops that scenario's processes and deletes its
   terraform state. It does not remove configuration already on the broker; run
   the scenario's destroy action first if you want a clean broker.

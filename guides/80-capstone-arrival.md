@@ -54,6 +54,19 @@ of the passenger app.
 Two queues, each fed by its own subscription, means the slow consumer's
 problems stay with the slow consumer.
 
+## Break it
+
+With Play running, scroll to **Break it** in the cockpit. Each card causes one
+failure on purpose. Press **Break it**, read the app's output and what the
+card tells you to look for, then press **Reset**. The card stays open after
+the reset so you can see the recovery, and **Why this breaks** explains the
+cause and where you would meet it in production.
+
+1. **A routing instance fails.** Baggage routing 1 stops. Routing 2 is left to
+   handle every belt.
+2. **The passenger app goes offline.** The passenger app stops while bags keep
+   being routed.
+
 ## Try this
 
 - Stop routing entirely during a surge. Bag statuses stop being produced, but

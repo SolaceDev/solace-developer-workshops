@@ -219,6 +219,22 @@ actions:
       until stopped. Repeating means a subscriber started late still sees traffic,
       which direct messaging would otherwise deny it.
 
+  # Run by the forbidden-subscription failure mode, not by Play. The baggage
+  # user connects, then asks for the flight domain, which its ACL profile does
+  # not allow. It exits straight away, so its step shows as failed, and that
+  # failure is the lesson.
+  - id: sub-forbidden
+    label: Try a forbidden subscription
+    kind: process
+    failure_only: true
+    cmd: [bash, ../../apps/run.sh, pubsub, subscribe, --role, baggage, --user, svc-acme-air-baggage, --sub, "acme/air/flight/>"]
+    cwd: .
+    variant: secondary
+    description: >
+      Connects as the baggage user and subscribes to acme/air/flight/>, which
+      its ACL profile does not permit. The connection succeeds and the
+      subscription is refused with a 403, so this step is expected to fail.
+
   # Recovery for the case terraform cannot handle on its own: objects present
   # on the broker but absent from state, which fails apply with ALREADY_EXISTS.
   - id: reconcile
@@ -240,6 +256,85 @@ actions:
     description: >
       Deletes the Acme Air client usernames, ACL profiles and client profile.
       Cleanup stops the apps first, so nothing is disconnected mid-run.
+
+# Ways to break the scenario once Play has it running. Each one names the
+# steps that cause it and the steps that put things back, so an attendee can
+# break it, look, reset, and try again. `node` marks the diagram node the
+# failure is about; `logs` is the step whose output tells the story. `why` and
+# `real_world` sit in a closed shade on the card for anyone who wants the
+# background. `docs` links the Go API's reference for the failure and the
+# broker documentation for the behaviour behind it.
+failure_modes:
+  - id: forbidden-subscription
+    title: Subscribe outside the ACL
+    breaks: >
+      The baggage team asks for flight events, which its ACL profile does not
+      allow.
+    watch: >
+      The client connects, because its client profile allows it. Then the
+      subscription is refused with a 403, because its ACL profile does not.
+      Capability and topic authority are separate decisions, and this is the
+      broker enforcing both.
+    why: >
+      Every client username carries an ACL profile, and the broker checks each
+      subscription against it when the subscription is made, not when a
+      message arrives. The baggage profile only has an exception for
+      acme/air/baggage/>, so a request for acme/air/flight/> is refused on the
+      spot. Logging in is a separate check against the client profile, which
+      is why the connection itself succeeds.
+    real_world: >
+      A team reuses another service's topic in a new feature, or a wildcard
+      gets widened during a refactor, and the service starts up and connects
+      normally but never receives anything for that topic. It shows up as a
+      403 "Subscription ACL Denied" in the application log at startup, or as a
+      consumer that looks healthy and simply sits idle. It is also exactly
+      what you want to happen when a compromised or misconfigured client tries
+      to read data it has no business seeing.
+    docs:
+      - label: "Go API: subcode.SubscriptionAclDenied"
+        url: https://docs.solace.com/API-Developer-Online-Ref-Documentation/go/solace.dev/go/messaging/pkg/solace/subcode/index.html
+      - label: "Broker: controlling client access with ACL profiles"
+        url: https://docs.solace.com/Security/Granting-Clients-Access.htm
+    node: baggage
+    logs: sub-forbidden
+    trigger:
+      - start: sub-forbidden
+    reset:
+      - stop: sub-forbidden
+
+  - id: subscriber-offline
+    title: A subscriber goes offline
+    breaks: >
+      The baggage subscriber stops while the publisher keeps sending.
+    watch: >
+      Leave it down for a round or two, then reset. Baggage resumes with the
+      next event published, and the ones sent while it was down never arrive:
+      direct messaging stores nothing for a subscriber that is not connected.
+    why: >
+      A direct subscription exists only while the client is connected. When
+      baggage disconnects, the broker drops its subscription, and events
+      published in the meantime match no one for that topic, so they are
+      discarded. Nothing is spooled because no queue was ever asked to hold
+      them.
+    real_world: >
+      A consumer restarts during a deploy, a pod is rescheduled, or a network
+      blip drops the connection for a few seconds. With direct messaging the
+      events published in that window are simply gone, and the consumer comes
+      back with a gap it cannot see. That is fine for data that is replaced
+      moments later, like live prices or telemetry, and a real problem for
+      anything that must not be lost, like orders or payments. That is the
+      point where a queue belongs in the design.
+    docs:
+      - label: "Go API: consuming direct messages"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-DM-Subscribe.htm
+      - label: "Broker: direct messages"
+        url: https://docs.solace.com/Messaging/Direct-Msg/Direct-Messages.htm
+    node: baggage
+    logs: sub-baggage
+    trigger:
+      - stop: sub-baggage
+    reset:
+      - start: sub-baggage
 
 inspect:
   - label: Client Usernames

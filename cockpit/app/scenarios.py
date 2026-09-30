@@ -33,6 +33,9 @@ class Action:
     # presentation
     variant: str = "primary"  # primary | secondary | danger
     confirm: Optional[str] = None
+    # Exists only to cause a failure mode, so it is left out of the Actions
+    # flowchart and reached from that failure mode's card instead.
+    failure_only: bool = False
 
     @property
     def is_destructive(self) -> bool:
@@ -51,6 +54,17 @@ class Inspect:
     ui_hint: str = ""
     # "config" for objects, "monitor" for live counters. See broker.semp_get.
     api: str = "config"
+
+
+# Broker object kinds a scenario can own at the top level, mapped to their SEMP
+# collection. Listed in the order they have to be deleted: a client username
+# refers to its profiles, so it goes before them.
+_TOP_LEVEL = {
+    "client_username": "clientUsernames",
+    "queue": "queues",
+    "acl_profile": "aclProfiles",
+    "client_profile": "clientProfiles",
+}
 
 
 @dataclass
@@ -75,6 +89,10 @@ class Scenario:
     # Ordered action ids for Cleanup: tears down whatever Play created. Usually
     # a terraform destroy, but a scenario may need several steps.
     cleanup: list = field(default_factory=list)
+    # Ways to break the running scenario on purpose, each with the steps that
+    # cause it and the steps that put things back. Passed to the browser
+    # as-is; the cockpit drives them with the ordinary start and stop calls.
+    failure_modes: list = field(default_factory=list)
 
     @property
     def run_sequence(self) -> list:
@@ -101,6 +119,24 @@ class Scenario:
             return [a for a in resolved if a is not None]
         return [a for a in self.actions if a.is_destructive]
 
+    def owned_objects(self) -> list:
+        """(kind, name) for every top-level broker object this scenario owns,
+        read from tf/imports.tsv, the same list Reconcile uses. Children such
+        as queue subscriptions and ACL exceptions are left out: they go when
+        their parent is deleted."""
+        imports = self.root / "tf" / "imports.tsv"
+        if not imports.exists():
+            return []
+        found = []
+        for line in imports.read_text().splitlines():
+            if not line.strip() or line.startswith("#") or "\t" not in line:
+                continue
+            address, import_id = line.split("\t", 1)
+            kind = address.split(".", 1)[0].removeprefix("solacebroker_msg_vpn_")
+            if kind in _TOP_LEVEL:
+                found.append((kind, import_id.strip().split("/", 1)[1]))
+        return found
+
     def action(self, action_id: str) -> Optional[Action]:
         return next((a for a in self.actions if a.id == action_id), None)
 
@@ -124,6 +160,7 @@ class Scenario:
                     "variant": a.variant,
                     "confirm": a.confirm,
                     "longRunning": a.long_running,
+                    "failureOnly": a.failure_only,
                 }
                 for a in self.actions
             ],
@@ -135,6 +172,7 @@ class Scenario:
             "runSequence": [a.id for a in self.run_sequence],
             "cleanupSequence": [a.id for a in self.cleanup_sequence],
             "diagram": self.diagram,
+            "failureModes": self.failure_modes,
         }
 
 
@@ -154,6 +192,7 @@ def _load_one(path: Path) -> Scenario:
         run=raw.get("run", []),
         cleanup=raw.get("cleanup", []),
         diagram=raw.get("diagram", {}) or {},
+        failure_modes=raw.get("failure_modes", []) or [],
     )
 
 

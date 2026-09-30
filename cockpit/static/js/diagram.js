@@ -17,7 +17,7 @@ const Diagram = (() => {
      messaging scenarios take. */
   const NODE_W = 150;
   const NODE_H = 76;
-  const COL_GAP = 116;
+  const COL_GAP = 136;
   const ROW_GAP = 26;
   const PAD_X = 18;
   const PAD_Y = 22;
@@ -55,14 +55,41 @@ const Diagram = (() => {
      that column, with each column centred vertically against the tallest one so
      a single broker sits level with three subscribers rather than at the top. */
   // How tall one node needs to be, given whatever it contains.
+  /* A processor consumes and publishes, and is drawn as a hexagon standing on
+     a point: events arrive at the top point and the new events it publishes
+     leave from the bottom one, so a chain of processors reads as work falling
+     through the pipeline even though every hop goes back through the broker.
+     A hexagon rather than a cylinder, which would read as a database. */
+  const isProcessor = (n) => n.shape === "processor";
+  // Height of the hexagon's top and bottom points above and below its sides.
+  const HEX_POINT = 18;
+  /* Space between two nodes in a column when either is a processor: room for
+     one flow leaving a bottom and the next arriving at a top. */
+  const PROC_GAP = 64;
+
+  function rowGap(a, b) {
+    return isProcessor(a) || isProcessor(b) ? PROC_GAP : ROW_GAP;
+  }
+
   function nodeHeight(n) {
+    // A point above and below the usual box, so the text keeps its room.
+    if (isProcessor(n)) return NODE_H + HEX_POINT * 2;
     const kids = n.contains?.length ?? 0;
     if (!kids) return NODE_H;
     return CHILD_TOP + kids * CHILD_H + (kids - 1) * CHILD_GAP + CHILD_BOTTOM;
   }
 
+  /* A node holding configuration grows to fit its longest child label, so a
+     queue name like q.shock.scans.partitioned never runs into its count.
+     Child labels are 10px monospace, about 6.2px a character; the constant
+     covers the insets, the label's padding and the count beside it. */
+  const CHILD_CHAR_W = 6.2;
+  const CHILD_CHROME_W = 76;
+
   function nodeWidth(n) {
-    return n.contains?.length ? NODE_W_WIDE : NODE_W;
+    if (!n.contains?.length) return NODE_W;
+    const longest = Math.max(...n.contains.map((c) => (c.label || "").length));
+    return Math.max(NODE_W_WIDE, Math.ceil(CHILD_CHROME_W + longest * CHILD_CHAR_W));
   }
 
   function layout(nodes) {
@@ -80,9 +107,13 @@ const Diagram = (() => {
        does not. */
     const colHeight = (c) => {
       const m = columns.get(c);
-      return m.reduce((t, n) => t + nodeHeight(n), 0) + (m.length - 1) * ROW_GAP;
+      return m.reduce((t, n, i) => t + nodeHeight(n) + (i ? rowGap(m[i - 1], n) : 0), 0);
     };
-    const canvasH = PAD_Y * 2 + Math.max(...colIndexes.map(colHeight));
+    /* Flows enter a processor from above and leave below, so a diagram with
+       one needs room over its top node and under its bottom one. */
+    const hasProcessor = nodes.some(isProcessor);
+    const padY = PAD_Y + (hasProcessor ? PROC_HEADROOM : 0);
+    const canvasH = padY * 2 + Math.max(...colIndexes.map(colHeight));
 
     /* Column width is set by its widest member, so a column containing the
        broker and its configuration is wider than one holding subscribers,
@@ -102,7 +133,8 @@ const Diagram = (() => {
       const members = columns.get(col);
       const top = (canvasH - colHeight(col)) / 2;
       let y = top;
-      members.forEach((n) => {
+      members.forEach((n, i) => {
+        if (i) y += rowGap(members[i - 1], n);
         const h = nodeHeight(n);
         const w = nodeWidth(n);
         placed.set(n.id, {
@@ -114,9 +146,20 @@ const Diagram = (() => {
           w,
           h,
         });
-        y += h + ROW_GAP;
+        y += h;
       });
     });
+
+    /* With processors, the broker runs the full height of the diagram. Each
+       flow to or from a processor travels along the gap above or below it,
+       and a broker that spans every gap can take each one head on. */
+    if (hasProcessor) {
+      for (const n of placed.values()) {
+        if (n.kind !== "broker") continue;
+        n.y = PAD_Y;
+        n.h = Math.max(n.h, canvasH - PAD_Y * 2);
+      }
+    }
 
     const canvasW = x - COL_GAP + PAD_X;
     return { placed, canvasW, canvasH };
@@ -140,25 +183,39 @@ const Diagram = (() => {
     });
     if (isBroker) g.classList.add("is-broker");
 
-    g.append(el("rect", {
-      x: n.x, y: n.y, width: n.w, height: n.h,
-      rx: 10, class: "dg-node__box",
-    }));
+    // Content sits below a hexagon's top point, so everything shifts down by it.
+    const shift = isProcessor(n) ? HEX_POINT : 0;
+
+    if (isProcessor(n)) {
+      const { x, y, w, h } = n;
+      const cx = x + w / 2;
+      g.append(el("path", {
+        class: "dg-node__box",
+        d: `M ${cx} ${y} L ${x + w} ${y + HEX_POINT} L ${x + w} ${y + h - HEX_POINT} ` +
+           `L ${cx} ${y + h} L ${x} ${y + h - HEX_POINT} L ${x} ${y + HEX_POINT} Z`,
+        "stroke-linejoin": "round",
+      }));
+    } else {
+      g.append(el("rect", {
+        x: n.x, y: n.y, width: n.w, height: n.h,
+        rx: 10, class: "dg-node__box",
+      }));
+    }
 
     /* Status ring: a small dot rather than a border change, so a node's state
        is readable without competing with the broker's green fill. */
     g.append(el("circle", {
-      cx: n.x + 14, cy: n.y + 15, r: 4.5, class: "dg-node__dot",
+      cx: n.x + 14, cy: n.y + 15 + shift, r: 4.5, class: "dg-node__dot",
     }));
 
     const cx = n.x + n.w / 2;
     g.append(el("text", {
-      x: cx, y: n.y + 32, class: "dg-node__label", "text-anchor": "middle",
+      x: cx, y: n.y + 32 + shift, class: "dg-node__label", "text-anchor": "middle",
     }, n.label));
 
     if (n.sublabel) {
       g.append(el("text", {
-        x: cx, y: n.y + 48, class: "dg-node__sub", "text-anchor": "middle",
+        x: cx, y: n.y + 48 + shift, class: "dg-node__sub", "text-anchor": "middle",
       }, n.sublabel));
     }
 
@@ -192,8 +249,10 @@ const Diagram = (() => {
 
     /* Bottom row: how much of this node's config exists, and a way into its
        logs. Both are per-node so nothing has to live further down the page. */
+    // A hexagon narrows to its bottom point, so its bottom row sits higher.
+    const base = isProcessor(n) ? HEX_POINT : 0;
     g.append(el("text", {
-      x: n.x + 12, y: n.y + n.h - 10,
+      x: n.x + 12, y: n.y + n.h - 10 - base,
       class: "dg-node__check", "text-anchor": "start",
     }, ""));
 
@@ -201,11 +260,11 @@ const Diagram = (() => {
       const btn = el("g", { class: "dg-node__logbtn", "data-log": n.id,
         role: "button", tabindex: "0" });
       btn.append(el("rect", {
-        x: n.x + n.w - 42, y: n.y + n.h - 22, width: 32, height: 16,
+        x: n.x + n.w - 42, y: n.y + n.h - 22 - base, width: 32, height: 16,
         rx: 8, class: "dg-node__logbtn-box",
       }));
       btn.append(el("text", {
-        x: n.x + n.w - 26, y: n.y + n.h - 10,
+        x: n.x + n.w - 26, y: n.y + n.h - 10 - base,
         class: "dg-node__logbtn-text", "text-anchor": "middle",
       }, "logs"));
       btn.addEventListener("click", (e) => {
@@ -231,16 +290,118 @@ const Diagram = (() => {
     return g;
   }
 
-  /* A flow is drawn as a path from the right edge of one node to the left edge
-     of another, with a packet animated along it. Curved rather than straight so
-     fan-out from one broker to three subscribers stays readable. */
-  function flowPath(from, to) {
-    const x1 = from.x + from.w;
-    const y1 = from.y + from.h / 2;
-    const x2 = to.x;
-    const y2 = to.y + to.h / 2;
-    const dx = Math.max(28, (x2 - x1) / 2);
-    return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+  /* A flow is drawn as a path between two nodes, with a packet animated along
+     it. Curved rather than straight so fan-out from one broker to three
+     subscribers stays readable.
+
+     Most flows run left to right, from one node's right edge to the next
+     one's left. A flow back to a node on the left is an app publishing to the
+     broker it also consumes from, so it leaves the app's left edge and lands
+     on the broker's right edge. A processor is the exception: flows arrive at
+     its top and leave from its bottom. */
+  const isBack = (from, to) => to.x + to.w <= from.x;
+
+  /* Which edge of `node` a flow uses, and its outward direction, which the
+     curve follows so a line always leaves and enters square to its edge. */
+  function sideOf(node, other) {
+    const otherIsLeft = other.x + other.w <= node.x;
+    return otherIsLeft ? { side: "L", nx: -1, ny: 0 } : { side: "R", nx: 1, ny: 0 };
+  }
+
+  function flowPath(p1, p2) {
+    const k = Math.max(28, Math.abs(p2.x - p1.x) / 2);
+    return `M ${p1.x} ${p1.y} C ${p1.x + p1.nx * k} ${p1.y}, ` +
+      `${p2.x + p2.nx * k} ${p2.y}, ${p2.x} ${p2.y}`;
+  }
+
+  /* Flows to and from a processor are routed square rather than curved: along
+     the gap above it and down onto its top point, or out of its bottom point
+     and along the gap below it. Stacked processors then read as one stream falling from
+     each into the next, with the broker between every hop. */
+  // Distance of the lane above or below a processor from its edge.
+  const PROC_LANE = 22;
+  // Radius of the rounded corner where a lane turns into a processor.
+  const PROC_CORNER = 10;
+  // Room above the top processor and below the bottom one for their lanes.
+  const PROC_HEADROOM = 36;
+
+  function processorPath(from, to) {
+    const r = PROC_CORNER;
+    if (isProcessor(to)) {
+      const x1 = from.x + from.w;
+      const cx = to.x + to.w / 2;
+      const lane = to.y - PROC_LANE;
+      return {
+        d: `M ${x1} ${lane} H ${cx - r} Q ${cx} ${lane} ${cx} ${lane + r} V ${to.y}`,
+        label: { x: (x1 + cx) / 2, y: lane - 6 },
+      };
+    }
+    const cx = from.x + from.w / 2;
+    const base = from.y + from.h;
+    const lane = base + PROC_LANE;
+    const x2 = to.x + to.w;
+    return {
+      d: `M ${cx} ${base} V ${lane - r} Q ${cx} ${lane} ${cx - r} ${lane} H ${x2}`,
+      label: { x: (cx + x2) / 2, y: lane - 6 },
+    };
+  }
+
+  // Spacing between connection points on one edge of a node.
+  const PORT_GAP = 14;
+
+  /* Where each flow meets each node. Every edge of a node spreads its flows
+     over separate points, ordered by where the other end sits, so a broker
+     consuming to four apps and hearing back from two of them shows six
+     distinct lines rather than one knot. Repeated flows between the same two
+     nodes in the same direction (a burst drawn as three packets) share a
+     point, because they are the same line. Returns [start, end] per flow,
+     each a point with its outward direction. */
+  function assignPorts(flows, placed) {
+    const sides = new Map();
+    const attach = (node, other, leaving, i) => {
+      const { side, nx, ny } = sideOf(node, other);
+      const key = `${node.id}:${side}`;
+      if (!sides.has(key)) sides.set(key, { node, side, nx, ny, lanes: new Map() });
+      const lanes = sides.get(key).lanes;
+      const lane = `${other.id}${leaving ? ">" : "<"}`;
+      if (!lanes.has(lane)) {
+        lanes.set(lane, {
+          otherY: other.y + other.h / 2,
+          back: leaving ? isBack(node, other) : isBack(other, node),
+          uses: [],
+        });
+      }
+      lanes.get(lane).uses.push([i, leaving ? 0 : 1]);
+    };
+
+    flows.forEach((f, i) => {
+      const from = placed.get(f.from);
+      const to = placed.get(f.to);
+      // Processor flows run along their own lanes; see processorPath.
+      if (!from || !to || isProcessor(from) || isProcessor(to)) return;
+      attach(from, to, true, i);
+      attach(to, from, false, i);
+    });
+
+    const ends = flows.map(() => [null, null]);
+    for (const { node, side, nx, ny, lanes } of sides.values()) {
+      // Down the edge by the far end, and on a tie the outbound lane above its
+      // return so a consume and the publish back never cross each other.
+      const ordered = [...lanes.values()].sort(
+        (a, b) => a.otherY - b.otherY || Number(a.back) - Number(b.back)
+      );
+      const span = Math.min(node.h - 24, (ordered.length - 1) * PORT_GAP);
+      const step = ordered.length > 1 ? span / (ordered.length - 1) : 0;
+      // Centred on the far ends rather than on this node, so a tall broker
+      // meets a short app level with it instead of from far above or below.
+      const aim = ordered.reduce((t, l) => t + l.otherY, 0) / ordered.length;
+      const centre = Math.min(Math.max(aim, node.y + 12 + span / 2), node.y + node.h - 12 - span / 2);
+      ordered.forEach((lane, k) => {
+        const point = { x: side === "L" ? node.x : node.x + node.w, y: centre - span / 2 + k * step };
+        for (const [i, end] of lane.uses) ends[i][end] = { ...point, nx, ny };
+      });
+    }
+    return ends;
   }
 
   function render(host, diagram, handlers = {}) {
@@ -271,6 +432,8 @@ const Diagram = (() => {
     const reduceMotion = window.matchMedia
       && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    const ports = assignPorts(flows, placed);
+
     flows.forEach((f, i) => {
       const from = placed.get(f.from);
       const to = placed.get(f.to);
@@ -278,14 +441,21 @@ const Diagram = (() => {
       // something to crash the page over; skip it and draw the rest.
       if (!from || !to) return;
 
-      const d = flowPath(from, to);
+      const back = isBack(from, to);
+      const routed = isProcessor(from) || isProcessor(to) ? processorPath(from, to) : null;
+      const d = routed ? routed.d : flowPath(...ports[i]);
       const pathId = `dg-flow-${i}`;
 
       edges.append(el("path", {
         id: pathId, d, class: "dg-edge", "marker-end": "url(#dg-arrow)",
       }));
 
-      if (f.label) {
+      if (f.label && routed) {
+        // A processor lane is level, so its label sits flat along it.
+        edges.append(el("text", {
+          x: routed.label.x, y: routed.label.y, class: "dg-edge__label", "text-anchor": "middle",
+        }, f.label));
+      } else if (f.label) {
         /* Set flat rather than along the path: a textPath rotates with the
            curve, and on a steep fan-out the labels end up near-vertical and
            unreadable.
@@ -297,8 +467,12 @@ const Diagram = (() => {
            paths all leave the broker from the same point but arrive at well
            separated ones, so labelling near the arrival keeps them apart;
            a level flow has no such crowding and reads best labelled midway. */
-        const rise = Math.abs((to.y + to.h / 2) - (from.y + from.h / 2));
-        const at = rise < 4 ? 0.5 : 0.78;
+        const rise = Math.abs(ports[i][1].y - ports[i][0].y);
+        /* A flow back to the broker is labelled near the app that sends it,
+           and below its line: the app end is where it is distinct from the
+           other flows arriving at the broker, and below keeps it clear of the
+           label on the consume running the other way above it. */
+        const at = rise < 4 ? 0.5 : back ? 0.35 : 0.78;
 
         // Path geometry is measurable without being in the document, so this
         // works while the svg is still being assembled.
@@ -306,7 +480,7 @@ const Diagram = (() => {
         const pt = probe.getPointAtLength(probe.getTotalLength() * at);
 
         edges.append(el("text", {
-          x: pt.x, y: pt.y - 9, class: "dg-edge__label", "text-anchor": "middle",
+          x: pt.x, y: back ? pt.y + 16 : pt.y - 9, class: "dg-edge__label", "text-anchor": "middle",
         }, f.label));
       }
 
@@ -327,10 +501,15 @@ const Diagram = (() => {
         return;
       }
 
+      /* Hidden until its first run starts: before `begin` an animated circle
+         with no position of its own sits at the canvas origin. */
+      const begin = `${f.delay ?? i * 0.35}s`;
+      packet.setAttribute("visibility", "hidden");
+      packet.append(el("set", { attributeName: "visibility", to: "visible", begin }));
       packet.append(el("animateMotion", {
         dur: `${diagram.duration || 2.4}s`,
         repeatCount: "indefinite",
-        begin: `${(f.delay ?? i * 0.35)}s`,
+        begin,
         path: d,
         keyPoints: "0;1",
         keyTimes: "0;1",

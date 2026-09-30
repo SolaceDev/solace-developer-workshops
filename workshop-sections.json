@@ -2,7 +2,7 @@
   {
     "id": "s1",
     "title": "Getting started",
-    "description": "Set up your environment and learn how the cockpit works",
+    "description": "Set up your environment and learn how the dashboard works",
     "triggerFile": "guides/00-getting-started.md"
   },
   {

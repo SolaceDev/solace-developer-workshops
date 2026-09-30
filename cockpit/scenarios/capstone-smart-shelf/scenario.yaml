@@ -24,9 +24,10 @@ run:
 
 diagram:
   caption: >
-    Three input streams reach the pricing engine through one queue. It holds
-    the current price per shelf, so it can tell a real change from a reading
-    that changes nothing, and only the real ones reach the tags.
+    Three input streams reach the pricing engine through one queue on the
+    broker. It holds the current price per shelf, so it can tell a real change
+    from a reading that changes nothing, and publishes only the real ones back
+    to the broker, where the shelf tags' queue picks them up.
   duration: 2.4
   liveWhen: sensors
   nodes:
@@ -39,21 +40,32 @@ diagram:
       requires:
         - label: svc-shelf-sensors
           semp: /msgVpns/{vpn}/clientUsernames/svc-shelf-sensors
-    - id: queue
-      label: q.shelf.pricing
-      sublabel: three subscriptions
+    - id: broker
+      label: Solace Broker
+      sublabel: readings in, prices out
       kind: broker
       col: 1
       action: apply
+      contains:
+        - id: pricing
+          label: q.shelf.pricing
+        - id: labels
+          label: q.shelf.labels
       provides:
         - label: q.shelf.pricing
+          group: pricing
           semp: /msgVpns/{vpn}/queues/q.shelf.pricing
         - label: q.shelf.labels
+          group: labels
           semp: /msgVpns/{vpn}/queues/q.shelf.labels
+    # The engine consumes readings from the broker and publishes price changes
+    # back to it, where the shelf tags' own queue picks them up.
     - id: pricing
       label: Pricing Engine
       sublabel: holds the price view
       kind: app
+      # Drawn as a hexagon: in at the top point, out at the bottom one.
+      shape: processor
       col: 2
       action: pricing
       requires:
@@ -63,26 +75,29 @@ diagram:
       label: Shelf Tags
       sublabel: changed prices only
       kind: app
-      col: 3
+      col: 2
       action: labels
       requires:
         - label: q.shelf.labels
           semp: /msgVpns/{vpn}/queues/q.shelf.labels
   flows:
     - from: sensors
-      to: queue
+      to: broker
       label: readings
       delay: 0
     - from: sensors
-      to: queue
+      to: broker
       delay: 0.2
-    - from: queue
+    - from: broker
       to: pricing
       delay: 0.8
     - from: pricing
+      to: broker
+      label: price changes
+      delay: 1.4
+    - from: broker
       to: labels
-      label: only on change
-      delay: 1.6
+      delay: 2.0
 
 actions:
   - id: apply
@@ -159,6 +174,71 @@ actions:
     variant: danger
     description: >
       Deletes both queues and the access control for this scenario.
+
+# Ways to break the scenario on purpose. Each names the steps that cause it
+# and the steps that put things back; see pub-sub for the full shape.
+failure_modes:
+  - id: pricing-down
+    title: The pricing engine goes down
+    breaks: >
+      The pricing engine stops while the store sensors keep sending readings.
+    watch: >
+      Open Readings in, changes out under On the broker: q.shelf.pricing
+      climbs and the shelf tags stop changing. Reset starts the engine. It
+      works through the backlog, and only the readings that change a price
+      reach the tags.
+    why: >
+      The engine reads its three input streams from one queue, so every
+      reading published while it is down is spooled for it. When it comes
+      back it processes them in order, rebuilds its view of the shelf and
+      publishes only the prices that actually changed.
+    real_world: >
+      A pricing or decision service is redeployed during trading hours. With
+      a queue in front of it, no stock or footfall reading is lost, and the
+      shelves catch up within moments of it returning. The risk to watch is a
+      backlog of stale readings driving price changes that no longer make
+      sense, which is where a time to live on readings helps.
+    docs:
+      - label: "Go API: consuming persistent messages and acknowledgments"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Subscribe.htm
+      - label: "Broker: guaranteed messages"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Guaranteed-Messages.htm
+    node: pricing
+    logs: pricing
+    trigger:
+      - stop: pricing
+    reset:
+      - start: pricing
+
+  - id: tags-offline
+    title: The shelf tags go offline
+    breaks: >
+      The shelf tags stop while the pricing engine keeps publishing changes.
+    watch: >
+      The engine carries on: it publishes price changes whether the tags are
+      listening or not. q.shelf.labels grows under On the broker. Reset starts
+      the tags, which apply every change they missed, in order.
+    why: >
+      Price changes go to a topic q.shelf.labels subscribes to, so they are
+      spooled while the tags are down and delivered in order when they
+      reconnect. The engine never has to know whether the tags are there.
+    real_world: >
+      Electronic shelf labels lose their connection to the store network, or
+      the label service restarts. The last price a shopper sees must be the
+      current one, so missing a change is not acceptable, and a queue in
+      front of the tags makes sure they converge on the right price as soon
+      as they are back.
+    docs:
+      - label: "Go API: consuming persistent messages and acknowledgments"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Subscribe.htm
+      - label: "Broker: queues"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Queues.htm
+    node: labels
+    logs: labels
+    trigger:
+      - stop: labels
+    reset:
+      - start: labels
 
 inspect:
   - label: Readings in, changes out

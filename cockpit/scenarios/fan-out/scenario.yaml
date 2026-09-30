@@ -4,20 +4,20 @@ eyebrow: Patterns
 title: Fan-Out
 summary: >
   One publisher emits grocery order events and four consumers each receive
-  their own copy. The publisher names none of them. Two consumers subscribe
-  directly and two read from a queue, so the same single publish is delivered
-  at two different qualities of service, and the queued pair catch up on
-  everything they missed while they were stopped.
+  their own copy. The publisher names none of them. Every consumer is a direct
+  subscriber with its own topic subscription, so the broker decides who gets
+  each event, and a new consumer is added without the publisher changing.
 
 objectives:
   - See one published event delivered independently to several consumers
   - Add a consumer while the publisher runs and confirm the publisher does not change
-  - Compare a direct subscription against a queue on the same event stream
+  - See that a direct subscriber only receives what is published while it is connected
   - Read a wildcard subscription and predict which events it will match
 
 # Analytics is deliberately left out. An attendee starts it by hand once the
-# others have been running, and finds a backlog waiting: the clearest possible
-# demonstration that a queue's copy does not depend on being connected.
+# others have been running, and it starts receiving straight away with nothing
+# about the publisher changed: the clearest demonstration that a consumer is a
+# subscription, not a release.
 run:
   - apply
   - build
@@ -28,9 +28,9 @@ run:
 
 diagram:
   caption: >
-    One publish enters the broker and leaves four times. Finance and warehouse
-    take a direct copy; loyalty and analytics take theirs from a queue, which
-    holds it whether or not they are running.
+    One publish enters the broker and leaves once for every matching
+    subscription. All four consumers subscribe directly, with no queue in
+    between, so each receives only what is published while it is connected.
   duration: 2.4
   liveWhen: pub
   nodes:
@@ -54,10 +54,6 @@ diagram:
           semp: /msgVpns/{vpn}/clientProfiles/cp-fanout
         - label: acl-fanout
           semp: /msgVpns/{vpn}/aclProfiles/acl-fanout
-        - label: q.fanout.loyalty
-          semp: /msgVpns/{vpn}/queues/q.fanout.loyalty
-        - label: q.fanout.analytics
-          semp: /msgVpns/{vpn}/queues/q.fanout.analytics
     - id: finance
       label: Finance
       sublabel: direct, placed only
@@ -78,22 +74,22 @@ diagram:
           semp: /msgVpns/{vpn}/clientUsernames/svc-fanout-warehouse
     - id: loyalty
       label: Loyalty
-      sublabel: queue, every action
+      sublabel: direct, every action
       kind: app
       col: 2
       action: consume-loyalty
       requires:
-        - label: q.fanout.loyalty
-          semp: /msgVpns/{vpn}/queues/q.fanout.loyalty
+        - label: svc-fanout-loyalty
+          semp: /msgVpns/{vpn}/clientUsernames/svc-fanout-loyalty
     - id: analytics
       label: Analytics
-      sublabel: queue, started late
+      sublabel: direct, started late
       kind: app
       col: 2
       action: consume-analytics
       requires:
-        - label: q.fanout.analytics
-          semp: /msgVpns/{vpn}/queues/q.fanout.analytics
+        - label: svc-fanout-analytics
+          semp: /msgVpns/{vpn}/clientUsernames/svc-fanout-analytics
   flows:
     - from: pub
       to: broker
@@ -124,8 +120,8 @@ actions:
     tf_dir: tf
     variant: primary
     description: >
-      Creates the client profile, ACL profile, five client usernames and the
-      two queues, each with its own topic subscription.
+      Creates the client profile, ACL profile and five client usernames. There
+      are no queues: every consumer subscribes directly.
 
   - id: build
     label: Build the apps
@@ -162,13 +158,13 @@ actions:
   - id: consume-loyalty
     label: Start loyalty consumer
     kind: process
-    cmd: [bash, ../../apps/run.sh, fanout, consume, --role, loyalty, --user, svc-fanout-loyalty, --queue, q.fanout.loyalty]
+    cmd: [bash, ../../apps/run.sh, fanout, consume, --role, loyalty, --user, svc-fanout-loyalty, --sub, "schwarz/grocery/order/*/v1/>"]
     cwd: .
     long_running: true
     variant: secondary
     description: >
-      Reads from a queue whose subscription wildcards the action, so this is
-      the only consumer that sees cancellations as well as placements.
+      Direct subscriber whose subscription wildcards the action, so it sees
+      cancellations as well as placements.
 
   - id: publish
     label: Publish orders
@@ -186,14 +182,29 @@ actions:
   - id: consume-analytics
     label: Start analytics consumer (late)
     kind: process
-    cmd: [bash, ../../apps/run.sh, fanout, consume, --role, analytics, --user, svc-fanout-analytics, --queue, q.fanout.analytics]
+    cmd: [bash, ../../apps/run.sh, fanout, consume, --role, analytics, --user, svc-fanout-analytics, --sub, "schwarz/grocery/>"]
     cwd: .
     long_running: true
     variant: secondary
     description: >
-      The new consumer. Start it after the others have been running: its queue
-      has been collecting events the whole time, and nothing about the
-      publisher changes to accommodate it.
+      The new consumer. Start it after the others have been running: it
+      subscribes to everything under schwarz/grocery and starts receiving on
+      the next publish. It gets nothing published before it connected, and
+      nothing about the publisher changes to accommodate it.
+
+  # Used by the subscription-typo failure mode: the same warehouse user with
+  # the v1 level missing from its subscription.
+  - id: consume-typo
+    label: Start a consumer with a subscription typo
+    kind: process
+    cmd: [bash, ../../apps/run.sh, fanout, consume, --role, warehouse-typo, --user, svc-fanout-warehouse, --sub, "schwarz/grocery/order/placed/online/>"]
+    cwd: .
+    long_running: true
+    variant: secondary
+    failure_only: true
+    description: >
+      Subscribes to schwarz/grocery/order/placed/online/>, which is missing the
+      v1 level, so it matches nothing that is published.
 
   - id: reconcile
     label: Reconcile with broker
@@ -212,35 +223,89 @@ actions:
     tf_dir: tf
     variant: danger
     description: >
-      Deletes the queues, client usernames, ACL profile and client profile.
-      Anything still spooled on the queues goes with them.
+      Deletes the client usernames, ACL profile and client profile.
+
+# Ways to break the scenario on purpose. Each names the steps that cause it
+# and the steps that put things back; see pub-sub for the full shape.
+failure_modes:
+  - id: consumer-offline
+    title: A consumer goes offline
+    breaks: >
+      Finance stops while the order service keeps publishing.
+    watch: >
+      Warehouse and loyalty carry on as if nothing happened: the publisher
+      does not know or care that finance left. Reset after a few orders.
+      Finance resumes with the next order, and the ones sent while it was down
+      never arrive.
+    why: >
+      Every consumer here is a direct subscriber. Its subscription exists only
+      while it is connected, so while finance is down the broker has nowhere
+      to send finance's copy and that copy is simply not made. The other
+      consumers are unaffected because each has its own subscription.
+    real_world: >
+      One team's service restarts during a deploy and misses the orders
+      published in that window, while every other team gets them. Nobody else
+      notices, which is the upside of fan-out, and the downside is that the
+      gap is invisible to finance too. Anything that must not miss an order
+      needs a queue.
+    docs:
+      - label: "Go API: consuming direct messages"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-DM-Subscribe.htm
+      - label: "Broker: direct messages"
+        url: https://docs.solace.com/Messaging/Direct-Msg/Direct-Messages.htm
+    node: finance
+    logs: consume-finance
+    trigger:
+      - stop: consume-finance
+    reset:
+      - start: consume-finance
+
+  - id: subscription-typo
+    title: A subscription with a typo
+    breaks: >
+      A new warehouse consumer subscribes to
+      schwarz/grocery/order/placed/online/>, leaving out the v1 level.
+    watch: >
+      It connects and subscribes without any error, then receives nothing,
+      while the real warehouse consumer keeps getting online orders. The
+      broker accepted a perfectly valid subscription that just matches no
+      topic anyone publishes.
+    why: >
+      Topic matching is level by level. The published topics have v1 as their
+      fifth level, so a subscription with online in that position never
+      matches, and > only stands in for the levels after it. A subscription
+      is not checked against what anyone publishes, so a wrong one is not an
+      error, it is silence.
+    real_world: >
+      A consumer ships with a topic copied from an old document, or a
+      publisher adds a version level and a subscriber is not updated. Both
+      show up the same way: a service that is healthy, connected and
+      subscribed, with an empty inbox. Checking the subscription against a
+      real published topic, level by level, is the quickest way to find it.
+    docs:
+      - label: "Go API: resource.TopicSubscriptionOf"
+        url: https://docs.solace.com/API-Developer-Online-Ref-Documentation/go/solace.dev/go/messaging/pkg/solace/resource/index.html
+      - label: "Broker: wildcard characters in topic subscriptions"
+        url: https://docs.solace.com/Messaging/Wildcard-Charaters-Topic-Subs.htm
+    node: warehouse
+    logs: consume-typo
+    trigger:
+      - start: consume-typo
+    reset:
+      - stop: consume-typo
 
 inspect:
-  - label: Queues
-    kind: semp
-    api: monitor
-    path: /msgVpns/{vpn}/queues?count=100
-    # msgSpoolUsage is the live backlog in bytes; it returns to zero once a
-    # queue drains. spooledMsgCount is cumulative on this broker and never
-    # falls, so it reads as a permanent backlog and is left out deliberately.
-    # The gap between lastSpooledMsgId and highestAckedMsgId is the count of
-    # messages still waiting.
-    columns: [queueName, accessType, msgSpoolUsage, lastSpooledMsgId, highestAckedMsgId]
-    ui_hint: Manager → Queues
-  - label: Queue Subscriptions
-    kind: semp
-    path: /msgVpns/{vpn}/queues/q.fanout.loyalty/subscriptions
-    columns: [queueName, subscriptionTopic]
-    ui_hint: Manager → Queues → q.fanout.loyalty → Subscriptions
-  - label: Loyalty Consumers
-    kind: semp
-    api: monitor
-    path: /msgVpns/{vpn}/queues/q.fanout.loyalty/txFlows?count=10
-    columns: [clientName, ackedMsgCount, unackedMsgCount, redeliveredMsgCount]
-    ui_hint: Manager → Queues → q.fanout.loyalty → Consumers
+  # No queues in this scenario, so the useful view is the clients: one row per
+  # connected app, with how many messages the broker has sent each consumer.
+  # The counts differ because the subscriptions do.
   - label: Connected Clients
     kind: semp
     api: monitor
-    path: /msgVpns/{vpn}/clients?count=100
+    path: /msgVpns/{vpn}/clients?count=100&where=clientUsername==svc-fanout*
     columns: [clientName, clientUsername, dataRxMsgCount, dataTxMsgCount]
     ui_hint: Manager → Clients
+  - label: Client Usernames
+    kind: semp
+    path: /msgVpns/{vpn}/clientUsernames?count=100&where=clientUsername==svc-fanout*
+    columns: [clientUsername, enabled, clientProfileName, aclProfileName]
+    ui_hint: Manager → Access Control → Client Usernames

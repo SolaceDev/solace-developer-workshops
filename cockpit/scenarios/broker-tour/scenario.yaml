@@ -132,6 +132,28 @@ actions:
       Use this if apply fails with "already exists". It imports objects that are
       on the broker but missing from terraform state. The broker is not modified.
 
+  # Used by the failure modes, not by Play.
+  - id: forget-state
+    label: Forget terraform state
+    kind: process
+    cmd: [bash, ../../scripts/forget_state.sh, broker-tour]
+    cwd: .
+    variant: secondary
+    failure_only: true
+    description: >
+      Deletes this scenario's terraform state file. Everything it created stays
+      on the broker.
+
+  - id: delete-queue
+    label: Delete q.order.events by hand
+    kind: process
+    cmd: [bash, ../../scripts/delete_queue.sh, q.order.events]
+    cwd: .
+    variant: secondary
+    failure_only: true
+    description: >
+      Deletes one queue straight over SEMP, without telling terraform.
+
   - id: destroy
     label: Remove configuration
     kind: terraform
@@ -141,6 +163,82 @@ actions:
     description: >
       Deletes every queue, profile and username this scenario created. Any
       messages spooled in those queues are discarded.
+
+# Ways to break the scenario on purpose. Each names the steps that cause it
+# and the steps that put things back; see pub-sub for the full shape.
+failure_modes:
+  - id: lost-state
+    title: Terraform loses its state
+    needs: applied
+    breaks: >
+      Terraform's state file is deleted, then apply runs again against a
+      broker that still has everything.
+    watch: >
+      Apply fails with ALREADY_EXISTS for every object: terraform thinks it
+      owns nothing, so it tries to create it all again. Reset runs Reconcile,
+      which imports the existing objects back into state, then applies
+      cleanly.
+    why: >
+      Terraform only manages what its state file says it created. The broker
+      still holds every queue, profile and username, but with the state gone
+      terraform sees an empty world and plans to create all of them. The
+      broker refuses each create because the object is already there.
+    real_world: >
+      A state file kept on a laptop or in a CI workspace that gets wiped, a
+      second team pointing fresh terraform at a broker someone configured by
+      hand, or a migration between state backends that misses a file. The fix
+      is always the same: import what exists before applying, which is what
+      Reconcile does from tf/imports.tsv.
+    docs:
+      - label: "Terraform provider: importing existing objects"
+        url: https://registry.terraform.io/providers/SolaceProducts/solacebroker/latest/docs/guides/provider
+      - label: "Terraform: state"
+        url: https://developer.hashicorp.com/terraform/language/state
+      - label: "Broker: declarative SEMP and Terraform"
+        url: https://docs.solace.com/Admin/SEMP/Declarative-SEMP.htm
+    node: tf
+    logs: apply
+    trigger:
+      - run: forget-state
+      - start: apply
+    reset:
+      - run: reconcile
+      - start: apply
+
+  - id: queue-deleted
+    title: Someone deletes a queue by hand
+    needs: applied
+    breaks: >
+      q.order.events is deleted straight from the broker, behind terraform's
+      back, then Preview changes runs.
+    watch: >
+      The plan shows the queue and its three subscriptions to add: terraform
+      noticed the broker no longer matches its state. Nothing is fixed until apply
+      runs, which is what Reset does.
+    why: >
+      Terraform compares its state with what the broker actually has each time
+      it plans. The queue is still in state but gone from the broker, so the
+      provider reports it missing and terraform plans to create it again. The
+      broker itself never warns anyone: a deleted queue simply stops
+      attracting messages.
+    real_world: >
+      An operator removes a queue in Broker Manager while debugging, or a
+      script cleans up objects it thinks are unused. Publishers keep sending,
+      the queue's subscriptions went with it, and consumers see nothing. A
+      scheduled terraform plan is the usual way this kind of drift is caught
+      before someone notices missing data.
+    docs:
+      - label: "Terraform: managing resource drift"
+        url: https://developer.hashicorp.com/terraform/tutorials/state/resource-drift
+      - label: "Broker: declarative SEMP and Terraform"
+        url: https://docs.solace.com/Admin/SEMP/Declarative-SEMP.htm
+    node: broker
+    logs: plan
+    trigger:
+      - run: delete-queue
+      - start: plan
+    reset:
+      - start: apply
 
 inspect:
   - label: Queues

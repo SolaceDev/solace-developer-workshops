@@ -58,28 +58,34 @@ action, but only for flight AC8763. Watch its pane: it receives the flight
 and baggage events, and never the booking, because the booking's last level
 is a record locator rather than a flight number.
 
-## Direct messaging has no memory
+## Break it
 
-Stop the baggage subscriber, wait for a round or two, then start it again.
-It resumes from the next message published. The ones it missed are gone: no
-queue was involved, so nothing was stored.
+With Play running, scroll to **Break it**. Each failure mode is one thing
+going wrong on purpose. Press **Break it**, read what the card tells you to
+look for, then press **Reset** before trying the next one. The diagram marks
+the node each failure is about while it is in effect.
 
-This is why the Play sequence starts the subscribers before the publisher.
+### 1. Subscribe outside the ACL
 
-## Ask for something you are not allowed
+The baggage user asks for `acme/air/flight/>`. It connects, because the
+client profile permits that. The subscription is refused with a 403, because
+the ACL profile does not. Capability and topic authority are separate
+decisions, and this is what that separation looks like when it is enforced.
 
-Every client here shares one client profile and differs only in its ACL
-profile. Run this in a terminal:
+The same thing from a terminal:
 
 ```bash
 bash cockpit/apps/run.sh pubsub subscribe \
   --role baggage --user svc-acme-air-baggage --sub "acme/air/flight/>"
 ```
 
-It connects, because the client profile permits that. The subscription is
-refused with a 403, because the ACL profile does not. Capability and topic
-authority are separate decisions, and this is what that separation looks
-like when it is enforced.
+### 2. A subscriber goes offline
+
+The baggage subscriber stops while the publisher keeps going. Leave it down
+for a round or two, then reset. It resumes from the next message published.
+The ones it missed are gone: no queue was involved, so nothing was stored.
+
+This is why the Play sequence starts the subscribers before the publisher.
 
 ## Try this
 

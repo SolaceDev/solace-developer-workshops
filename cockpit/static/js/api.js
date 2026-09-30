@@ -38,6 +38,7 @@ const API = (() => {
     cleanupScenario: (scenario) => req(`/api/scenarios/${scenario}/cleanup`, { method: "POST" }),
     reset: (scenario) => req(`/api/scenarios/${scenario}/reset`, { method: "POST" }),
     stopAll: () => req("/api/runs/stop-all", { method: "POST" }),
+    clearBroker: () => req("/api/broker/clear", { method: "POST" }),
 
     /* Opens a log stream for one action. Returns the socket so the caller can
        close it when the user navigates away -- leaking sockets across a long

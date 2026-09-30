@@ -6,11 +6,10 @@
 // which is the whole point: the cost of a new consumer does not land on the
 // team that owns the event.
 //
-// Two of the consumers take their copy directly and two take it through a
-// queue. Same single publish, different quality of service per consumer: the
-// direct ones are cheap and see only what is published while they are
-// connected, and the queued ones are spooled and catch up on whatever they
-// missed.
+// Every consumer is a direct subscriber. The fan-out comes from the broker
+// matching one publish against several topic subscriptions, with no queue in
+// between, so each consumer sees only what is published while it is
+// connected.
 package fanout
 
 import (
@@ -22,10 +21,11 @@ import (
 
 	"solace-workshop/apps/internal/solace"
 	"solace.dev/go/messaging/pkg/solace/message"
+	"solace.dev/go/messaging/pkg/solace/resource"
 )
 
 // interval is the pause between orders. Slow enough to read a pane, fast
-// enough that a late-started consumer has a visible backlog to drain.
+// enough that a late-started consumer shows traffic within a few seconds.
 const interval = 2 * time.Second
 
 var (
@@ -51,7 +51,7 @@ func Publish(args []string) {
 	svc := solace.Connect(*role, *user)
 	defer svc.Disconnect()
 
-	pub := solace.StartPersistentPublisher(*role, *user, svc)
+	pub := solace.StartDirectPublisher(*role, *user, svc)
 	defer solace.Terminate(pub)
 
 	solace.Logf(*role, "publishing an order every %s. Press Stop to end.", interval)
@@ -78,7 +78,7 @@ func Publish(args []string) {
 			`{"orderId":"%s","store":"%s","channel":"%s","action":"%s","totalEur":%.2f,"at":"%s"}`,
 			orderID, store, channel, action, 10+rand.Float64()*90, time.Now().UTC().Format(time.RFC3339))
 
-		if err := solace.PublishKeyed(svc, pub, topic, payload, ""); err != nil {
+		if err := pub.PublishString(payload, resource.TopicOf(topic)); err != nil {
 			solace.Errf(*role, "publish to %s failed: %s", topic, err)
 		} else {
 			fmt.Printf("#%d -> %s\n", n, topic)
@@ -93,21 +93,18 @@ func Publish(args []string) {
 	}
 }
 
-// Consume runs one fan-out consumer.
-//
-// Passing --sub takes a direct copy; passing --queue takes a spooled one. The
-// same function serves both so the difference on screen comes from the flag,
-// not from two different implementations that might differ for other reasons.
+// Consume runs one fan-out consumer: a direct subscriber to one topic
+// subscription. Every consumer runs this same function, so the only
+// difference between their panes is the subscription each was given.
 func Consume(args []string) {
 	fs := flag.NewFlagSet("fanout consume", flag.ExitOnError)
 	role := fs.String("role", "", "label for log lines, e.g. finance")
 	user := fs.String("user", "", "client username to connect as")
-	sub := fs.String("sub", "", "topic subscription for a direct consumer")
-	queue := fs.String("queue", "", "queue name for a guaranteed consumer")
+	sub := fs.String("sub", "", "topic subscription")
 	fs.Parse(args)
 
-	if *role == "" || *user == "" || (*sub == "" && *queue == "") {
-		fmt.Fprintln(os.Stderr, "usage: workshop fanout consume --role <role> --user <username> (--sub <topic> | --queue <queue>)")
+	if *role == "" || *user == "" || *sub == "" {
+		fmt.Fprintln(os.Stderr, "usage: workshop fanout consume --role <role> --user <username> --sub <topic>")
 		os.Exit(2)
 	}
 
@@ -120,24 +117,14 @@ func Consume(args []string) {
 		solace.Eventf(*role, received, msg.GetDestinationName(), solace.PayloadOf(msg))
 	}
 
-	if *queue != "" {
-		rcv := solace.BindQueue(*role, *user, svc, *queue, solace.QueueOpts{})
-		defer solace.Terminate(rcv)
-		if err := rcv.ReceiveAsync(handle); err != nil {
-			solace.Errf(*role, "could not register the message handler: %s", err)
-			os.Exit(1)
-		}
-		solace.Logf(*role, "consuming from the queue. Anything published while this was stopped is still waiting.")
-	} else {
-		rcv := solace.StartDirectReceiver(*role, svc)
-		defer solace.Terminate(rcv)
-		if err := rcv.ReceiveAsync(handle); err != nil {
-			solace.Errf(*role, "could not register the message handler: %s", err)
-			os.Exit(1)
-		}
-		solace.Subscribe(*role, *user, rcv, *sub)
-		solace.Logf(*role, "listening directly. Only what is published from now on will arrive.")
+	rcv := solace.StartDirectReceiver(*role, svc)
+	defer solace.Terminate(rcv)
+	if err := rcv.ReceiveAsync(handle); err != nil {
+		solace.Errf(*role, "could not register the message handler: %s", err)
+		os.Exit(1)
 	}
+	solace.Subscribe(*role, *user, rcv, *sub)
+	solace.Logf(*role, "listening directly. Only what is published from now on will arrive.")
 
 	solace.WaitForStop()
 	fmt.Println()

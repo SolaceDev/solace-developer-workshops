@@ -27,7 +27,7 @@ async def lifespan(app: FastAPI):
     await manager.stop_all()
 
 
-app = FastAPI(title="Solace Workshop Cockpit", lifespan=lifespan)
+app = FastAPI(title="Solace Workshop Dashboard", lifespan=lifespan)
 
 
 # ---------------------------------------------------------------- environment
@@ -399,7 +399,54 @@ async def stop_all_runs():
     """The escape hatch. Attendees jump between sections out of order, and a
     stale process from an earlier section is the most confusing failure mode in
     a workshop like this."""
+    # Cancel any Play still working through its steps, or it would carry on
+    # starting them after everything was stopped.
+    for task in _sequences.values():
+        if not task.done():
+            task.cancel()
     return {"stopped": await manager.stop_all()}
+
+
+@app.post("/api/broker/clear")
+async def clear_broker():
+    """Remove every scenario's configuration from the broker, whatever state
+    terraform is in. Stops everything first, since apps fail the moment their
+    usernames go. Only objects a scenario lists in tf/imports.tsv are touched,
+    so the broker's own defaults and anything made by hand survive."""
+    from .scenarios import _TOP_LEVEL
+
+    for task in _sequences.values():
+        if not task.done():
+            task.cancel()
+    stopped = await manager.stop_all()
+
+    objects = []
+    for scenario in registry.all():
+        objects.extend(scenario.owned_objects())
+    order = list(_TOP_LEVEL)
+    # Deduplicated, and ordered so nothing is deleted while something still
+    # refers to it.
+    objects = sorted(set(objects), key=lambda o: (order.index(o[0]), o[1]))
+
+    deleted, failed = 0, []
+    for kind, name in objects:
+        try:
+            outcome = await broker.semp_delete(f"/msgVpns/{{vpn}}/{_TOP_LEVEL[kind]}/{name}")
+        except broker.BrokerUnavailable as exc:
+            raise HTTPException(503, f"broker unavailable: {exc}") from exc
+        if outcome == "deleted":
+            deleted += 1
+        elif outcome != "absent":
+            failed.append(f"{kind} {name}: {outcome}")
+
+    # With the objects gone, every scenario's terraform state is wrong, so it
+    # goes too. The next Play then applies from scratch.
+    for scenario in registry.all():
+        state = scenario_state_dir(scenario.id)
+        if state.exists():
+            shutil.rmtree(state)
+
+    return {"stopped": stopped, "deleted": deleted, "failed": failed}
 
 
 @app.post("/api/scenarios/{scenario_id}/reset")

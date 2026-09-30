@@ -1,10 +1,10 @@
 # Getting started
 
 Everything in this workshop runs inside this container. There is a Solace
-broker in Docker, a control surface called the cockpit on port 3000, and a
-set of small Go applications the cockpit runs for you.
+broker in Docker, the Solace Workshop Dashboard on port 3000, and a
+set of small Go applications the dashboard runs for you.
 
-## Open the cockpit
+## Open the dashboard
 
 It starts automatically when you attach. If you closed it, open
 <http://localhost:3000>, or start it by hand:
@@ -14,7 +14,7 @@ bash cockpit/start_cockpit.sh
 ```
 
 The broker takes thirty to sixty seconds to come up the first time. The
-cockpit tells you while it waits.
+dashboard tells you while it waits.
 
 ## How a section works
 
@@ -39,14 +39,14 @@ subscriptions, connected clients and message counts, read live.
 
 Solace Broker Manager is at <http://localhost:8080>, username `admin`, password
 `admin`. Every Inspect view names where to find the same thing there, so you
-can check the cockpit against the real interface whenever you want to.
+can check the dashboard against the real interface whenever you want to.
 
 ## If something goes wrong
 
 - **A step fails with "already exists".** The broker has objects terraform
   does not know about. Run **Reconcile with broker**, then Play again.
 - **An app cannot connect.** The broker is probably still starting. Wait for
-  the cockpit's broker indicator to go green.
+  the dashboard's broker indicator to go green.
 - **Nothing arrives at a subscriber.** Check it started before the publisher.
   Direct messaging has no replay, so anything sent before it connected is
   gone. This is the subject of the first messaging section.
@@ -56,7 +56,7 @@ can check the cockpit against the real interface whenever you want to.
 
 ## Running an app yourself
 
-The cockpit runs the same commands you can run in a terminal. Every app lives
+The dashboard runs the same commands you can run in a terminal. Every app lives
 in one binary:
 
 ```bash
@@ -65,7 +65,7 @@ bash cockpit/apps/run.sh pubsub subscribe \
 ```
 
 The connection details come from the environment, so an app run this way
-talks to the same broker the cockpit does. This matters for the exercises
+talks to the same broker the dashboard does. This matters for the exercises
 that ask you to point an app somewhere it is not allowed to go.
 
 Next: [Tour the broker](10-broker-tour.md).

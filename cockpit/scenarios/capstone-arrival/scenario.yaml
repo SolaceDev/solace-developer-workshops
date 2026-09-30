@@ -28,11 +28,12 @@ run:
 
 diagram:
   caption: >
-    Scans go to a partitioned queue, where the surge waits to be routed. Each
-    routing instance owns a subset of belts. Bag statuses go to a queue of
-    their own, so the passenger app is paced by its own consumption rather
-    than by how far behind routing is.
-  duration: 2.4
+    Scans go to a partitioned queue on the broker, where the surge waits to be
+    routed. Each routing instance owns a subset of belts and publishes bag
+    statuses back to the broker. They land on a queue of their own, so the
+    passenger app is paced by its own consumption rather than by how far
+    behind routing is.
+  duration: 2.8
   liveWhen: scanner
   nodes:
     - id: scanner
@@ -44,21 +45,32 @@ diagram:
       requires:
         - label: svc-arrival-scanner
           semp: /msgVpns/{vpn}/clientUsernames/svc-arrival-scanner
-    - id: scans
-      label: q.arrival.scans
-      sublabel: partitioned by belt
+    - id: broker
+      label: Solace Broker
+      sublabel: scans in, statuses out
       kind: broker
       col: 1
       action: apply
+      contains:
+        - id: scans
+          label: q.arrival.scans
+        - id: status
+          label: q.arrival.status
       provides:
         - label: q.arrival.scans
+          group: scans
           semp: /msgVpns/{vpn}/queues/q.arrival.scans
         - label: q.arrival.status
+          group: status
           semp: /msgVpns/{vpn}/queues/q.arrival.status
+    # Routing consumes scans from the broker and publishes bag statuses back
+    # to it, where the passenger app's own queue picks them up.
     - id: routing1
       label: Baggage Routing 1
       sublabel: its share of belts
       kind: app
+      # Drawn as a hexagon: in at the top point, out at the bottom one.
+      shape: processor
       col: 2
       action: routing-1
       requires:
@@ -68,41 +80,46 @@ diagram:
       label: Baggage Routing 2
       sublabel: the other belts
       kind: app
+      # Drawn as a hexagon: in at the top point, out at the bottom one.
+      shape: processor
       col: 2
       action: routing-2
     - id: passenger
       label: Passenger App
       sublabel: q.arrival.status
       kind: app
-      col: 3
+      col: 2
       action: passenger
       requires:
         - label: q.arrival.status
           semp: /msgVpns/{vpn}/queues/q.arrival.status
   flows:
     - from: scanner
-      to: scans
+      to: broker
       label: surge
       delay: 0
     - from: scanner
-      to: scans
+      to: broker
       delay: 0.15
     - from: scanner
-      to: scans
+      to: broker
       delay: 0.3
-    - from: scans
+    - from: broker
       to: routing1
       delay: 0.9
-    - from: scans
+    - from: broker
       to: routing2
       delay: 1.1
     - from: routing1
-      to: passenger
+      to: broker
       label: bag status
-      delay: 1.7
+      delay: 1.6
     - from: routing2
+      to: broker
+      delay: 1.8
+    - from: broker
       to: passenger
-      delay: 1.9
+      delay: 2.3
 
 actions:
   - id: apply
@@ -190,6 +207,75 @@ actions:
     description: >
       Deletes both queues and the access control for this scenario. Any bags
       still waiting to be routed go with them.
+
+# Ways to break the scenario on purpose. Each names the steps that cause it
+# and the steps that put things back; see pub-sub for the full shape.
+failure_modes:
+  - id: routing-fails
+    title: A routing instance fails
+    breaks: >
+      Baggage routing 1 stops. Routing 2 is left to handle every belt.
+    watch: >
+      Open Routing instances under On the broker: about five seconds after
+      routing 1 leaves, routing 2 is the only consumer bound to
+      q.arrival.scans and it owns every partition. Its log keeps reporting
+      every belt in scan order. Reset starts routing 1, and the partitions are
+      shared again.
+    why: >
+      q.arrival.scans is a partitioned queue: each belt hashes to one
+      partition, and each partition is bound to one consumer at a time. When a
+      consumer leaves, the broker waits the rebalance delay, then reassigns
+      its partitions to the consumers still bound, so no belt is left without
+      a router and no belt is processed by two at once.
+    real_world: >
+      One instance of a keyed, ordered consumer dies during the evening rush.
+      With a partitioned queue the remaining instances take over its keys
+      within seconds, and ordering per key survives. Without partitions you
+      pick between one consumer for ordering and many for throughput. The
+      rebalance delay is the window where that work waits, so it is worth
+      tuning.
+    docs:
+      - label: "Go API: publishing with a partition key"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Publish.htm
+      - label: "Broker: partition rebalancing"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Partition-Rebalancing.htm
+    node: routing1
+    logs: routing-2
+    trigger:
+      - stop: routing-1
+    reset:
+      - start: routing-1
+
+  - id: passenger-offline
+    title: The passenger app goes offline
+    breaks: >
+      The passenger app stops while bags keep being routed.
+    watch: >
+      Routing is unaffected: it publishes bag statuses whether anyone is
+      reading or not. Open Queues under On the broker and watch
+      q.arrival.status grow. Reset starts the passenger app, which works
+      through every status it missed.
+    why: >
+      Bag statuses go to a topic that q.arrival.status subscribes to, so they
+      are spooled while the passenger app is down. The app is paced by its
+      own consumption, not by routing, which is why routing keeps its speed.
+    real_world: >
+      A customer-facing app or notification service goes down during the
+      busiest hour. Because it has its own queue, the operational side does
+      not slow down, and passengers get their updates late rather than never.
+      The same queue lets you size the app for average load rather than for
+      the peak.
+    docs:
+      - label: "Go API: consuming persistent messages and acknowledgments"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Subscribe.htm
+      - label: "Broker: queues"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Queues.htm
+    node: passenger
+    logs: passenger
+    trigger:
+      - stop: passenger
+    reset:
+      - start: passenger
 
 inspect:
   - label: Queues

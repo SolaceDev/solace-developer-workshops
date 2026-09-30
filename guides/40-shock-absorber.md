@@ -78,6 +78,19 @@ Compare the two panes:
 That last point is worth sitting with. Partitioning buys ordering per key and
 parallelism across keys, but not an even distribution of work.
 
+## Break it
+
+With Play running, scroll to **Break it** in the cockpit. Each card causes one
+failure on purpose. Press **Break it**, read the app's output and what the
+card tells you to look for, then press **Reset**. The card stays open after
+the reset so you can see the recovery, and **Why this breaks** explains the
+cause and where you would meet it in production.
+
+1. **A worker dies holding messages.** Worker 2 joins, then worker 1 is
+   stopped while it has scans it has taken but not yet acknowledged.
+2. **Poison messages go to the DMQ.** A failing worker joins that settles some
+   scans FAILED and some REJECTED.
+
 ## Try this
 
 - Start a third partition worker and watch the broker rebalance.

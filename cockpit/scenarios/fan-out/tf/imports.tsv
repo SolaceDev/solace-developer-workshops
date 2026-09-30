@@ -4,12 +4,6 @@
 solacebroker_msg_vpn_client_profile.fanout	{vpn}/cp-fanout
 solacebroker_msg_vpn_acl_profile.fanout	{vpn}/acl-fanout
 
-# Queues and their subscriptions
-solacebroker_msg_vpn_queue.loyalty	{vpn}/q.fanout.loyalty
-solacebroker_msg_vpn_queue_subscription.loyalty	{vpn}/q.fanout.loyalty/schwarz%2Fgrocery%2Forder%2F%2A%2Fv1%2F%3E
-solacebroker_msg_vpn_queue.analytics	{vpn}/q.fanout.analytics
-solacebroker_msg_vpn_queue_subscription.analytics	{vpn}/q.fanout.analytics/schwarz%2Fgrocery%2F%3E
-
 # Client usernames
 solacebroker_msg_vpn_client_username.fanout["publisher"]	{vpn}/svc-fanout-publisher
 solacebroker_msg_vpn_client_username.fanout["finance"]	{vpn}/svc-fanout-finance

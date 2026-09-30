@@ -1,5 +1,5 @@
 /* ============================================================
-   Workshop Cockpit
+   Solace Workshop Dashboard
    Built on the Solace Design System tokens (ds/styles.css).
    Dark mode throughout, per the brand rule that developer tools
    and code are always shown in dark mode.
@@ -450,6 +450,223 @@ a { color: var(--text-link); }
   align-items: center;
 }
 
+/* -------------------------------------------------------------------- parts */
+
+/* A scenario page is worked through in numbered parts: run it, step through
+   it, break it, look at the broker. The number is what makes the order read
+   as a progression rather than a stack of panels. */
+.part {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.part + .part {
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.part__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.part__num {
+  flex: none;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  color: var(--green-bright);
+  padding-top: 0.35rem;
+}
+
+.part__titles {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.part__title {
+  font-size: 1.5rem;
+}
+
+.part__hint {
+  font-size: var(--fs-body-sm);
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------ failure modes */
+
+.fm-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.fm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  transition: border-color var(--dur-base) var(--ease-standard);
+}
+
+.fm[data-state="locked"],
+.fm[data-state="waiting"] { opacity: 0.7; }
+.fm[data-state="recovered"] {
+  border-color: color-mix(in srgb, var(--green-classic) 55%, transparent);
+  grid-column: 1 / -1;
+}
+.fm[data-state="broken"] {
+  border-color: color-mix(in srgb, var(--status-danger) 60%, transparent);
+  grid-column: 1 / -1;
+}
+
+.fm__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.fm__num {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: #FF9A9D;
+  border: 1px solid color-mix(in srgb, var(--status-danger) 55%, transparent);
+}
+
+.fm__title {
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+.fm__breaks {
+  font-size: var(--fs-body-sm);
+  color: var(--text-body);
+}
+
+.fm__controls {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.fm__watch {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--border-subtle);
+}
+.fm__watch[hidden] { display: none; }
+
+.fm__watch-title {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.fm__watch-text {
+  font-size: var(--fs-body-sm);
+  color: var(--text-body);
+}
+
+.fm__output {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.fm__output-source {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.fm__output-hint {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+}
+
+/* The broker's refusal is the point of the card, so errors stand out more
+   here than in an ordinary log pane. */
+.fm__log .line--stderr {
+  color: #FF9A9D;
+  font-weight: 600;
+}
+
+.fm__docs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.fm__docs-title {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.fm__doc {
+  font-size: var(--fs-body-sm);
+  color: var(--text-link);
+  text-decoration: none;
+}
+.fm__doc::after { content: " \2197"; font-size: 0.75em; }
+.fm__doc:hover { text-decoration: underline; }
+
+.panel__notice {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-caption);
+  color: #FFB4B6;
+  background: color-mix(in srgb, var(--status-danger) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--status-danger) 40%, transparent);
+}
+
+.fm__log {
+  max-height: 220px;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunk);
+  border: 1px solid var(--border-subtle);
+}
+
+/* The diagram node a failure mode is about, while it is in effect. Stays red
+   when the node is also selected or hovered, so opening its logs does not
+   hide which node is broken. */
+.dg-node.is-faulted .dg-node__box,
+.dg-node.is-faulted.is-selected .dg-node__box,
+.dg-node.is-faulted.is-clickable:hover .dg-node__box {
+  stroke: var(--status-danger);
+  stroke-width: 2;
+  stroke-dasharray: 5 3;
+}
+
 /* -------------------------------------------------------------- action flow */
 
 /* The flowchart form of the Actions section: one line of steps, with a single
@@ -605,6 +822,15 @@ a { color: var(--text-link); }
   border: 1px solid var(--green-classic);
 }
 .aflow__detail[hidden] { display: none; }
+
+.aflow__log {
+  max-height: 240px;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunk);
+  border: 1px solid var(--border-subtle);
+}
+.aflow__log[hidden] { display: none; }
 
 .aflow__detail-head {
   display: flex;
@@ -1209,6 +1435,91 @@ td.is-false { color: var(--text-muted); }
   font-size: 0.6875rem;
   color: var(--text-muted);
   letter-spacing: 0.04em;
+}
+
+.inspect__where { margin-left: auto; }
+
+/* ------------------------------------------------------------------ shades */
+
+/* A disclosure that stays shut until asked: the Inspect tables, and the
+   background on a failure mode card. Built on <details> so keyboard and
+   screen reader behaviour come for free. */
+.shade {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-card);
+}
+
+.shade-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.shade__summary {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  list-style: none;
+  border-radius: var(--radius-md);
+}
+.shade__summary::-webkit-details-marker { display: none; }
+.shade__summary:hover { background: rgba(255, 255, 255, 0.03); }
+.shade__summary:focus-visible { outline: none; box-shadow: var(--ring); }
+
+/* Drawn from two borders rather than a glyph, which not every font has. */
+.shade__chev {
+  flex: none;
+  align-self: center;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid var(--text-muted);
+  border-bottom: 1.5px solid var(--text-muted);
+  transform: rotate(-45deg);
+  transition: transform var(--dur-base) var(--ease-standard);
+}
+.shade[open] > .shade__summary .shade__chev { transform: rotate(45deg); }
+
+.shade__summary h4 { font-size: 0.95rem; }
+
+.shade__body {
+  padding: 0 var(--space-4) var(--space-4);
+}
+
+/* Inside a failure card the shade is lighter: it sits on the card already. */
+.fm__why {
+  background: transparent;
+  border-style: dashed;
+}
+
+.fm__why-summary {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--fs-body-sm);
+  color: var(--text-muted);
+}
+
+.fm__why-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+.fm__why-title {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.fm__why-title:not(:first-child) { margin-top: var(--space-2); }
+
+.fm__why-text {
+  font-size: var(--fs-body-sm);
+  color: var(--text-body);
 }
 
 .empty {

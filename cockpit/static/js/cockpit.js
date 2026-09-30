@@ -23,6 +23,18 @@
     runStatus: new Map(),
     // The one flow step whose detail is expanded, if any.
     openStep: null,
+    /* The failure mode currently in effect, as { scenarioId, modeId }, and
+       the log socket its card is streaming. One at a time, so the diagram
+       only ever marks one thing as broken. */
+    failure: null,
+    failureSocket: null,
+    /* The failure mode most recently reset, as { scenarioId, modeId }. Its
+       card stays open on the restarted app's log, because what happens after
+       a reset (a backlog draining, a queued command arriving, a gap that
+       never fills) is half of what the failure teaches. */
+    recovered: null,
+    // Inspect shades the attendee has opened, as "<scenario>:<label>".
+    openInspect: new Set(),
   };
 
   const el = {
@@ -35,6 +47,7 @@
     brokerLink: document.getElementById("broker-link"),
     activeBadge: document.getElementById("active-badge"),
     stopAll: document.getElementById("stop-all"),
+    clearBroker: document.getElementById("clear-broker"),
     refresh: document.getElementById("refresh"),
   };
 
@@ -135,6 +148,8 @@
           if (sid === state.activeId) paintStatus(sid, aid, r);
         }
 
+        paintFailureModes(active);
+
         setTransport({
           busy,
           active,
@@ -197,7 +212,9 @@
     const play = scenario.runSequence.map(byId).filter(Boolean);
     const cleanup = scenario.cleanupSequence.map(byId).filter(Boolean);
     const sequenced = new Set([...scenario.runSequence, ...scenario.cleanupSequence]);
-    const optional = scenario.actions.filter((a) => !sequenced.has(a.id));
+    // An action that exists only to cause a failure belongs to that failure
+    // mode's card, not to the list of optional steps.
+    const optional = scenario.actions.filter((a) => !sequenced.has(a.id) && !a.failureOnly);
 
     state.openStep = null;
     for (const a of scenario.actions) {
@@ -266,6 +283,8 @@
     const detail = document.getElementById("aflow-detail");
     if (!detail) return;
     state.openStep = state.openStep === action.id ? null : action.id;
+    // Whatever log the previous step was streaming belongs to that step.
+    closeSockets();
 
     for (const node of document.querySelectorAll(".aflow__step")) {
       const open = node.dataset.step === state.openStep;
@@ -308,11 +327,46 @@
           text: "Stop",
           disabled: true,
           onClick: () => stopAction(scenario, action),
+        }),
+        h("button", {
+          class: "btn btn--ghost btn--sm aflow__logs-btn",
+          text: "Show logs",
+          "aria-expanded": "false",
+          onClick: (e) => toggleStepLog(scenario, action, e.currentTarget),
         })
-      )
+      ),
+      h("pre", { class: "panel__log aflow__log", id: "aflow-log", hidden: true })
     );
     detail.hidden = false;
     paintStatus(scenario.id, action.id, status);
+  }
+
+  /* A step's own output, streamed under its detail. Not every action has a
+     diagram node to open logs from, and a step that is meant to fail, like a
+     refused subscription, is only useful if its output can be read. */
+  function toggleStepLog(scenario, action, button) {
+    const pre = document.getElementById("aflow-log");
+    if (!pre) return;
+    const key = `${scenario.id}:${action.id}`;
+    const opening = pre.hidden;
+    pre.hidden = !opening;
+    button.textContent = opening ? "Hide logs" : "Show logs";
+    button.setAttribute("aria-expanded", String(opening));
+
+    if (!opening) {
+      closeSockets();
+      return;
+    }
+
+    const append = (line) => {
+      const atBottom = pre.scrollHeight - pre.scrollTop - pre.clientHeight < 40;
+      pre.append(h("div", { class: `line--${line.stream}`, text: line.text }));
+      if (atBottom) pre.scrollTop = pre.scrollHeight;
+    };
+    state.sockets.set(key, API.streamRun(scenario.id, action.id, {
+      onHistory: (lines) => { pre.textContent = ""; lines.forEach(append); },
+      onLine: append,
+    }));
   }
 
   async function startAction(scenario, action) {
@@ -333,68 +387,320 @@
     }
   }
 
-  /* -------------------------------------------------------------- inspect */
+  /* -------------------------------------------------------- failure modes */
 
-  function makeInspectView(view) {
-    if (view.error) {
-      return h(
-        "div",
-        { class: "inspect" },
-        h("div", { class: "inspect__head" }, h("h4", { text: view.label })),
-        h("div", { class: "empty", text: view.error })
-      );
-    }
-
-    if (!view.rows.length) {
-      return h(
-        "div",
-        { class: "inspect" },
-        h(
-          "div",
-          { class: "inspect__head" },
-          h("h4", { text: view.label }),
-          view.uiHint && h("span", { class: "inspect__hint", text: view.uiHint })
-        ),
-        h("div", { class: "empty", text: "Nothing here yet. Apply the configuration to populate it." })
-      );
-    }
-
-    /* A scenario may declare which columns matter; fall back to whatever keys
-       the first row happens to have so a new inspect view still renders. */
-    const columns = view.columns.length ? view.columns : Object.keys(view.rows[0]);
-
-    const table = h(
-      "table",
-      {},
-      h("thead", {}, h("tr", {}, columns.map((c) => h("th", { text: humanize(c) })))),
-      h(
-        "tbody",
-        {},
-        view.rows.map((row) =>
-          h(
-            "tr",
-            {},
-            columns.map((c) => {
-              const { text, cls } = formatCell(row[c]);
-              return h("td", { class: cls, text });
-            })
-          )
-        )
-      )
-    );
-
+  /* Each failure mode is a card: what breaks, a button that breaks it, what
+     to look for once it has, and a reset that puts the scenario back so the
+     next one starts from a working system. They need the scenario running,
+     so they stay locked until Play has brought it up. */
+  function makeFailureModes(scenario) {
     return h(
       "div",
-      { class: "inspect" },
-      h(
-        "div",
-        { class: "inspect__head" },
-        h("h4", { text: view.label }),
-        h("span", { class: "inspect__hint", text: `${view.rows.length} on the broker` }),
-        view.uiHint && h("span", { class: "inspect__hint", style: "margin-left:auto", text: view.uiHint })
-      ),
-      h("div", { class: "table-wrap" }, table)
+      { class: "fm-list" },
+      scenario.failureModes.map((mode, i) => {
+        const id = `fm-${mode.id}`;
+        return h(
+          "article",
+          { class: "fm", id, "data-mode": mode.id, "data-state": "locked" },
+          h(
+            "div",
+            { class: "fm__head" },
+            h("span", { class: "fm__num", text: String(i + 1) }),
+            h("h3", { class: "fm__title", text: mode.title }),
+            h("span", { class: "badge badge--idle fm__badge", text: "Not ready" })
+          ),
+          h("p", { class: "fm__breaks", text: mode.breaks }),
+          h(
+            "div",
+            { class: "fm__controls" },
+            h("button", {
+              class: "btn btn--danger btn--sm fm__break",
+              text: "Break it",
+              disabled: true,
+              onClick: () => breakScenario(scenario, mode),
+            }),
+            h("button", {
+              class: "btn btn--secondary btn--sm fm__reset",
+              text: "Reset",
+              disabled: true,
+              onClick: () => resetFailure(scenario, mode),
+            })
+          ),
+          (mode.why || mode.real_world) &&
+            h(
+              "details",
+              { class: "shade fm__why" },
+              h(
+                "summary",
+                { class: "shade__summary fm__why-summary" },
+                h("span", { class: "shade__chev", "aria-hidden": "true" }),
+                h("span", { text: "Why this breaks, and where you would see it" })
+              ),
+              h(
+                "div",
+                { class: "shade__body fm__why-body" },
+                mode.why && h("p", { class: "fm__why-title", text: "Why it breaks" }),
+                mode.why && h("p", { class: "fm__why-text", text: mode.why }),
+                mode.real_world && h("p", { class: "fm__why-title", text: "In the real world" }),
+                mode.real_world && h("p", { class: "fm__why-text", text: mode.real_world })
+              )
+            ),
+          h(
+            "div",
+            { class: "fm__watch", hidden: true },
+            /* The app's own output comes first: it is the evidence, and the
+               explanation below it makes more sense once it has been read.
+               Errors are the red lines. */
+            mode.logs &&
+              h(
+                "div",
+                { class: "fm__output" },
+                h(
+                  "p",
+                  { class: "fm__watch-title" },
+                  h("span", { class: "fm__output-label", text: "What the app printed" }),
+                  h("span", {
+                    class: "fm__output-source",
+                    text: ` · ${scenario.actions.find((a) => a.id === mode.logs)?.label || mode.logs}`,
+                  })
+                ),
+                h("pre", { class: "panel__log fm__log" }),
+                h("p", { class: "fm__output-hint", text: "Errors from the broker show in red. The same output is under this node's logs button in the diagram while the failure is in effect." })
+              ),
+            h("p", { class: "fm__watch-title", text: "What to look for" }),
+            h("p", { class: "fm__watch-text", text: mode.watch })
+          ),
+          /* Where to read more: the Go API's reference for this failure, and
+             the broker documentation for the behaviour behind it. Always
+             shown, so the card is useful before and after breaking it. */
+          (mode.docs || []).length &&
+            h(
+              "div",
+              { class: "fm__docs" },
+              h("span", { class: "fm__docs-title", text: "Docs" }),
+              mode.docs.map((d) =>
+                h("a", { class: "fm__doc", href: d.url, target: "_blank", rel: "noopener", text: d.label })
+              )
+            )
+        );
+      })
     );
+  }
+
+  const failureActive = (scenario, mode) =>
+    state.failure?.scenarioId === scenario.id && state.failure?.modeId === mode.id;
+
+  /* Keep every card honest about whether it can be used. Called on each run
+     poll, since "the scenario is running" is what unlocks them. */
+  function paintFailureModes(live) {
+    const scenario = state.scenarios.find((s) => s.id === state.activeId);
+    if (!scenario) return;
+    /* Most failures need apps running to break. A scenario with no apps, like
+       the broker tour, marks its modes `needs: applied`: they unlock once its
+       configuration has been applied. */
+    const applied = live || state.runStatus.get(`${scenario.id}:apply`)?.state === "succeeded";
+    for (const mode of scenario.failureModes || []) {
+      const card = document.getElementById(`fm-${mode.id}`);
+      if (!card) continue;
+      const ready = mode.needs === "applied" ? applied : live;
+      const active = failureActive(scenario, mode);
+      const other = Boolean(state.failure) && !active;
+      const recovered =
+        state.recovered?.scenarioId === scenario.id && state.recovered?.modeId === mode.id;
+      const cardState = active
+        ? "broken"
+        : !ready
+        ? "locked"
+        : other
+        ? "waiting"
+        : recovered
+        ? "recovered"
+        : "ready";
+      card.dataset.state = cardState;
+
+      const badge = card.querySelector(".fm__badge");
+      const [cls, text] = {
+        broken: ["failed", "Broken"],
+        locked: ["idle", "Not ready"],
+        waiting: ["idle", "Reset the other first"],
+        recovered: ["succeeded", "Recovered"],
+        ready: ["succeeded", "Ready"],
+      }[cardState];
+      badge.className = `badge badge--${cls} fm__badge`;
+      badge.textContent = text;
+
+      // A recovered card can be broken again straight away: try again.
+      card.querySelector(".fm__break").disabled = cardState !== "ready" && cardState !== "recovered";
+      card.querySelector(".fm__reset").disabled = !active;
+      card.querySelector(".fm__watch").hidden = !active && cardState !== "recovered";
+      const label = card.querySelector(".fm__output-label");
+      if (label) label.textContent = cardState === "recovered" ? "After reset" : "What the app printed";
+    }
+  }
+
+  /* Steps in order, as a failure mode's trigger or reset lists them. `start`
+     and `stop` return at once; `run` starts a step and waits for it to finish,
+     for a step the next one depends on, like deleting terraform's state
+     before an apply that should then fail. */
+  async function runSteps(scenario, steps) {
+    for (const step of steps || []) {
+      const [verb, actionId] = Object.entries(step)[0];
+      if (verb === "stop") {
+        await API.stopAction(scenario.id, actionId);
+        continue;
+      }
+      // A step already running is left alone, so a failure mode can make
+      // sure something is up (like the processor's router) without failing
+      // when it already is.
+      const { runs } = await API.runs();
+      const current = (runs || []).find((r) => r.key === `${scenario.id}:${actionId}`);
+      if (current?.state !== "running") await API.startAction(scenario.id, actionId);
+      if (verb === "run") await waitForStep(scenario.id, actionId);
+    }
+  }
+
+  async function waitForStep(scenarioId, actionId, timeoutMs = 180000) {
+    const key = `${scenarioId}:${actionId}`;
+    const deadline = Date.now() + timeoutMs;
+    while (Date.now() < deadline) {
+      await new Promise((r) => setTimeout(r, 1000));
+      const { runs } = await API.runs();
+      const run = (runs || []).find((r) => r.key === key);
+      if (run && run.state !== "running") return run;
+    }
+    throw new Error(`Timed out waiting for ${actionId} to finish`);
+  }
+
+  function markDiagramNode(nodeId, broken) {
+    for (const n of document.querySelectorAll(".dg-node.is-faulted")) n.classList.remove("is-faulted");
+    if (broken && nodeId) {
+      document.querySelector(`.dg-node[data-node="${nodeId}"]`)?.classList.add("is-faulted");
+    }
+  }
+
+  function closeFailureSocket() {
+    if (state.failureSocket) {
+      state.failureSocket.close();
+      state.failureSocket = null;
+    }
+  }
+
+  // Stream the step whose output tells this failure's story into its card.
+  function streamFailureLog(scenario, mode) {
+    closeFailureSocket();
+    const pre = document.querySelector(`#fm-${mode.id} .fm__log`);
+    if (!pre || !mode.logs) return;
+    pre.textContent = "";
+    const append = (line) => {
+      const atBottom = pre.scrollHeight - pre.scrollTop - pre.clientHeight < 40;
+      pre.append(h("div", { class: `line--${line.stream}`, text: line.text }));
+      if (atBottom) pre.scrollTop = pre.scrollHeight;
+    };
+    state.failureSocket = API.streamRun(scenario.id, mode.logs, {
+      onHistory: (lines) => { pre.textContent = ""; lines.forEach(append); },
+      onLine: append,
+    });
+  }
+
+  async function breakScenario(scenario, mode) {
+    state.recovered = null;
+    state.failure = { scenarioId: scenario.id, modeId: mode.id };
+    paintFailureModes(true);
+    markDiagramNode(mode.node, true);
+    try {
+      await runSteps(scenario, mode.trigger);
+      streamFailureLog(scenario, mode);
+      // The card grows to full width and may move, so keep it on screen.
+      document.getElementById(`fm-${mode.id}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      // An open panel for the marked node should switch to the failure's log.
+      if (state.panel?.nodeId === mode.node) renderPanel();
+    } catch (err) {
+      toast(err.message, true);
+    }
+  }
+
+  async function resetFailure(scenario, mode) {
+    try {
+      await runSteps(scenario, mode.reset);
+      toast(`${mode.title}: reset`);
+    } catch (err) {
+      toast(err.message, true);
+    }
+    state.failure = null;
+    state.recovered = { scenarioId: scenario.id, modeId: mode.id };
+    markDiagramNode(null, false);
+    paintFailureModes(true);
+    // Reattach to the log, which now belongs to the app's new run.
+    streamFailureLog(scenario, mode);
+    if (state.panel?.nodeId === mode.node) renderPanel();
+  }
+
+  /* -------------------------------------------------------------- inspect */
+
+  /* Each view is a shade, closed until opened, so the part reads as a list
+     of what is on the broker rather than a wall of tables. The summary still
+     says how many objects there are, so a closed shade is not empty of
+     information. Which shades are open is remembered across refreshes. */
+  function makeInspectView(scenarioId, view) {
+    const key = `${scenarioId}:${view.label}`;
+    const count = view.error
+      ? "unavailable"
+      : view.rows.length
+      ? `${view.rows.length} on the broker`
+      : "none yet";
+
+    let body;
+    if (view.error) {
+      body = h("div", { class: "empty", text: view.error });
+    } else if (!view.rows.length) {
+      body = h("div", { class: "empty", text: "Nothing here yet. Apply the configuration to populate it." });
+    } else {
+      /* A scenario may declare which columns matter; fall back to whatever
+         keys the first row happens to have so a new inspect view still renders. */
+      const columns = view.columns.length ? view.columns : Object.keys(view.rows[0]);
+      body = h(
+        "div",
+        { class: "table-wrap" },
+        h(
+          "table",
+          {},
+          h("thead", {}, h("tr", {}, columns.map((c) => h("th", { text: humanize(c) })))),
+          h(
+            "tbody",
+            {},
+            view.rows.map((row) =>
+              h(
+                "tr",
+                {},
+                columns.map((c) => {
+                  const { text, cls } = formatCell(row[c]);
+                  return h("td", { class: cls, text });
+                })
+              )
+            )
+          )
+        )
+      );
+    }
+
+    const shade = h(
+      "details",
+      { class: "shade", open: state.openInspect.has(key) },
+      h(
+        "summary",
+        { class: "inspect__head shade__summary" },
+        h("span", { class: "shade__chev", "aria-hidden": "true" }),
+        h("h4", { text: view.label }),
+        h("span", { class: "inspect__hint", text: count }),
+        view.uiHint && h("span", { class: "inspect__hint inspect__where", text: view.uiHint })
+      ),
+      h("div", { class: "shade__body" }, body)
+    );
+    shade.addEventListener("toggle", () => {
+      if (shade.open) state.openInspect.add(key);
+      else state.openInspect.delete(key);
+    });
+    return shade;
   }
 
   async function refreshInspect(scenarioId) {
@@ -402,7 +708,7 @@
     if (!host) return;
     try {
       const { views } = await API.inspect(scenarioId);
-      host.replaceChildren(...views.map(makeInspectView));
+      host.replaceChildren(...views.map((v) => makeInspectView(scenarioId, v)));
     } catch (err) {
       host.replaceChildren(h("div", { class: "empty", text: err.message }));
     }
@@ -460,39 +766,77 @@
        below is for anyone who wants one step on its own. */
     const transport = makeTransport(scenario);
 
-    const actions = h(
-      "section",
-      { class: "section" },
-      h(
-        "div",
-        { class: "section__head" },
-        h("h3", { text: "Actions" }),
-        h("button", {
-          class: "btn btn--ghost btn--sm",
-          text: "Reset this scenario",
-          onClick: () => resetScenario(scenario),
-        })
-      ),
+    /* The page reads top to bottom in the order a scenario is worked through:
+       run it, step through it, break it, then look at what is on the broker.
+       Numbering the parts makes that order visible rather than implied. */
+    const parts = [];
+    const part = (title, hint, extra, ...content) => {
+      const n = String(parts.length + 1).padStart(2, "0");
+      parts.push(
+        h(
+          "section",
+          { class: "part" },
+          h(
+            "div",
+            { class: "part__head" },
+            h("span", { class: "part__num", text: n }),
+            h("div", { class: "part__titles" },
+              h("h2", { class: "part__title", text: title }),
+              hint && h("p", { class: "part__hint", text: hint })),
+            extra
+          ),
+          ...content
+        )
+      );
+    };
+
+    part(
+      "Run it",
+      "Press Play to bring the scenario up. The diagram shows what is running and where events go.",
+      null,
+      transport, stage, stats
+    );
+
+    part(
+      "Step through it",
+      "Every step Play and Cleanup run, one at a time. Click a step to run it on its own or read its logs.",
+      h("button", {
+        class: "btn btn--ghost btn--sm",
+        text: "Reset this scenario",
+        onClick: () => resetScenario(scenario),
+      }),
       makeActionFlow(scenario)
     );
 
-    const inspect = h(
-      "section",
-      { class: "section" },
-      h(
-        "div",
-        { class: "section__head" },
-        h("h3", { text: "On the broker" }),
-        h("button", {
-          class: "btn btn--secondary btn--sm",
-          text: "Refresh",
-          onClick: () => refreshInspect(scenario.id),
-        })
-      ),
-      h("div", { id: "inspect-host", class: "section" }, h("div", { class: "empty", text: "Loading…" }))
+    if ((scenario.failureModes || []).length) {
+      part(
+        "Break it",
+        "With the scenario running, cause one failure on purpose, watch what the broker does, then reset and try another.",
+        null,
+        makeFailureModes(scenario)
+      );
+    }
+
+    part(
+      "On the broker",
+      "What the broker holds right now, read over SEMP.",
+      h("button", {
+        class: "btn btn--secondary btn--sm",
+        text: "Refresh",
+        onClick: () => refreshInspect(scenario.id),
+      }),
+      h("div", { id: "inspect-host", class: "shade-list" }, h("div", { class: "empty", text: "Loading…" }))
     );
 
-    el.view.replaceChildren(header, transport, stage, stats, actions, inspect);
+    el.view.replaceChildren(header, ...parts);
+
+    /* A failure left in effect is still in effect on the broker, so coming
+       back to the scenario shows it broken again rather than a fresh card. */
+    const broken = (scenario.failureModes || []).find((m) => failureActive(scenario, m));
+    if (broken) {
+      markDiagramNode(broken.node, true);
+      streamFailureLog(scenario, broken);
+    }
 
     refreshInspect(scenario.id);
     refreshStats();
@@ -578,6 +922,15 @@
     const action = spec.action
       ? scenario.actions.find((a) => a.id === spec.action)
       : null;
+    /* While a failure mode marks this node, its logs are the failure's, not
+       the node's own app: a refused subscription happens in a separate
+       process, and the healthy subscriber's log would show nothing wrong. */
+    const failing = (scenario.failureModes || []).find(
+      (m) => m.node === nodeId && m.logs && failureActive(scenario, m)
+    );
+    const logAction = failing
+      ? scenario.actions.find((a) => a.id === failing.logs) || action
+      : action;
 
     closePanelSocket();
     document.querySelector(".stage")?.classList.add("is-open");
@@ -609,14 +962,14 @@
       "div",
       { class: "panel__tabs" },
       tabBtn("detail", "Detail"),
-      action && tabBtn("logs", "Logs")
+      logAction && tabBtn("logs", "Logs")
     );
 
     const body = h("div", { class: "panel__body", id: "panel-body" });
     host.replaceChildren(head, tabs, body);
 
-    if (tab === "logs" && action) {
-      renderPanelLogs(scenario, action, body);
+    if (tab === "logs" && logAction) {
+      renderPanelLogs(scenario, logAction, body, failing);
     } else {
       renderPanelDetail(scenario, spec, action, body);
     }
@@ -685,9 +1038,16 @@
     body.replaceChildren(...rows);
   }
 
-  function renderPanelLogs(scenario, action, body) {
+  function renderPanelLogs(scenario, action, body, failing) {
     const pre = h("pre", { class: "panel__log" });
-    body.replaceChildren(pre);
+    body.replaceChildren(
+      failing &&
+        h("p", {
+          class: "panel__notice",
+          text: `"${failing.title}" is in effect, so this shows the output of "${action.label}". Reset it to see this node's own log again.`,
+        }),
+      pre
+    );
 
     const append = (line) => {
       const atBottom = pre.scrollHeight - pre.scrollTop - pre.clientHeight < 40;
@@ -920,6 +1280,8 @@
 
   function select(scenarioId) {
     closeSockets();
+    closeFailureSocket();
+    state.recovered = null;
     closePanel();
     state.diagramState = null;
     state.activeId = scenarioId;
@@ -972,6 +1334,37 @@
       }
     });
 
+    /* Wipes every scenario's configuration so the next Play starts from an
+       empty broker. Asks first, because queued messages go with the queues. */
+    el.clearBroker.addEventListener("click", async () => {
+      const ok = window.confirm(
+        "Clear broker config?\n\nThis stops everything that is running, then deletes every " +
+          "queue, client profile, ACL profile and client username the workshop scenarios " +
+          "create, along with any messages waiting on those queues. Broker defaults and " +
+          "anything you created yourself are left alone.\n\nPress Play on a scenario to set " +
+          "it up again."
+      );
+      if (!ok) return;
+      el.clearBroker.disabled = true;
+      try {
+        const { deleted, failed } = await API.clearBroker();
+        state.failure = null;
+        state.recovered = null;
+        toast(
+          failed.length
+            ? `Cleared ${deleted} object(s); ${failed.length} could not be deleted: ${failed[0]}`
+            : `Cleared ${deleted} object(s) from the broker`,
+          failed.length > 0
+        );
+        await load();
+        refreshStats();
+      } catch (err) {
+        toast(err.message, true);
+      } finally {
+        el.clearBroker.disabled = false;
+      }
+    });
+
     window.addEventListener("hashchange", () => {
       const id = location.hash.slice(1);
       if (id && id !== state.activeId) select(id);
@@ -979,6 +1372,6 @@
   }
 
   init().catch((err) => {
-    el.view.replaceChildren(h("div", { class: "empty", text: `Cockpit failed to start: ${err.message}` }));
+    el.view.replaceChildren(h("div", { class: "empty", text: `The dashboard failed to start: ${err.message}` }));
   });
 })();

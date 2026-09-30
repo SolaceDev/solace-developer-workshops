@@ -67,6 +67,19 @@ If it wildcarded, the `rebooted` event the device publishes in reply would
 match its own inbox, and the gateway would receive its own event as a
 command. Naming the imperative verbs keeps the two directions apart.
 
+## Break it
+
+With Play running, scroll to **Break it** in the cockpit. Each card causes one
+failure on purpose. Press **Break it**, read the app's output and what the
+card tells you to look for, then press **Reset**. The card stays open after
+the reset so you can see the recovery, and **Why this breaks** explains the
+cause and where you would meet it in production.
+
+1. **The gateway goes offline.** Gateway gw4471 disconnects, and then the
+   operator sends it a reboot command.
+2. **The read model goes offline.** The fleet read model stops while the
+   gateway keeps reporting battery levels.
+
 ## Try this
 
 - Send several commands with the gateway stopped, then start it. They arrive

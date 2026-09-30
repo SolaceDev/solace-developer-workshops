@@ -27,10 +27,11 @@ run:
 
 diagram:
   caption: >
-    Scanners publish faster than the workers consume. The queue holds the
-    difference, so the surge is absorbed rather than passed on. Messages a
-    worker has taken but not yet acknowledged go back to the queue if it stops.
-  duration: 2.2
+    Scanners publish faster than the workers consume. The queue on the broker
+    holds the difference, so the surge is absorbed rather than passed on.
+    Messages a worker has taken but not yet acknowledged go back to the queue
+    if it stops, and a rejected message moves to the dead message queue.
+  duration: 2.6
   liveWhen: scanner
   nodes:
     - id: scanner
@@ -42,18 +43,32 @@ diagram:
       requires:
         - label: svc-shock-scanner
           semp: /msgVpns/{vpn}/clientUsernames/svc-shock-scanner
-    - id: queue
-      label: q.shock.scans
+    # The queues live on the broker, so they are boxes inside it. A rejected
+    # message moves from q.shock.scans to q.shock.dmq without leaving it, so
+    # the failing worker has no flow back: rejecting settles, it does not
+    # publish.
+    - id: broker
+      label: Solace Broker
       sublabel: the absorber
       kind: broker
       col: 1
       action: apply
+      contains:
+        - id: scans
+          label: q.shock.scans
+        - id: dmq
+          label: q.shock.dmq
+        - id: partitioned
+          label: q.shock.scans.partitioned
       provides:
         - label: q.shock.scans
+          group: scans
           semp: /msgVpns/{vpn}/queues/q.shock.scans
         - label: q.shock.dmq
+          group: dmq
           semp: /msgVpns/{vpn}/queues/q.shock.dmq
         - label: q.shock.scans.partitioned
+          group: partitioned
           semp: /msgVpns/{vpn}/queues/q.shock.scans.partitioned
     - id: worker1
       label: Worker 1
@@ -76,10 +91,10 @@ diagram:
       kind: app
       col: 2
       action: worker-3
-    - id: dmq
-      label: q.shock.dmq
-      sublabel: gave up after 3 tries
-      kind: config
+    - id: nacker
+      label: Failing Worker
+      sublabel: rejects to the DMQ
+      kind: app
       col: 2
       action: worker-nack
       requires:
@@ -87,28 +102,27 @@ diagram:
           semp: /msgVpns/{vpn}/queues/q.shock.dmq
   flows:
     - from: scanner
-      to: queue
+      to: broker
       label: burst
       delay: 0
     - from: scanner
-      to: queue
+      to: broker
       delay: 0.15
     - from: scanner
-      to: queue
+      to: broker
       delay: 0.3
-    - from: queue
+    - from: broker
       to: worker1
       delay: 0.9
-    - from: queue
+    - from: broker
       to: worker2
       delay: 1.1
-    - from: queue
+    - from: broker
       to: worker3
       delay: 1.3
-    - from: queue
-      to: dmq
-      label: rejected
-      delay: 1.6
+    - from: broker
+      to: nacker
+      delay: 1.5
 
 actions:
   - id: apply
@@ -231,6 +245,78 @@ actions:
     description: >
       Deletes all three queues and the access control for this scenario.
       Anything still spooled goes with them.
+
+# Ways to break the scenario on purpose. Each names the steps that cause it
+# and the steps that put things back; see pub-sub for the full shape.
+failure_modes:
+  - id: worker-dies
+    title: A worker dies holding messages
+    breaks: >
+      Worker 2 joins, then worker 1 is stopped while it has scans it has taken
+      but not yet acknowledged.
+    watch: >
+      Watch worker 2's log. Within a second or two it picks up the scans
+      worker 1 had taken but not finished, marked (redelivered). Nothing was lost: the broker
+      only deletes a message once a consumer settles it. Reset starts worker 1
+      again and stops worker 2.
+    why: >
+      The workers use client acknowledgement and sleep before settling, so at
+      any moment each has messages in flight that the broker has delivered but
+      not yet been told are done. When worker 1 disconnects, the broker puts
+      those back on q.shock.scans and gives them to the next consumer, with
+      the redelivered flag set.
+    real_world: >
+      A consumer crashes, is killed by an out-of-memory error or is scaled
+      down mid-batch. With a queue and client acks, the work it was doing is
+      handed to another instance rather than lost. The cost is that some
+      messages are processed twice, so a consumer should be safe to run on a
+      message it may already have handled, and can use the redelivered flag
+      to check.
+    docs:
+      - label: "Go API: consuming persistent messages and acknowledgments"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Subscribe.htm
+      - label: "Broker: queues"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Queues.htm
+    node: worker1
+    logs: worker-2
+    trigger:
+      - start: worker-2
+      - stop: worker-1
+    reset:
+      - start: worker-1
+      - stop: worker-2
+
+  - id: poison-messages
+    title: Poison messages go to the DMQ
+    breaks: >
+      A failing worker joins that settles some scans FAILED and some REJECTED.
+    watch: >
+      In its log, FAILED scans go back on the queue and come round again,
+      and REJECTED ones leave for the dead message queue. Open Queues under On
+      the broker and watch q.shock.dmq fill while q.shock.scans keeps
+      draining. Reset stops the failing worker.
+    why: >
+      A consumer settles each message with an outcome. ACCEPTED removes it.
+      FAILED hands it back for redelivery. REJECTED tells the broker this
+      message can never be processed, so it is moved to the queue's dead
+      message queue instead of being retried forever and blocking the rest.
+    real_world: >
+      A malformed payload, a message from a newer schema, or one that points
+      at data that no longer exists. Without a DMQ such a poison message is
+      retried over and over and can hold up everything behind it. With one,
+      it is parked for someone to inspect and replay, and the stream keeps
+      moving. A DMQ that grows is usually the first sign of a bad producer.
+    docs:
+      - label: "Go API: consuming persistent messages and acknowledgments"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Subscribe.htm
+      - label: "Broker: dead message queues"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Setting-Dead-Msg-Queues.htm
+    node: nacker
+    logs: worker-nack
+    trigger:
+      - start: worker-nack
+    reset:
+      - stop: worker-nack
 
 inspect:
   - label: Queues

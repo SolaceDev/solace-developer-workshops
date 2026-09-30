@@ -42,6 +42,27 @@ async def semp_get(path: str, api: str = "config") -> dict:
     return resp.json()
 
 
+async def semp_delete(path: str) -> str:
+    """DELETE a config object. Returns "deleted", "absent" when the broker has
+    no such object (so clearing twice is not an error), or the broker's own
+    error text."""
+    url = SEMP_BASE_URL + path.format(vpn=MSG_VPN)
+    try:
+        async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
+            resp = await client.delete(url, auth=(SEMP_USER, SEMP_PASSWORD))
+    except httpx.RequestError as exc:
+        raise BrokerUnavailable(str(exc)) from exc
+    if resp.status_code == 200:
+        return "deleted"
+    try:
+        status = resp.json().get("meta", {}).get("error", {}).get("status", "")
+    except ValueError:
+        status = ""
+    if resp.status_code == 404 or status == "NOT_FOUND":
+        return "absent"
+    return f"{resp.status_code} {status or resp.text[:200]}"
+
+
 async def health() -> dict:
     """Readiness probe the UI polls while the broker container boots."""
     try:

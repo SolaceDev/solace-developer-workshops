@@ -55,6 +55,19 @@ This is the honest limit of scaling a stateful processor by adding instances.
 The fix is the partitioned queue from the shock absorber section: partition
 by card, and every authorization for one card reaches the same instance.
 
+## Break it
+
+With Play running, scroll to **Break it** in the cockpit. Each card causes one
+failure on purpose. Press **Break it**, read the app's output and what the
+card tells you to look for, then press **Reset**. The card stays open after
+the reset so you can see the recovery, and **Why this breaks** explains the
+cause and where you would meet it in production.
+
+1. **The fraud rule goes down.** The fraud rule stops while the payment
+   gateway keeps authorizing.
+2. **The US desk goes offline.** The US desk stops while authorizations and
+   flags keep flowing.
+
 ## Try this
 
 - Lower the threshold to 2 and watch the false positives appear. Rules like

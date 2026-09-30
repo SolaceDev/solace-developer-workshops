@@ -28,23 +28,18 @@ func StartDirectReceiver(role string, svc solace.MessagingService) solace.Direct
 	return rcv
 }
 
-// Subscribe adds one topic subscription, explaining an ACL refusal instead of
-// dumping an error.
+// Subscribe adds one topic subscription, and exits on a refusal.
 //
 // An ACL refusal is an expected outcome in this workshop, not a crash: the
 // pub-sub scenario invites attendees to point a subscriber at a topic it is
 // not authorised for and see what the broker does. AddSubscription is
 // synchronous and returns the broker's error directly, so the refusal is
-// caught here at the moment it happens.
+// caught here at the moment it happens. It is printed exactly as the API
+// returns it, with nothing added: reading the broker's own answer is the
+// point, and the cockpit's failure card carries the explanation.
 func Subscribe(role, username string, rcv solace.DirectMessageReceiver, topic string) {
 	if err := rcv.AddSubscription(resource.TopicSubscriptionOf(topic)); err != nil {
-		Errf(role, "")
-		Errf(role, "the broker refused this subscription:")
-		Errf(role, "  %s", err)
-		if why := Explain(err, username, topic); why != "" {
-			Errf(role, "")
-			Errf(role, "%s", why)
-		}
+		Errf(role, "%s", err)
 		os.Exit(1)
 	}
 	Logf(role, "subscribed to %s", topic)

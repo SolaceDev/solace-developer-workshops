@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Workshop Cockpit</title>
+  <title>Solace Workshop Dashboard</title>
   <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
   <link rel="stylesheet" href="/static/css/cockpit.css">
 </head>
@@ -13,7 +13,7 @@
       <div class="sidebar__brand">
         <img class="sidebar__logo" src="/static/ds/assets/logo/solace-white.png" alt="Solace">
         <span class="sidebar__rule" aria-hidden="true"></span>
-        <span class="eyebrow">Cockpit</span>
+        <span class="eyebrow">Workshop Dashboard</span>
       </div>
 
       <nav class="sidebar__nav" id="nav" aria-label="Workshop sections"></nav>
@@ -40,6 +40,7 @@
         <div class="topbar__actions">
           <span class="badge badge--running hidden" id="active-badge"></span>
           <button class="btn btn--ghost btn--sm" id="stop-all">Stop everything</button>
+          <button class="btn btn--danger btn--sm" id="clear-broker">Clear broker config</button>
           <button class="btn btn--secondary btn--sm" id="refresh">Refresh</button>
         </div>
       </header>

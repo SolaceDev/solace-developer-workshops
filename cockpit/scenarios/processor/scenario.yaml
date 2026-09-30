@@ -27,10 +27,11 @@ run:
 
 diagram:
   caption: >
-    Each stage reads from its own queue and publishes to a topic the next
-    stage subscribes to. Nothing points at the next stage directly, which is
-    why one can be replaced or added while the others keep running.
-  duration: 2.6
+    Each stage reads from its own queue on the broker and publishes its result
+    back to the broker, on a topic the next stage's queue subscribes to.
+    Nothing points at the next stage directly, which is why one can be
+    replaced or added while the others keep running.
+  duration: 3.2
   liveWhen: line
   nodes:
     - id: line
@@ -42,11 +43,33 @@ diagram:
       requires:
         - label: svc-processor-line
           semp: /msgVpns/{vpn}/clientUsernames/svc-processor-line
+    # Every stage reads from the broker and publishes back to it. Each queue is
+    # a box inside the broker because that is where it lives.
+    - id: broker
+      label: Solace Broker
+      sublabel: one queue per stage
+      kind: broker
+      col: 1
+      action: apply
+      contains:
+        - id: assembly
+          label: q.processor.assembly
+        - id: router
+          label: q.processor.router
+      provides:
+        - label: q.processor.assembly
+          group: assembly
+          semp: /msgVpns/{vpn}/queues/q.processor.assembly
+        - label: q.processor.router
+          group: router
+          semp: /msgVpns/{vpn}/queues/q.processor.router
     - id: enrich
       label: Enricher
       sublabel: adds model and shift
       kind: app
-      col: 1
+      # Drawn as a hexagon: in at the top point, out at the bottom one.
+      shape: processor
+      col: 2
       action: enrich
       requires:
         - label: q.processor.assembly
@@ -55,6 +78,8 @@ diagram:
       label: Router
       sublabel: start me late
       kind: app
+      # Drawn as a hexagon: in at the top point, out at the bottom one.
+      shape: processor
       col: 2
       action: route
       requires:
@@ -64,24 +89,33 @@ diagram:
       label: EMEA Fulfilment
       sublabel: routed/v1/emea/>
       kind: app
-      col: 3
+      col: 2
       action: sink
       requires:
         - label: svc-processor-sink
           semp: /msgVpns/{vpn}/clientUsernames/svc-processor-sink
   flows:
     - from: line
-      to: enrich
+      to: broker
       label: started
       delay: 0
+    - from: broker
+      to: enrich
+      delay: 0.5
     - from: enrich
-      to: route
+      to: broker
       label: enriched
-      delay: 0.8
+      delay: 1.0
+    - from: broker
+      to: route
+      delay: 1.5
     - from: route
-      to: sink
+      to: broker
       label: routed/emea
-      delay: 1.6
+      delay: 2.0
+    - from: broker
+      to: sink
+      delay: 2.5
 
 actions:
   - id: apply
@@ -169,6 +203,80 @@ actions:
     variant: danger
     description: >
       Deletes both stage queues and the access control for this scenario.
+
+# Ways to break the scenario on purpose. Each names the steps that cause it
+# and the steps that put things back; see pub-sub for the full shape.
+failure_modes:
+  - id: stage-down
+    title: A queued stage goes down
+    breaks: >
+      With the router running, the enricher stops while the assembly line
+      keeps publishing.
+    watch: >
+      Open Stage inboxes under On the broker: q.processor.assembly climbs as
+      events wait for the enricher, and EMEA fulfilment goes quiet. Reset
+      starts the enricher again and it works through the backlog, so nothing
+      downstream misses an event.
+    why: >
+      The enricher reads from its own queue. While it is down, the line's
+      events still match that queue's subscription, so the broker spools them
+      there. The stages after it simply receive nothing until it returns.
+    real_world: >
+      One stage of a pipeline is redeployed, or its database goes away for a
+      few minutes. Because each stage has its own queue, the rest of the
+      pipeline keeps running and the stalled stage catches up when it comes
+      back. The thing to watch is queue depth: a steadily rising inbox is how
+      you spot a stage that has stopped or cannot keep up.
+    docs:
+      - label: "Go API: consuming persistent messages and acknowledgments"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Subscribe.htm
+      - label: "Broker: queues"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Queues.htm
+    node: enrich
+    logs: enrich
+    trigger:
+      # Play leaves the router out on purpose. Both failures need the
+      # whole pipeline running, so make sure it is up first.
+      - start: route
+      - stop: enrich
+    reset:
+      - start: enrich
+
+  - id: sink-down
+    title: The direct subscriber at the end goes down
+    breaks: >
+      With the router running, EMEA fulfilment stops. It is the one stage
+      that subscribes directly instead of reading from a queue.
+    watch: >
+      The stages before it keep working and publishing routed events, which
+      now reach nobody. Reset after a few events: fulfilment picks up from the
+      next one, and the ones routed while it was down are gone. Compare that
+      with the enricher, which caught up.
+    why: >
+      A direct subscription only exists while the subscriber is connected, so
+      while fulfilment is down its routed events match no one and are
+      discarded. Nothing upstream can tell, because publishing to a topic does
+      not depend on anyone listening.
+    real_world: >
+      The last hop in a pipeline is often the one someone wires up quickly
+      with a direct subscription, and it is exactly where losing events is
+      most expensive: an order that was enriched and routed but never
+      fulfilled. A queue at every stage that must not lose work is the usual
+      fix.
+    docs:
+      - label: "Go API: consuming direct messages"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-DM-Subscribe.htm
+      - label: "Broker: direct messages"
+        url: https://docs.solace.com/Messaging/Direct-Msg/Direct-Messages.htm
+    node: sink
+    logs: sink
+    trigger:
+      # Play leaves the router out on purpose. Both failures need the
+      # whole pipeline running, so make sure it is up first.
+      - start: route
+      - stop: sink
+    reset:
+      - start: sink
 
 inspect:
   - label: Stage inboxes

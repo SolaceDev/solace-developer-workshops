@@ -52,6 +52,19 @@ exception carved out for `acme/payment/>`. Same mechanism, opposite posture.
 
 A **client username** joins one of each together.
 
+## Break it
+
+Once the configuration is applied, scroll to **Break it** in the cockpit. Each
+card causes one failure on purpose. Press **Break it**, read the app's output
+and what the card tells you to look for, then press **Reset**. The card stays
+open after the reset so you can see the recovery, and **Why this breaks**
+explains the cause and where you would meet it in production.
+
+1. **Terraform loses its state.** Terraform's state file is deleted, then
+   apply runs again against a broker that still has everything.
+2. **Someone deletes a queue by hand.** q.order.events is deleted straight
+   from the broker, behind terraform's back, then Preview changes runs.
+
 ## Try this
 
 - Open `svc-legacy-import`. It is disabled on purpose. Disabling a username
