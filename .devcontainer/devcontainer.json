@@ -1,6 +1,6 @@
 {
   "name": "Solace Developer Workshop",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
   "onCreateCommand": "/bin/bash ${containerWorkspaceFolder}/.devcontainer/onCreate.sh",
   "waitFor": "onCreateCommand",
   "updateContentCommand": "/bin/bash cockpit/apps/build.sh",
