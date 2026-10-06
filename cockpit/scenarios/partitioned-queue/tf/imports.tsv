@@ -1,0 +1,13 @@
+# What the partitioned-queue scenario owns on the broker.
+# Columns: terraform address <TAB> import id. {vpn} is substituted.
+
+solacebroker_msg_vpn_client_profile.part	{vpn}/cp-part
+
+solacebroker_msg_vpn_acl_profile.part	{vpn}/acl-part
+solacebroker_msg_vpn_acl_profile_publish_topic_exception.part	{vpn}/acl-part/smf/sonepar%2Finventory%2F%3E
+
+solacebroker_msg_vpn_client_username.part["stock-feed"]	{vpn}/svc-part-stock-feed
+solacebroker_msg_vpn_client_username.part["stock-worker"]	{vpn}/svc-part-stock-worker
+
+solacebroker_msg_vpn_queue.stock	{vpn}/q.part.stock
+solacebroker_msg_vpn_queue_subscription.stock	{vpn}/q.part.stock/sonepar%2Finventory%2Fstock%2Fadjusted%2Fv1%2F%3E

@@ -1,0 +1,13 @@
+# What the non-exclusive-queue scenario owns on the broker.
+# Columns: terraform address <TAB> import id. {vpn} is substituted.
+
+solacebroker_msg_vpn_client_profile.shared	{vpn}/cp-shared
+
+solacebroker_msg_vpn_acl_profile.shared	{vpn}/acl-shared
+solacebroker_msg_vpn_acl_profile_publish_topic_exception.shared	{vpn}/acl-shared/smf/sonepar%2Fwarehouse%2F%3E
+
+solacebroker_msg_vpn_client_username.shared["order-wave"]	{vpn}/svc-shared-order-wave
+solacebroker_msg_vpn_client_username.shared["picker"]	{vpn}/svc-shared-picker
+
+solacebroker_msg_vpn_queue.picks	{vpn}/q.shared.pick-tasks
+solacebroker_msg_vpn_queue_subscription.picks	{vpn}/q.shared.pick-tasks/sonepar%2Fwarehouse%2Fpick%2Frequested%2Fv1%2F%3E

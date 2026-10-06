@@ -74,4 +74,4 @@ explains the cause and where you would meet it in production.
   the broker against its state and recreates it. That is not a failure mode,
   it is the tool working.
 
-Next: [Publish and subscribe](20-pub-sub.md).
+Next: [Direct pub/sub](20-pub-sub.md).

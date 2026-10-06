@@ -1,0 +1,17 @@
+# What the dead-message-queue scenario owns on the broker.
+# Columns: terraform address <TAB> import id. {vpn} is substituted.
+
+solacebroker_msg_vpn_client_profile.dmq	{vpn}/cp-dmq
+
+solacebroker_msg_vpn_acl_profile.dmq	{vpn}/acl-dmq
+solacebroker_msg_vpn_acl_profile_publish_topic_exception.dmq	{vpn}/acl-dmq/smf/sonepar%2Fcatalog%2F%3E
+
+solacebroker_msg_vpn_client_username.dmq["price-feed"]	{vpn}/svc-dmq-price-feed
+solacebroker_msg_vpn_client_username.dmq["pricing"]	{vpn}/svc-dmq-pricing
+solacebroker_msg_vpn_client_username.dmq["ops"]	{vpn}/svc-dmq-ops
+
+# The dead message queue has no subscription: messages reach it from
+# q.dmq.prices, not by being published to it.
+solacebroker_msg_vpn_queue.prices	{vpn}/q.dmq.prices
+solacebroker_msg_vpn_queue_subscription.prices	{vpn}/q.dmq.prices/sonepar%2Fcatalog%2Fprice%2Fupdated%2Fv1%2F%3E
+solacebroker_msg_vpn_queue.dead	{vpn}/q.dmq.prices.dead

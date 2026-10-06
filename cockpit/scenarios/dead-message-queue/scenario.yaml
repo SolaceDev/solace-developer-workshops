@@ -1,0 +1,281 @@
+id: dead-message-queue
+order: 60
+eyebrow: Queues
+title: Dead Message Queue
+summary: >
+  Suppliers send price updates for the catalogue. Most are fine, but some
+  cannot be used: a price sent as text, an update that waited so long it is
+  out of date, or one the pricing service keeps failing on. Retrying those
+  forever would block everything behind them, and dropping them would lose
+  them. A dead message queue sets them aside so someone can look.
+
+objectives:
+  - Reject a message the consumer can never process and find it in the dead message queue
+  - See a message that keeps failing move to the dead message queue after its last redelivery
+  - See messages whose time to live has passed move there too
+  - Read the dead message queue like any other queue
+
+run:
+  - apply
+  - build
+  - pricing
+  - publish
+
+diagram:
+  caption: >
+    Price updates go to q.dmq.prices. The pricing service accepts the good
+    ones and rejects the ones it can never use. The broker moves rejected,
+    expired and repeatedly failed updates to q.dmq.prices.dead, where the
+    operations reader can look at them.
+  duration: 2.6
+  liveWhen: feed
+  nodes:
+    - id: feed
+      label: Supplier Price Feed
+      sublabel: 1 in 7 unreadable
+      kind: app
+      col: 0
+      action: publish
+      requires:
+        - label: svc-dmq-price-feed
+          semp: /msgVpns/{vpn}/clientUsernames/svc-dmq-price-feed
+    - id: broker
+      label: Solace Broker
+      sublabel: sonepar/catalog/price/updated/v1/>
+      kind: broker
+      col: 1
+      action: apply
+      contains:
+        - id: prices
+          label: q.dmq.prices
+        - id: dead
+          label: q.dmq.prices.dead
+      provides:
+        - label: q.dmq.prices
+          group: prices
+          semp: /msgVpns/{vpn}/queues/q.dmq.prices
+        - label: q.dmq.prices.dead
+          group: dead
+          semp: /msgVpns/{vpn}/queues/q.dmq.prices.dead
+        - label: cp-dmq
+          semp: /msgVpns/{vpn}/clientProfiles/cp-dmq
+        - label: acl-dmq
+          semp: /msgVpns/{vpn}/aclProfiles/acl-dmq
+    # A rejected update moves from q.dmq.prices to q.dmq.prices.dead inside
+    # the broker, so the pricing service has no flow back: rejecting settles,
+    # it does not publish.
+    - id: pricing
+      label: Pricing Service
+      sublabel: rejects unreadable prices
+      kind: app
+      col: 2
+      action: pricing
+      requires:
+        - label: svc-dmq-pricing
+          semp: /msgVpns/{vpn}/clientUsernames/svc-dmq-pricing
+        - label: q.dmq.prices
+          semp: /msgVpns/{vpn}/queues/q.dmq.prices
+    - id: ops
+      label: Operations Reader
+      sublabel: reads the DMQ
+      kind: app
+      col: 2
+      action: read-dmq
+      requires:
+        - label: svc-dmq-ops
+          semp: /msgVpns/{vpn}/clientUsernames/svc-dmq-ops
+        - label: q.dmq.prices.dead
+          semp: /msgVpns/{vpn}/queues/q.dmq.prices.dead
+  flows:
+    - { from: feed, to: broker, label: price updates, delay: 0 }
+    - { from: broker, to: pricing, label: q.dmq.prices, delay: 1.0 }
+    - { from: broker, to: ops, label: q.dmq.prices.dead, delay: 1.4 }
+
+actions:
+  - id: apply
+    label: Apply configuration
+    kind: terraform
+    command: apply
+    tf_dir: tf
+    variant: primary
+    description: >
+      Creates q.dmq.prices, which names q.dmq.prices.dead as its dead message
+      queue and allows three redeliveries, plus the client profile, ACL
+      profile and three client usernames.
+
+  - id: build
+    label: Build the apps
+    kind: process
+    cmd: [bash, ../../apps/run.sh, build]
+    cwd: .
+    variant: secondary
+    description: >
+      Compiles the Go apps shared by every section. Only needed to rebuild
+      after a change.
+
+  - id: pricing
+    label: Start the pricing service
+    kind: process
+    cmd: [bash, ../../apps/run.sh, sonepar, consume, --role, pricing, --user, svc-dmq-pricing, --queue, q.dmq.prices, --exclusive, --validate, --ack-delay, 200ms]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Reads each price update and checks the price is a number. Good updates
+      are settled ACCEPTED. An unreadable one can never succeed, so it is
+      settled REJECTED and the broker moves it to the dead message queue.
+
+  - id: publish
+    label: Start the supplier price feed
+    kind: process
+    cmd: [bash, ../../apps/run.sh, sonepar, publish, --role, price-feed, --user, svc-dmq-price-feed, --feed, prices, --every, 1s, --poison-every, "7", --ttl, 15s]
+    cwd: .
+    long_running: true
+    variant: primary
+    description: >
+      Publishes one price update a second to topics like
+      sonepar/catalog/price/updated/v1/legrand/MCB-C16-1P. Every seventh has
+      its price written as text, like "12,40 EUR". Each update expires
+      fifteen seconds after it is published, because an older price is out
+      of date.
+
+  - id: read-dmq
+    label: Start the operations reader
+    kind: process
+    cmd: [bash, ../../apps/run.sh, sonepar, consume, --role, ops, --user, svc-dmq-ops, --queue, q.dmq.prices.dead, --exclusive, --payload, --ack-delay, 0s]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Reads the dead message queue and prints each update in full. It
+      acknowledges what it reads, so reading the queue empties it.
+
+  - id: plan
+    label: Preview changes
+    kind: terraform
+    command: plan
+    tf_dir: tf
+    variant: secondary
+    description: >
+      Shows what Apply would change on the broker, without changing anything.
+
+  - id: reconcile
+    label: Reconcile with broker
+    kind: process
+    cmd: [bash, ../../scripts/reconcile.sh, dead-message-queue]
+    cwd: .
+    variant: secondary
+    description: >
+      Use this if Play fails with "already exists". It imports objects that are
+      on the broker but missing from terraform state. The broker is not modified.
+
+  - id: destroy
+    label: Remove configuration
+    kind: terraform
+    command: destroy
+    tf_dir: tf
+    variant: danger
+    description: >
+      Deletes both queues and the access control for this section. Anything
+      still on them goes too.
+
+  # Used by the failure modes, not by Play.
+  - id: pricing-down
+    label: Start pricing with its database down
+    kind: process
+    failure_only: true
+    cmd: [bash, ../../apps/run.sh, sonepar, consume, --role, pricing, --user, svc-dmq-pricing, --queue, q.dmq.prices, --exclusive, --fail-all, --ack-delay, 200ms]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      The pricing service, unable to reach its database, so it settles every
+      update FAILED and asks for it to be delivered again.
+
+failure_modes:
+  - id: database-down
+    title: The pricing database is down
+    breaks: >
+      The pricing service is replaced by one that cannot reach its database,
+      so it settles every update FAILED.
+    watch: >
+      In the log, each update is delivered, FAILED, and delivered again
+      marked (redelivered). After the fourth attempt it does not come back:
+      the broker has moved it to q.dmq.prices.dead. Open Queues under On the
+      broker to watch that queue grow. Reset brings back the normal pricing
+      service.
+    why: >
+      FAILED means "not now, try again", so the broker redelivers the
+      update. q.dmq.prices allows three redeliveries (max_redelivery_count).
+      When an update has been delivered that many extra times and still
+      failed, the broker stops trying and moves it to the queue's dead
+      message queue instead of retrying forever.
+    real_world: >
+      A database, a supplier API or another dependency is down. Without a
+      redelivery limit the consumer spins on the same messages, and
+      everything else waits. With one, the stuck messages move aside and can
+      be replayed once the dependency is back. If the outage is expected to
+      be short, a delay between redeliveries is often a better first step
+      than a low limit.
+    docs:
+      - label: "Go API: message settlement outcomes"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Subscribe.htm
+      - label: "Broker: dead message queues"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Setting-Dead-Msg-Queues.htm
+    node: pricing
+    logs: pricing-down
+    trigger:
+      - stop: pricing
+      - start: pricing-down
+    reset:
+      - stop: pricing-down
+      - start: pricing
+
+  - id: updates-expire
+    title: Price updates expire
+    breaks: >
+      The pricing service stops while suppliers keep sending updates that are
+      only valid for fifteen seconds.
+    watch: >
+      Open Queues under On the broker and press Refresh every few seconds.
+      Updates wait on q.dmq.prices, and once each is fifteen seconds old it
+      moves to q.dmq.prices.dead without anyone touching it. Start the
+      operations reader to see them. Reset starts the pricing service, which
+      picks up only the updates that are still fresh.
+    why: >
+      The feed sets a time to live on every update, and q.dmq.prices has
+      respect_ttl_enabled, so the broker enforces it. An update that is still
+      waiting when its time runs out is removed from the queue. Updates are
+      eligible for the dead message queue by default, so the broker moves
+      it there rather than discarding it.
+    real_world: >
+      A price, a stock level or a delivery slot that is minutes old is worse
+      than none, because acting on it does harm. A time to live keeps a
+      consumer that has been down from working through a backlog of stale
+      data when it comes back. The dead message queue keeps a record of what
+      was missed, which matters when someone asks why a price never changed.
+    docs:
+      - label: "Go API: message properties, including time to live"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Publish.htm
+      - label: "Broker: configuring queues, including respecting TTL"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Configuring-Queues.htm
+    node: pricing
+    logs: publish
+    trigger:
+      - stop: pricing
+    reset:
+      - start: pricing
+
+inspect:
+  - label: Queues
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues?count=100&where=queueName==q.dmq.*
+    columns: [queueName, msgSpoolUsage, lastSpooledMsgId, highestAckedMsgId, maxRedeliveryExceededToDmqMsgCount, maxTtlExpiredToDmqMsgCount]
+    ui_hint: Manager → Queues
+  - label: Messages in the dead message queue
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues/q.dmq.prices.dead/msgs?count=50
+    columns: [msgId, spooledTime, redeliveryCount, attachmentSize]
+    ui_hint: Manager → Queues → q.dmq.prices.dead → Messages Queued

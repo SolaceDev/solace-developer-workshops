@@ -1,16 +1,16 @@
 # Solace Core Developer Workshop
 
-A hands-on introduction to event-driven architecture on the Solace Broker. A
-short practice run on the dashboard itself, then nine sections, each one a
-working system you run, break and inspect: a broker configuration tour,
-publish and subscribe, the five patterns from the Real-Time Data Deep Dives
-series, and two capstones that compose them.
+A hands-on introduction to event-driven architecture on the Solace Broker,
+prepared for Sonepar. A short practice run on the dashboard itself, then six
+sections, each one a working system you run, break and inspect: a broker
+configuration tour, direct publish and subscribe, and the four kinds of queue
+you will use most, told through orders, picking, stock and supplier prices.
 
 Everything runs in a container. There is nothing to install and no account to
 create.
 
 <p align="center">
-  <a href="https://codespaces.new/SolaceDev/solace-developer-workshops/tree/core-workshops?quickstart=1">
+  <a href="https://codespaces.new/SolaceDev/solace-developer-workshops/tree/workshop/sonepar?quickstart=1">
     <img src="https://github.com/codespaces/badge.svg" alt="Open in GitHub Codespaces" width="600">
   </a>
 </p>
@@ -31,14 +31,11 @@ finishes, start at [Getting started](guides/00-getting-started.md).
 | --- | --- | --- |
 | 00 | [Getting started](guides/00-getting-started.md) | A practice run: Play, Break it, On the broker and Broker Manager |
 | 10 | [Tour the broker](guides/10-broker-tour.md) | Queues, client profiles, ACL profiles |
-| 20 | [Publish and subscribe](guides/20-pub-sub.md) | Topic hierarchies, wildcards, access control |
-| 30 | [Fan-out](guides/30-fan-out.md) | One event, many independent consumers |
-| 40 | [Shock absorber](guides/40-shock-absorber.md) | Absorbing a surge, competing consumers, redelivery, partitions |
-| 50 | [Processor](guides/50-processor.md) | Consume, transform, republish |
-| 60 | [Command and query](guides/60-cqrs.md) | Read models, and commands that survive a device being offline |
-| 70 | [Streaming](guides/70-streaming.md) | A stateful rule applied to data in motion |
-| 80 | [Surviving the Arrival](guides/80-capstone-arrival.md) | Capstone: absorber, partitions and fan-out together |
-| 90 | [Smart Shelf Pricing](guides/90-capstone-smart-shelf.md) | Capstone: streaming plus a read model that suppresses no-op writes |
+| 20 | [Direct pub/sub](guides/20-pub-sub.md) | Topic hierarchies, wildcards, access control, nothing stored |
+| 30 | [Exclusive queue](guides/30-exclusive-queue.md) | Guaranteed delivery, one active consumer and a standby, order kept |
+| 40 | [Non-exclusive queue](guides/40-non-exclusive-queue.md) | Absorbing a wave of work, competing consumers, redelivery, quotas |
+| 50 | [Partitioned queue](guides/50-partitioned-queue.md) | Order per key with parallel consumers, rebalancing |
+| 60 | [Dead message queue](guides/60-dead-message-queue.md) | Rejected, repeatedly failed and expired messages set aside |
 | 99 | [Cleanup](guides/99-cleanup.md) | Tearing it down |
 
 ## What you get in the container

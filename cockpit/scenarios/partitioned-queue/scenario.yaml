@@ -1,0 +1,284 @@
+id: partitioned-queue
+order: 50
+eyebrow: Queues
+title: Partitioned Queue
+summary: >
+  Stock movements arrive from both distribution centres, and the movements for
+  any one SKU must be applied in the order they happened, or the stock level
+  is wrong. Several workers sharing an ordinary queue would lose that order. A
+  partitioned queue keeps it: every movement for one SKU goes to the same
+  partition and so to the same worker, while different SKUs are worked in
+  parallel.
+
+objectives:
+  - Publish with a partition key and see every message for one key reach the same consumer
+  - Check that each consumer sees the sequence for its keys in order
+  - Stop a consumer and watch the broker hand its partitions to the others
+  - See what happens with more consumers than partitions
+
+run:
+  - apply
+  - build
+  - worker-1
+  - worker-2
+  - publish
+
+diagram:
+  caption: >
+    Each stock movement carries its SKU as a partition key. The broker hashes
+    the key onto one of three partitions, and each partition is delivered to
+    exactly one worker. So one SKU's movements always go to one worker, in
+    order, while the workers run side by side.
+  duration: 2.6
+  liveWhen: feed
+  nodes:
+    - id: feed
+      label: Stock Feed
+      sublabel: key = SKU
+      kind: app
+      col: 0
+      action: publish
+      requires:
+        - label: svc-part-stock-feed
+          semp: /msgVpns/{vpn}/clientUsernames/svc-part-stock-feed
+    - id: broker
+      label: Solace Broker
+      sublabel: 3 partitions
+      kind: broker
+      col: 1
+      action: apply
+      contains:
+        - id: stock
+          label: q.part.stock
+      provides:
+        - label: q.part.stock
+          group: stock
+          semp: /msgVpns/{vpn}/queues/q.part.stock
+        - label: cp-part
+          semp: /msgVpns/{vpn}/clientProfiles/cp-part
+        - label: acl-part
+          semp: /msgVpns/{vpn}/aclProfiles/acl-part
+    - id: worker1
+      label: Stock Worker 1
+      sublabel: its own SKUs, in order
+      kind: app
+      col: 2
+      action: worker-1
+      requires:
+        - label: svc-part-stock-worker
+          semp: /msgVpns/{vpn}/clientUsernames/svc-part-stock-worker
+        - label: q.part.stock
+          semp: /msgVpns/{vpn}/queues/q.part.stock
+    - id: worker2
+      label: Stock Worker 2
+      sublabel: its own SKUs, in order
+      kind: app
+      col: 2
+      action: worker-2
+    - id: worker3
+      label: Stock Worker 3
+      sublabel: start to rebalance
+      kind: app
+      col: 2
+      action: worker-3
+  flows:
+    - { from: feed, to: broker, label: movements, delay: 0 }
+    - { from: feed, to: broker, delay: 0.2 }
+    - { from: broker, to: worker1, delay: 1.0 }
+    - { from: broker, to: worker2, delay: 1.2 }
+    - { from: broker, to: worker3, delay: 1.4 }
+
+actions:
+  - id: apply
+    label: Apply configuration
+    kind: terraform
+    command: apply
+    tf_dir: tf
+    variant: primary
+    description: >
+      Creates q.part.stock, a non-exclusive queue with three partitions, plus
+      the client profile, ACL profile and two client usernames.
+
+  - id: build
+    label: Build the apps
+    kind: process
+    cmd: [bash, ../../apps/run.sh, build]
+    cwd: .
+    variant: secondary
+    description: >
+      Compiles the Go apps shared by every section. Only needed to rebuild
+      after a change.
+
+  - id: worker-1
+    label: Start stock worker 1
+    kind: process
+    cmd: [bash, ../../apps/run.sh, sonepar, consume, --role, worker-1, --user, svc-part-stock-worker, --queue, q.part.stock, --check-order, --ack-delay, 100ms]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Binds to the partitioned queue and applies each stock movement. Each
+      line shows the SKU (the key) and its sequence number, and any movement
+      that arrives out of order is flagged.
+
+  - id: worker-2
+    label: Start stock worker 2
+    kind: process
+    cmd: [bash, ../../apps/run.sh, sonepar, consume, --role, worker-2, --user, svc-part-stock-worker, --queue, q.part.stock, --check-order, --ack-delay, 100ms]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      The same app again. Compare its SKUs with worker 1's: no SKU appears in
+      both logs.
+
+  - id: worker-3
+    label: Start stock worker 3
+    kind: process
+    cmd: [bash, ../../apps/run.sh, sonepar, consume, --role, worker-3, --user, svc-part-stock-worker, --queue, q.part.stock, --check-order, --ack-delay, 100ms]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      A third worker. After about five seconds the broker moves one partition
+      to it, and the SKUs on that partition start appearing here instead.
+
+  - id: publish
+    label: Start the stock feed
+    kind: process
+    cmd: [bash, ../../apps/run.sh, sonepar, publish, --role, stock-feed, --user, svc-part-stock-feed, --feed, stock, --burst, "24", --every, 3s, --quiet]
+    cwd: .
+    long_running: true
+    variant: primary
+    description: >
+      Publishes 24 stock movements every three seconds across twelve SKUs, to
+      topics like sonepar/inventory/stock/adjusted/v1/dc-fr-north/MCB-C16-1P.
+      Each movement carries its SKU as the partition key and a sequence
+      number per SKU.
+
+  - id: plan
+    label: Preview changes
+    kind: terraform
+    command: plan
+    tf_dir: tf
+    variant: secondary
+    description: >
+      Shows what Apply would change on the broker, without changing anything.
+
+  - id: reconcile
+    label: Reconcile with broker
+    kind: process
+    cmd: [bash, ../../scripts/reconcile.sh, partitioned-queue]
+    cwd: .
+    variant: secondary
+    description: >
+      Use this if Play fails with "already exists". It imports objects that are
+      on the broker but missing from terraform state. The broker is not modified.
+
+  - id: destroy
+    label: Remove configuration
+    kind: terraform
+    command: destroy
+    tf_dir: tf
+    variant: danger
+    description: >
+      Deletes the queue and the access control for this section. Any stock
+      movements still on the queue go with it.
+
+  # Used by the failure modes, not by Play.
+  - id: worker-4
+    label: Start stock worker 4
+    kind: process
+    failure_only: true
+    cmd: [bash, ../../apps/run.sh, sonepar, consume, --role, worker-4, --user, svc-part-stock-worker, --queue, q.part.stock, --check-order, --ack-delay, 100ms]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      A fourth worker on a queue with three partitions.
+
+failure_modes:
+  - id: worker-stops
+    title: A stock worker stops
+    breaks: >
+      Stock worker 1 stops while movements keep arriving.
+    watch: >
+      For about five seconds the SKUs worker 1 owned wait on the queue. Then
+      the broker hands its partitions to worker 2, and those SKUs start
+      appearing in worker 2's log, carrying on from the right sequence
+      number with nothing flagged out of order. Reset starts worker 1 again
+      and the broker gives it a share back.
+    why: >
+      Each partition is delivered to one consumer at a time. When a consumer
+      goes, the broker waits for the rebalance delay (five seconds here) and
+      then assigns its partitions to the consumers that are left. Nothing is
+      delivered for those partitions in between, which is what keeps the
+      order: a new owner only starts once the old one has let go.
+    real_world: >
+      A stock service restarts during a deploy or scales in overnight. Its
+      SKUs move to the remaining instances and keep being applied in order,
+      with no coordination code in the application. The short pause during
+      rebalancing is the price of that guarantee, and it is set on the queue.
+    docs:
+      - label: "Go API: consuming persistent messages"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Subscribe.htm
+      - label: "Broker: partitioned queues"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Partitioned-Queue-Messaging.htm
+    node: worker1
+    logs: worker-2
+    trigger:
+      - stop: worker-1
+    reset:
+      - start: worker-1
+
+  - id: too-many-workers
+    title: More workers than partitions
+    breaks: >
+      Workers 3 and 4 join, so four workers share a queue with only three
+      partitions.
+    watch: >
+      Give the broker about five seconds to rebalance, then compare the four
+      logs. Three workers each own one partition. The fourth binds without
+      any error and then receives nothing. Open Workers on the queue under On
+      the broker: three flows are active-consumer and one is inactive. Reset
+      stops workers 3 and 4.
+    why: >
+      A partition is delivered to exactly one consumer, so a queue with three
+      partitions can keep at most three consumers busy. The fourth is bound
+      and ready, and takes over a partition as soon as one of the others
+      leaves, but until then the broker has nothing to give it.
+    real_world: >
+      A team scales the stock service from three to six instances to clear a
+      backlog, and throughput does not move. Partitioned queues scale up to
+      the partition count and no further. Choose the count for the largest
+      number of consumers you expect to run, and remember that changing it
+      later reshuffles which keys go to which consumer.
+    docs:
+      - label: "Go API: consuming persistent messages"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Subscribe.htm
+      - label: "Broker: partitioned queues"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Partitioned-Queue-Messaging.htm
+    node: broker
+    logs: worker-4
+    trigger:
+      - start: worker-3
+      - start: worker-4
+    reset:
+      - stop: worker-4
+      - stop: worker-3
+
+inspect:
+  - label: Queues
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues?count=100&where=queueName==q.part.*
+    # The message id columns other sections show stay at zero on a partitioned
+    # queue, because the messages are held on the partitions behind it.
+    columns: [queueName, accessType, partitionCount, msgSpoolUsage]
+    ui_hint: Manager → Queues
+  - label: Workers on the queue
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues/q.part.stock/txFlows?count=10
+    columns: [clientName, activityState, ackedMsgCount, unackedMsgCount, redeliveredMsgCount]
+    ui_hint: Manager → Queues → q.part.stock → Consumers

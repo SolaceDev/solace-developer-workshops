@@ -1,13 +1,15 @@
 id: pub-sub
 order: 20
 eyebrow: Messaging
-title: Publish and Subscribe
+title: Direct Pub/Sub
 summary: >
-  Acme Air publishes flight, baggage and booking events to three topics. Four
-  subscribers listen, each connecting as its own client username with its own ACL
-  profile, and each receives only what it is authorised for. Every client shares
-  one client profile, so every difference in what they see comes from access
-  control rather than from the applications.
+  Direct messaging, the fastest and simplest way to move events. Acme Air
+  publishes flight, baggage and booking events to three topics. Four
+  subscribers listen, each connecting as its own client username with its own
+  ACL profile, and each receives only what it is authorised for. Every client
+  shares one client profile, so every difference in what they see comes from
+  access control rather than from the applications. Nothing is stored: a
+  subscriber only gets what is published while it is connected.
 
 objectives:
   - See how a structured topic hierarchy lets one publisher serve several unrelated consumers

@@ -1,9 +1,13 @@
-# Publish and subscribe
+# Direct pub/sub
 
 Acme Air publishes flight, baggage and booking events. Four subscribers
 listen. Each receives only what it is authorised for, and every one of them
 runs the same code with the same client profile, so every difference you see
 comes from broker configuration.
+
+Everything in this section is direct messaging: the broker passes each event
+to whoever is subscribed at that moment and keeps nothing. That makes it fast,
+and it is the baseline the queue sections that follow improve on.
 
 Press **Play**.
 
@@ -94,4 +98,4 @@ This is why the Play sequence starts the subscribers before the publisher.
 - Check **Connected Clients** under **On the broker** while everything runs, and watch the
   message counts diverge between the four subscribers.
 
-Next: [Fan-out](30-fan-out.md).
+Next: [Exclusive queue](30-exclusive-queue.md).

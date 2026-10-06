@@ -29,6 +29,11 @@ type QueueOpts struct {
 	// gets one consumer the messages and leaves the rest idle, which looks
 	// like a broken app rather than a configuration mismatch.
 	Shared bool
+
+	// OnStateChange is told when the broker makes this receiver active or
+	// passive. On an exclusive queue only one bound consumer is active at a
+	// time, and without this a standby looks exactly like a stuck app.
+	OnStateChange solace.ReceiverStateChangeListener
 }
 
 // BindQueue starts a persistent receiver bound to an existing durable queue.
@@ -48,6 +53,9 @@ func BindQueue(role, username string, svc solace.MessagingService, queue string,
 	}
 	if len(opts.Outcomes) > 0 {
 		b = b.WithRequiredMessageOutcomeSupport(opts.Outcomes...)
+	}
+	if opts.OnStateChange != nil {
+		b = b.WithActivationPassivationSupport(opts.OnStateChange)
 	}
 
 	endpoint := resource.QueueDurableExclusive(queue)

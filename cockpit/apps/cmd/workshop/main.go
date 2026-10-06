@@ -21,6 +21,7 @@ import (
 	"solace-workshop/apps/scenarios/pubsub"
 	"solace-workshop/apps/scenarios/shock"
 	"solace-workshop/apps/scenarios/smartshelf"
+	"solace-workshop/apps/scenarios/sonepar"
 	"solace-workshop/apps/scenarios/streaming"
 )
 
@@ -51,6 +52,8 @@ var roles = map[string]func([]string){
 	"smartshelf sensors": smartshelf.Sensors,
 	"smartshelf pricing": smartshelf.Pricing,
 	"smartshelf labels":  smartshelf.Labels,
+	"sonepar publish":    sonepar.Publish,
+	"sonepar consume":    sonepar.Consume,
 }
 
 func main() {

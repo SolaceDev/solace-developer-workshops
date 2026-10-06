@@ -1,0 +1,298 @@
+id: non-exclusive-queue
+order: 40
+eyebrow: Queues
+title: Non-exclusive Queue
+summary: >
+  At the start of the day a wave of orders turns into pick tasks for the
+  warehouse, far faster than one picker can work. A non-exclusive queue holds
+  the wave and shares it out: every picker bound to the queue takes a share,
+  so adding pickers clears the backlog faster without changing anything else.
+  Stop a picker mid-wave and its unfinished tasks go to someone else.
+
+objectives:
+  - Watch a queue absorb a wave of work that one consumer cannot keep up with
+  - Add consumers to a non-exclusive queue and see the work shared between them
+  - Stop a consumer mid-wave and find its unacknowledged tasks redelivered to another
+  - See what a publisher is told when a queue reaches its quota
+
+# One picker in the Play sequence on purpose: the first thing to see is a
+# backlog forming, which needs the pickers to be slower than the wave.
+run:
+  - apply
+  - build
+  - picker-1
+  - publish
+
+diagram:
+  caption: >
+    The order wave publishes pick tasks much faster than one picker can work.
+    The queue on the broker holds the difference, and every picker bound to
+    it takes a share. Click a picker to start it and watch the work spread.
+  duration: 2.6
+  liveWhen: wave
+  nodes:
+    - id: wave
+      label: Order Wave
+      sublabel: bursts of 100 tasks
+      kind: app
+      col: 0
+      action: publish
+      requires:
+        - label: svc-shared-order-wave
+          semp: /msgVpns/{vpn}/clientUsernames/svc-shared-order-wave
+    - id: broker
+      label: Solace Broker
+      sublabel: sonepar/warehouse/pick/requested/v1/>
+      kind: broker
+      col: 1
+      action: apply
+      contains:
+        - id: picks
+          label: q.shared.pick-tasks
+      provides:
+        - label: q.shared.pick-tasks
+          group: picks
+          semp: /msgVpns/{vpn}/queues/q.shared.pick-tasks
+        - label: cp-shared
+          semp: /msgVpns/{vpn}/clientProfiles/cp-shared
+        - label: acl-shared
+          semp: /msgVpns/{vpn}/aclProfiles/acl-shared
+    - id: picker1
+      label: Picker 1
+      sublabel: ~300ms per task
+      kind: app
+      col: 2
+      action: picker-1
+      requires:
+        - label: svc-shared-picker
+          semp: /msgVpns/{vpn}/clientUsernames/svc-shared-picker
+        - label: q.shared.pick-tasks
+          semp: /msgVpns/{vpn}/queues/q.shared.pick-tasks
+    - id: picker2
+      label: Picker 2
+      sublabel: start to go faster
+      kind: app
+      col: 2
+      action: picker-2
+    - id: picker3
+      label: Picker 3
+      sublabel: start to go faster
+      kind: app
+      col: 2
+      action: picker-3
+  flows:
+    - { from: wave, to: broker, label: wave, delay: 0 }
+    - { from: wave, to: broker, delay: 0.15 }
+    - { from: wave, to: broker, delay: 0.3 }
+    - { from: broker, to: picker1, delay: 0.9 }
+    - { from: broker, to: picker2, delay: 1.1 }
+    - { from: broker, to: picker3, delay: 1.3 }
+
+actions:
+  - id: apply
+    label: Apply configuration
+    kind: terraform
+    command: apply
+    tf_dir: tf
+    variant: primary
+    description: >
+      Creates the non-exclusive queue q.shared.pick-tasks with its topic
+      subscription, plus the client profile, ACL profile and two client
+      usernames.
+
+  - id: build
+    label: Build the apps
+    kind: process
+    cmd: [bash, ../../apps/run.sh, build]
+    cwd: .
+    variant: secondary
+    description: >
+      Compiles the Go apps shared by every section. Only needed to rebuild
+      after a change.
+
+  - id: picker-1
+    label: Start picker 1
+    kind: process
+    cmd: [bash, ../../apps/run.sh, sonepar, consume, --role, picker-1, --user, svc-shared-picker, --queue, q.shared.pick-tasks, --ack-delay, 300ms]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Binds to the shared queue and works one pick task at a time, about
+      300ms each. One picker cannot keep up with a wave, which is what makes
+      the backlog visible.
+
+  - id: picker-2
+    label: Start picker 2
+    kind: process
+    cmd: [bash, ../../apps/run.sh, sonepar, consume, --role, picker-2, --user, svc-shared-picker, --queue, q.shared.pick-tasks, --ack-delay, 300ms]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      The same app again, bound to the same queue. The broker shares the
+      tasks between the pickers, so the backlog drains about twice as fast.
+
+  - id: picker-3
+    label: Start picker 3
+    kind: process
+    cmd: [bash, ../../apps/run.sh, sonepar, consume, --role, picker-3, --user, svc-shared-picker, --queue, q.shared.pick-tasks, --ack-delay, 300ms]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      A third picker. Nothing about the queue or the order wave changes when
+      it joins or leaves.
+
+  - id: publish
+    label: Start the order wave
+    kind: process
+    cmd: [bash, ../../apps/run.sh, sonepar, publish, --role, order-wave, --user, svc-shared-order-wave, --feed, picks, --burst, "100", --every, 20s, --quiet]
+    cwd: .
+    long_running: true
+    variant: primary
+    description: >
+      Publishes 100 pick tasks as fast as it can, waits twenty seconds, then
+      does it again. Each task goes to a topic like
+      sonepar/warehouse/pick/requested/v1/dc-fr-north/SO-200001.
+
+  - id: plan
+    label: Preview changes
+    kind: terraform
+    command: plan
+    tf_dir: tf
+    variant: secondary
+    description: >
+      Shows what Apply would change on the broker, without changing anything.
+
+  - id: reconcile
+    label: Reconcile with broker
+    kind: process
+    cmd: [bash, ../../scripts/reconcile.sh, non-exclusive-queue]
+    cwd: .
+    variant: secondary
+    description: >
+      Use this if Play fails with "already exists". It imports objects that are
+      on the broker but missing from terraform state. The broker is not modified.
+
+  - id: destroy
+    label: Remove configuration
+    kind: terraform
+    command: destroy
+    tf_dir: tf
+    variant: danger
+    description: >
+      Deletes the queue and the access control for this section. Any tasks
+      still on the queue go with it.
+
+  # Used by the failure modes, not by Play.
+  - id: flood
+    label: Publish a flood of tasks
+    kind: process
+    failure_only: true
+    cmd: [bash, ../../apps/run.sh, sonepar, publish, --role, flood, --user, svc-shared-order-wave, --feed, picks, --burst, "500", --every, 1ms, --count, "15000", --quiet]
+    cwd: .
+    variant: secondary
+    description: >
+      Publishes 15,000 pick tasks at once, far more than the queue's 1 MB
+      quota can hold, then stops.
+
+  - id: drain
+    label: Clear the backlog
+    kind: process
+    failure_only: true
+    cmd: [bash, ../../apps/run.sh, sonepar, consume, --role, bulk-picker, --user, svc-shared-picker, --queue, q.shared.pick-tasks, --ack-delay, 0s, --quiet, --idle-exit, 3s]
+    cwd: .
+    variant: secondary
+    description: >
+      A picker with no work to do per task, which empties the queue and exits
+      once nothing has arrived for three seconds.
+
+failure_modes:
+  - id: picker-dies
+    title: A picker stops mid-wave
+    breaks: >
+      Picker 2 joins, then picker 1 stops while it is holding tasks it has
+      taken but not yet acknowledged.
+    watch: >
+      Watch picker 2's log. Within a second or two it receives the tasks
+      picker 1 was holding, marked (redelivered), and carries on with the
+      wave. No task is lost. Reset starts picker 1 again and stops picker 2.
+    why: >
+      Each picker may hold up to ten tasks it has not yet acknowledged
+      (max_delivered_unacked_msgs_per_flow). The broker only deletes a task
+      when a picker acknowledges it. When picker 1 goes, the tasks it still
+      held go back on the queue and the broker gives them to another picker,
+      with the redelivered flag set.
+    real_world: >
+      A handheld scanner app crashes, or a picking service is scaled down in
+      the middle of the morning wave. With a queue and client
+      acknowledgement, the tasks it held go to another instance instead of
+      vanishing. A task may be worked twice, so a consumer should be safe to
+      run again on a task it might already have handled.
+    docs:
+      - label: "Go API: consuming persistent messages and acknowledgments"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Subscribe.htm
+      - label: "Broker: exclusive and non-exclusive queues"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Endpoints.htm
+    node: picker1
+    logs: picker-2
+    trigger:
+      - start: picker-2
+      - stop: picker-1
+    reset:
+      - start: picker-1
+      - stop: picker-2
+
+  - id: queue-full
+    title: The queue fills up
+    breaks: >
+      Picker 1 stops, and 15,000 pick tasks arrive at once, more than the
+      queue's 1 MB quota can hold.
+    watch: >
+      The flood's log shows the broker accepting tasks until the queue is
+      full, then refusing the rest with the error the publisher receives.
+      Open Queues under On the broker: msgSpoolUsage sits at the quota. Reset
+      empties the queue with a fast bulk picker, then starts picker 1 again.
+    why: >
+      Every queue has a quota (max_msg_spool_usage, 1 MB here). Once it is
+      reached the broker cannot store another message on that queue. Because
+      the queue is set to reject messages to the sender when it discards
+      them, each publish that cannot be stored comes back to the publisher as
+      a failed receipt instead of disappearing silently.
+    real_world: >
+      A consumer is down for hours, or a promotion produces more orders than
+      the warehouse system was sized for. A queue absorbs a surge, but not an
+      unlimited one. Size quotas for the longest outage you want to ride out,
+      alert on queue depth well before the limit, and make sure publishers
+      handle a refused message rather than assuming every publish succeeds.
+    docs:
+      - label: "Go API: publish receipts for persistent messages"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Publish.htm
+      - label: "Broker: configuring queues"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Configuring-Queues.htm
+    node: broker
+    logs: flood
+    trigger:
+      - stop: picker-1
+      - start: flood
+    reset:
+      - run: drain
+      - start: picker-1
+
+inspect:
+  - label: Queues
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues?count=100&where=queueName==q.shared.*
+    # msgSpoolUsage is the live backlog and returns to zero once the queue
+    # drains. The gap between lastSpooledMsgId and highestAckedMsgId is
+    # roughly how many tasks are waiting.
+    columns: [queueName, accessType, msgSpoolUsage, maxMsgSpoolUsage, lastSpooledMsgId, highestAckedMsgId, redeliveredMsgCount]
+    ui_hint: Manager → Queues
+  - label: Pickers bound to the queue
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues/q.shared.pick-tasks/txFlows?count=10
+    columns: [clientName, activityState, ackedMsgCount, unackedMsgCount, redeliveredMsgCount]
+    ui_hint: Manager → Queues → q.shared.pick-tasks → Consumers

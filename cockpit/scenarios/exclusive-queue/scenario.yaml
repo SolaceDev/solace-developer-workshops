@@ -1,0 +1,263 @@
+id: exclusive-queue
+order: 30
+eyebrow: Queues
+title: Exclusive Queue
+summary: >
+  Orders from the webshop must reach the ERP, all of them, in the order they
+  were placed. A queue keeps every order until the ERP has it, even while the
+  ERP is down. Because the queue is exclusive, two ERP connectors can be
+  connected and only one receives at a time. The other waits on standby and
+  takes over the moment the first one stops.
+
+objectives:
+  - See a queue keep every message for a consumer that is not connected
+  - Watch an exclusive queue deliver to one consumer while another waits on standby
+  - Stop the active consumer and see the standby take over at the next order, with nothing lost
+  - Check that orders still arrive in sequence after a takeover
+
+# Connector A before B, so A binds first and is the active one. Both before
+# the webshop, although with a queue that no longer matters: orders published
+# before anyone binds are kept.
+run:
+  - apply
+  - build
+  - erp-a
+  - erp-b
+  - publish
+
+diagram:
+  caption: >
+    The webshop publishes each order to a topic. The queue on the broker
+    subscribes to those topics and keeps every order until an ERP connector
+    has acknowledged it. Both connectors are bound to the queue, but only the
+    active one receives. Click a box to start it, stop it or read its log.
+  duration: 2.4
+  liveWhen: webshop
+  nodes:
+    - id: webshop
+      label: Webshop
+      sublabel: svc-excl-webshop
+      kind: app
+      col: 0
+      action: publish
+      requires:
+        - label: svc-excl-webshop
+          semp: /msgVpns/{vpn}/clientUsernames/svc-excl-webshop
+    - id: broker
+      label: Solace Broker
+      sublabel: sonepar/order/placed/v1/>
+      kind: broker
+      col: 1
+      action: apply
+      contains:
+        - id: orders
+          label: q.excl.erp-orders
+      provides:
+        - label: q.excl.erp-orders
+          group: orders
+          semp: /msgVpns/{vpn}/queues/q.excl.erp-orders
+        - label: cp-excl
+          semp: /msgVpns/{vpn}/clientProfiles/cp-excl
+        - label: acl-excl
+          semp: /msgVpns/{vpn}/aclProfiles/acl-excl
+    - id: erpa
+      label: ERP Connector A
+      sublabel: active
+      kind: app
+      col: 2
+      action: erp-a
+      requires:
+        - label: svc-excl-erp
+          semp: /msgVpns/{vpn}/clientUsernames/svc-excl-erp
+        - label: q.excl.erp-orders
+          semp: /msgVpns/{vpn}/queues/q.excl.erp-orders
+    - id: erpb
+      label: ERP Connector B
+      sublabel: standby
+      kind: app
+      col: 2
+      action: erp-b
+      requires:
+        - label: svc-excl-erp
+          semp: /msgVpns/{vpn}/clientUsernames/svc-excl-erp
+        - label: q.excl.erp-orders
+          semp: /msgVpns/{vpn}/queues/q.excl.erp-orders
+  flows:
+    - { from: webshop, to: broker, label: order placed, delay: 0 }
+    - { from: broker, to: erpa, label: one at a time, delay: 1.0 }
+
+actions:
+  - id: apply
+    label: Apply configuration
+    kind: terraform
+    command: apply
+    tf_dir: tf
+    variant: primary
+    description: >
+      Creates the exclusive queue q.excl.erp-orders with its topic
+      subscription, plus the client profile, ACL profile and two client
+      usernames.
+
+  - id: build
+    label: Build the apps
+    kind: process
+    cmd: [bash, ../../apps/run.sh, build]
+    cwd: .
+    variant: secondary
+    description: >
+      Compiles the Go apps shared by every section. Only needed to rebuild
+      after a change.
+
+  - id: erp-a
+    label: Start ERP connector A
+    kind: process
+    cmd: [bash, ../../apps/run.sh, sonepar, consume, --role, erp-a, --user, svc-excl-erp, --queue, q.excl.erp-orders, --exclusive, --check-order, --ack-delay, 300ms]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Binds to the exclusive queue and books each order into the ERP, taking
+      about 300ms per order. Its log says whether it is ACTIVE or on STANDBY,
+      and flags any order that arrives out of sequence.
+
+  - id: erp-b
+    label: Start ERP connector B
+    kind: process
+    cmd: [bash, ../../apps/run.sh, sonepar, consume, --role, erp-b, --user, svc-excl-erp, --queue, q.excl.erp-orders, --exclusive, --check-order, --ack-delay, 300ms]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      A second copy of the same connector, bound to the same queue. While A
+      is connected, B receives nothing and its log says STANDBY.
+
+  - id: publish
+    label: Start the webshop
+    kind: process
+    cmd: [bash, ../../apps/run.sh, sonepar, publish, --role, webshop, --user, svc-excl-webshop, --feed, orders, --burst, "5", --every, 2s]
+    cwd: .
+    long_running: true
+    variant: primary
+    description: >
+      Publishes five orders every two seconds as guaranteed messages, to topics like
+      sonepar/order/placed/v1/lyon-03/SO-100001. Each order carries a
+      sequence number so the connectors can check the order they arrive in.
+
+  - id: plan
+    label: Preview changes
+    kind: terraform
+    command: plan
+    tf_dir: tf
+    variant: secondary
+    description: >
+      Shows what Apply would change on the broker, without changing anything.
+
+  - id: reconcile
+    label: Reconcile with broker
+    kind: process
+    cmd: [bash, ../../scripts/reconcile.sh, exclusive-queue]
+    cwd: .
+    variant: secondary
+    description: >
+      Use this if Play fails with "already exists". It imports objects that are
+      on the broker but missing from terraform state. The broker is not modified.
+
+  - id: destroy
+    label: Remove configuration
+    kind: terraform
+    command: destroy
+    tf_dir: tf
+    variant: danger
+    description: >
+      Deletes the queue and the access control for this section. Any orders
+      still on the queue go with it.
+
+failure_modes:
+  - id: active-stops
+    title: The active connector stops
+    breaks: >
+      ERP connector A stops while the webshop keeps sending orders.
+    watch: >
+      Watch connector B's log. Within a second it changes from STANDBY to
+      ACTIVE and starts at the very next order A did not finish. Check the
+      sequence numbers against the end of A's log: none are missing and none
+      are out of order. Reset restarts A, which now joins as the standby.
+    why: >
+      An exclusive queue delivers to one bound consumer at a time. The broker
+      keeps the others bound but idle, and when the active one unbinds it
+      promotes the next straight away. A stopped cleanly, so it finished and
+      acknowledged what it had. Had it crashed instead, the orders it held
+      unacknowledged would still be on the queue, and B would receive them
+      again marked (redelivered).
+    real_world: >
+      The ERP connector runs as two instances for resilience, but the ERP must
+      book orders in sequence, so they cannot both work at once. An exclusive
+      queue gives you active and standby without writing any leader election:
+      when the active pod restarts or its node fails, the standby takes over
+      in seconds. Because a crash can mean an order is delivered twice, the
+      connector should check the redelivered flag or the order id before
+      booking.
+    docs:
+      - label: "Go API: activation and passivation of receivers"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Subscribe.htm
+      - label: "Broker: exclusive and non-exclusive queues"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Endpoints.htm
+    node: erpa
+    logs: erp-b
+    trigger:
+      - stop: erp-a
+    reset:
+      - start: erp-a
+
+  - id: erp-offline
+    title: The ERP is offline
+    breaks: >
+      Both connectors stop, as if the ERP were down for maintenance, while
+      the webshop keeps taking orders.
+    watch: >
+      Open Queues under On the broker and press Refresh a few times. The
+      backlog on q.excl.erp-orders grows with every order. The webshop does
+      not notice. Press Reset: connector A starts, works through the backlog
+      oldest first, and the sequence numbers in its log have no gaps.
+    why: >
+      The queue's subscription matches every order topic, so the broker
+      stores each order on the queue whether or not anyone is bound to it.
+      An order is deleted only when a consumer acknowledges it. This is the
+      difference from direct messaging in the previous section, where a
+      subscriber that was away simply missed what was published.
+    real_world: >
+      ERP maintenance windows, a slow ERP during month end, or a connector
+      that crashes overnight. The webshop keeps selling and nothing is lost:
+      the orders wait on the broker until the ERP is back. Watch the queue's
+      quota, though. A queue that is never drained eventually fills, and then
+      the broker starts refusing new orders.
+    docs:
+      - label: "Go API: publishing persistent messages"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-PM-Publish.htm
+      - label: "Broker: queues"
+        url: https://docs.solace.com/Messaging/Guaranteed-Msg/Queues.htm
+    node: broker
+    logs: erp-a
+    trigger:
+      - stop: erp-a
+      - stop: erp-b
+    reset:
+      - start: erp-a
+      - start: erp-b
+
+inspect:
+  - label: Queues
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues?count=100&where=queueName==q.excl.*
+    # msgSpoolUsage is the live backlog and returns to zero once the queue
+    # drains. The gap between lastSpooledMsgId and highestAckedMsgId is
+    # roughly how many orders are waiting.
+    columns: [queueName, accessType, msgSpoolUsage, lastSpooledMsgId, highestAckedMsgId, redeliveredMsgCount]
+    ui_hint: Manager → Queues
+  - label: Connectors bound to the queue
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/queues/q.excl.erp-orders/txFlows?count=10
+    columns: [clientName, activityState, ackedMsgCount, unackedMsgCount, redeliveredMsgCount]
+    ui_hint: Manager → Queues → q.excl.erp-orders → Consumers

@@ -44,11 +44,17 @@ binary.
 
 ## What you built
 
-Nine sections: a configuration tour, publish and subscribe, the five patterns
-from the Real Time Data Deep Dives series, and two capstones that compose
-them.
+Six sections: a configuration tour, direct publish and subscribe, and four
+kinds of queue.
 
-The patterns are worth more than the scenarios. Pick one painful integration
-in your own stack, name its events in business language, and work out which
-of these shapes it wants. Most real problems need more than one, which is
-what the capstones are there to show.
+| You need | Use |
+| --- | --- |
+| The latest value, fast, and a missed one does not matter | Direct messaging |
+| Every message, in order, with a standby ready to take over | Exclusive queue |
+| Every message, worked in parallel, order not important | Non-exclusive queue |
+| Every message, in order per key, worked in parallel | Partitioned queue |
+| Somewhere for the messages that cannot be processed | Dead message queue |
+
+Pick one integration in your own landscape, an order flow, a stock feed or a
+supplier interface, name its events in business language, and work out which
+row it belongs in. Most real systems use more than one.

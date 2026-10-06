@@ -1,0 +1,13 @@
+# What the exclusive-queue scenario owns on the broker.
+# Columns: terraform address <TAB> import id. {vpn} is substituted.
+
+solacebroker_msg_vpn_client_profile.excl	{vpn}/cp-excl
+
+solacebroker_msg_vpn_acl_profile.excl	{vpn}/acl-excl
+solacebroker_msg_vpn_acl_profile_publish_topic_exception.excl	{vpn}/acl-excl/smf/sonepar%2Forder%2F%3E
+
+solacebroker_msg_vpn_client_username.excl["webshop"]	{vpn}/svc-excl-webshop
+solacebroker_msg_vpn_client_username.excl["erp"]	{vpn}/svc-excl-erp
+
+solacebroker_msg_vpn_queue.orders	{vpn}/q.excl.erp-orders
+solacebroker_msg_vpn_queue_subscription.orders	{vpn}/q.excl.erp-orders/sonepar%2Forder%2Fplaced%2Fv1%2F%3E
