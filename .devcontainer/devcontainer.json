@@ -26,12 +26,9 @@
       "tflint": "none",
       "terragrunt": "none"
     },
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.12",
-      "installTools": false
-    },
     "ghcr.io/devcontainers/features/go:1": {
-      "version": "latest"
+      "version": "latest",
+      "installGoTools": false
     }
   },
   "forwardPorts": [3000, 8080],
