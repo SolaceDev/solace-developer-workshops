@@ -1,0 +1,11 @@
+# What the getting-started scenario owns on the broker.
+# Columns: terraform address <TAB> import id. {vpn} is substituted.
+
+solacebroker_msg_vpn_client_profile.hello	{vpn}/cp-hello
+
+solacebroker_msg_vpn_acl_profile.hello	{vpn}/acl-hello
+solacebroker_msg_vpn_acl_profile_publish_topic_exception.hello	{vpn}/acl-hello/smf/workshop%2Fhello%2F%3E
+solacebroker_msg_vpn_acl_profile_subscribe_topic_exception.hello	{vpn}/acl-hello/smf/workshop%2Fhello%2F%3E
+
+solacebroker_msg_vpn_client_username.hello["greeter"]	{vpn}/svc-hello-greeter
+solacebroker_msg_vpn_client_username.hello["listener"]	{vpn}/svc-hello-listener

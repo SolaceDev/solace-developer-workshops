@@ -1,9 +1,10 @@
 # Solace Core Developer Workshop
 
-A hands-on introduction to event-driven architecture on the Solace Broker. Nine
-sections, each one a working system you run, break and inspect: a broker
-configuration tour, publish and subscribe, the five patterns from the
-Real-Time Data Deep Dives series, and two capstones that compose them.
+A hands-on introduction to event-driven architecture on the Solace Broker. A
+short practice run on the dashboard itself, then nine sections, each one a
+working system you run, break and inspect: a broker configuration tour,
+publish and subscribe, the five patterns from the Real-Time Data Deep Dives
+series, and two capstones that compose them.
 
 Everything runs in a container. There is nothing to install and no account to
 create.
@@ -28,7 +29,7 @@ finishes, start at [Getting started](guides/00-getting-started.md).
 
 | # | Section | What it covers |
 | --- | --- | --- |
-| 00 | [Getting started](guides/00-getting-started.md) | The dashboard, the broker, and how a section works |
+| 00 | [Getting started](guides/00-getting-started.md) | A practice run: Play, Break it, On the broker and Broker Manager |
 | 10 | [Tour the broker](guides/10-broker-tour.md) | Queues, client profiles, ACL profiles |
 | 20 | [Publish and subscribe](guides/20-pub-sub.md) | Topic hierarchies, wildcards, access control |
 | 30 | [Fan-out](guides/30-fan-out.md) | One event, many independent consumers |

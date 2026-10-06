@@ -1,0 +1,296 @@
+id: getting-started
+order: 0
+eyebrow: Start here
+title: Using the Dashboard
+summary: >
+  A practice run before the real thing. One app says hello every three seconds
+  and another listens. The messaging is kept simple on purpose, so you can
+  learn the controls every later section uses: Play, Pause and Cleanup, the
+  live diagram, the step flowchart, the Break it cards, the On the broker
+  views, and Solace Broker Manager.
+
+objectives:
+  - Bring a scenario up with Play, stop it with Pause, and remove it with Cleanup
+  - Read the diagram as a live view, and click a node to start it, stop it or read its log
+  - Run a single step from Step through it, and tell a running step from a failed one
+  - Break something on purpose, read the real error, and Reset it
+  - Check what the dashboard shows against the broker itself, in On the broker and in Solace Broker Manager
+
+# Listener before greeter: direct messaging keeps nothing for a subscriber
+# that has not connected yet.
+run:
+  - apply
+  - build
+  - listen
+  - greet
+
+diagram:
+  caption: >
+    The greeter publishes a numbered greeting, the broker passes it on, and the
+    listener prints it. Every box is live: its dot shows whether the app is
+    running, and its checklist shows whether the broker objects it needs exist
+    right now. Click a box to try it.
+  duration: 2.2
+  liveWhen: greeter
+  nodes:
+    - id: greeter
+      label: Greeter
+      sublabel: svc-hello-greeter
+      kind: app
+      col: 0
+      action: greet
+      requires:
+        - label: svc-hello-greeter
+          semp: /msgVpns/{vpn}/clientUsernames/svc-hello-greeter
+        - label: acl-hello
+          semp: /msgVpns/{vpn}/aclProfiles/acl-hello
+    - id: broker
+      label: Solace Broker
+      sublabel: workshop/hello/>
+      kind: broker
+      col: 1
+      action: apply
+      provides:
+        - label: cp-hello
+          semp: /msgVpns/{vpn}/clientProfiles/cp-hello
+        - label: acl-hello
+          semp: /msgVpns/{vpn}/aclProfiles/acl-hello
+        - label: svc-hello-greeter
+          semp: /msgVpns/{vpn}/clientUsernames/svc-hello-greeter
+        - label: svc-hello-listener
+          semp: /msgVpns/{vpn}/clientUsernames/svc-hello-listener
+    - id: listener
+      label: Listener
+      sublabel: svc-hello-listener
+      kind: app
+      col: 2
+      action: listen
+      requires:
+        - label: svc-hello-listener
+          semp: /msgVpns/{vpn}/clientUsernames/svc-hello-listener
+        - label: acl-hello
+          semp: /msgVpns/{vpn}/aclProfiles/acl-hello
+  flows:
+    - { from: greeter, to: broker, label: greeting, delay: 0 }
+    - { from: broker, to: listener, label: workshop/hello/>, delay: 1.0 }
+
+actions:
+  - id: apply
+    label: Apply configuration
+    kind: terraform
+    command: apply
+    tf_dir: tf
+    variant: primary
+    description: >
+      Creates one client profile, one ACL profile and two client usernames,
+      one for each app. Every section starts with a step like this one.
+
+  - id: build
+    label: Build the apps
+    kind: process
+    cmd: [bash, ../../apps/run.sh, build]
+    cwd: .
+    variant: secondary
+    description: >
+      Compiles every workshop app into one binary. The first build takes a
+      little while; after that it is skipped unless the code changes.
+
+  - id: listen
+    label: Start the listener
+    kind: process
+    cmd: [bash, ../../apps/run.sh, hello, listen]
+    cwd: .
+    long_running: true
+    variant: secondary
+    description: >
+      Connects as svc-hello-listener, subscribes to workshop/hello/> and prints
+      every greeting that arrives. Keeps running until stopped.
+
+  - id: greet
+    label: Start the greeter
+    kind: process
+    cmd: [bash, ../../apps/run.sh, hello, greet]
+    cwd: .
+    long_running: true
+    variant: primary
+    description: >
+      Connects as svc-hello-greeter and publishes a numbered greeting to
+      workshop/hello/greeting/v1 every three seconds until stopped.
+
+  - id: plan
+    label: Preview changes
+    kind: terraform
+    command: plan
+    tf_dir: tf
+    variant: secondary
+    description: >
+      Shows what Apply would change on the broker, without changing anything.
+
+  - id: reconcile
+    label: Reconcile with broker
+    kind: process
+    cmd: [bash, ../../scripts/reconcile.sh, getting-started]
+    cwd: .
+    variant: secondary
+    description: >
+      Use this if Play fails with "already exists". It imports objects that are
+      on the broker but missing from terraform state. The broker is not modified.
+
+  - id: destroy
+    label: Remove configuration
+    kind: terraform
+    command: destroy
+    tf_dir: tf
+    variant: danger
+    description: >
+      Deletes the client usernames, ACL profile and client profile. Cleanup
+      stops the apps first, so nothing is disconnected mid-run.
+
+  # Used by the failure modes, not by Play.
+  - id: listen-forbidden
+    label: Listen where you are not allowed
+    kind: process
+    failure_only: true
+    cmd: [bash, ../../apps/run.sh, hello, listen, --sub, "workshop/admin/>"]
+    cwd: .
+    variant: secondary
+    description: >
+      Connects as svc-hello-listener and subscribes to workshop/admin/>, which
+      its ACL profile does not allow. This step is expected to fail.
+
+  - id: forget-state
+    label: Forget terraform state
+    kind: process
+    failure_only: true
+    cmd: [bash, ../../scripts/forget_state.sh, getting-started]
+    cwd: .
+    variant: secondary
+    description: >
+      Deletes this scenario's terraform state file. Everything it created stays
+      on the broker.
+
+# Each mode teaches one part of the dashboard as much as one broker behaviour:
+# a stopped node, a failed step and its log, and the Reconcile recovery that
+# attendees most often need later on.
+failure_modes:
+  - id: listener-offline
+    title: Stop the listener
+    breaks: >
+      The listener stops while the greeter keeps sending.
+    watch: >
+      In the diagram, the listener's dot goes grey and the greeter keeps
+      going. Wait for two or three greetings, then press Reset. The listener
+      starts again from the next greeting, and the numbers it missed never
+      arrive. Every Break it card works like this one: break, watch, reset.
+    why: >
+      A direct subscription exists only while the app is connected. With the
+      listener gone, greetings published in the meantime match no subscriber,
+      so the broker has nowhere to send them and drops them. Nothing was
+      asked to keep them.
+    real_world: >
+      A service restarts during a deploy, or a network blip drops its
+      connection for a few seconds. With direct messaging, whatever was
+      published in that window is gone. That is fine for data that is
+      replaced moments later, and a real problem for orders or payments,
+      which is why later sections bring in queues.
+    docs:
+      - label: "Go API: consuming direct messages"
+        url: https://docs.solace.com/API/API-Developer-Guide-Go/Go-DM-Subscribe.htm
+      - label: "Broker: direct messages"
+        url: https://docs.solace.com/Messaging/Direct-Msg/Direct-Messages.htm
+    node: listener
+    logs: listen
+    trigger:
+      - stop: listen
+    reset:
+      - start: listen
+
+  - id: forbidden-subscription
+    title: Listen where you are not allowed
+    breaks: >
+      A second listener asks for workshop/admin/>, a topic its ACL profile
+      does not allow.
+    watch: >
+      The log below shows the app connect, then the broker refuse the
+      subscription with a 403. The step exits, so in Step through it it shows
+      as failed. A failed step is not always a broken workshop: read its log
+      first, because the reason is usually right there.
+    why: >
+      acl-hello denies every subscription by default and makes one exception,
+      workshop/hello/>. The broker checks each subscription against that list
+      when it is made. Logging in is a separate check, which is why the
+      connection succeeds and only the subscription is refused.
+    real_world: >
+      A service is pointed at a new topic during a change, starts up and
+      connects normally, and then never receives anything for that topic. The
+      403 in its startup log is the clue. It is also exactly what should
+      happen when a client tries to read data it has no business seeing.
+    docs:
+      - label: "Go API: subcode.SubscriptionAclDenied"
+        url: https://docs.solace.com/API-Developer-Online-Ref-Documentation/go/solace.dev/go/messaging/pkg/solace/subcode/index.html
+      - label: "Broker: controlling client access with ACL profiles"
+        url: https://docs.solace.com/Security/Granting-Clients-Access.htm
+    node: listener
+    logs: listen-forbidden
+    trigger:
+      - start: listen-forbidden
+    reset:
+      - stop: listen-forbidden
+
+  - id: lost-state
+    title: Terraform loses its state
+    needs: applied
+    breaks: >
+      Terraform's record of what it created is deleted, then Apply runs again
+      against a broker that still has everything.
+    watch: >
+      Apply fails with ALREADY_EXISTS for every object. Reset runs Reconcile
+      with broker, which adopts the existing objects back into terraform's
+      record, then applies cleanly. Remember this one: if any section's Play
+      ever fails with "already exists", Reconcile with broker is the fix.
+    why: >
+      Terraform only manages what its state file says it created. With the
+      file gone it sees an empty broker and tries to create everything again,
+      and the broker refuses each create because the object is already there.
+    real_world: >
+      A state file kept on a laptop or in a CI workspace gets wiped, or a new
+      team points terraform at a broker someone configured by hand. The fix is
+      always to import what exists before applying, which is what Reconcile
+      does from tf/imports.tsv.
+    docs:
+      - label: "Terraform: state"
+        url: https://developer.hashicorp.com/terraform/language/state
+      - label: "Broker: declarative SEMP and Terraform"
+        url: https://docs.solace.com/Admin/SEMP/Declarative-SEMP.htm
+    node: broker
+    logs: apply
+    trigger:
+      - run: forget-state
+      - start: apply
+    reset:
+      - run: reconcile
+      - start: apply
+
+inspect:
+  - label: Connected Clients
+    kind: semp
+    api: monitor
+    path: /msgVpns/{vpn}/clients?count=100
+    columns: [clientName, clientUsername, dataRxMsgCount, dataTxMsgCount]
+    ui_hint: Manager → Clients
+
+  - label: Client Usernames
+    kind: semp
+    path: /msgVpns/{vpn}/clientUsernames?count=100
+    columns: [clientUsername, enabled, clientProfileName, aclProfileName]
+    ui_hint: Manager → Access Control → Client Usernames
+
+  - label: ACL Profiles
+    kind: semp
+    path: /msgVpns/{vpn}/aclProfiles?count=100
+    columns:
+      - aclProfileName
+      - clientConnectDefaultAction
+      - publishTopicDefaultAction
+      - subscribeTopicDefaultAction
+    ui_hint: Manager → Access Control → ACL Profiles
