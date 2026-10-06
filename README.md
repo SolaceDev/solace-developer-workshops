@@ -10,7 +10,7 @@ Everything runs in a container. There is nothing to install and no account to
 create.
 
 <p align="center">
-  <a href="https://github.com/codespaces/new/Chaymee/solace-core-developer-workshops?quickstart=1">
+  <a href="https://codespaces.new/SolaceDev/solace-developer-workshops/tree/core-workshops?quickstart=1">
     <img src="https://github.com/codespaces/badge.svg" alt="Open in GitHub Codespaces" width="600">
   </a>
 </p>
