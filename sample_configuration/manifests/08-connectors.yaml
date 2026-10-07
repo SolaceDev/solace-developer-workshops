@@ -1,0 +1,12 @@
+kind: manifest
+name: 08-connectors
+description: Adds the flights, hotels, and places connectors
+target:
+  url: http://localhost:8800
+resources:
+  toolsets:
+    - travel-planner
+  connectors:
+    - flights-db
+    - hotels-db
+    - places-mcp

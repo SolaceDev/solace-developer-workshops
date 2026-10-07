@@ -1,0 +1,10 @@
+kind: connector
+name: places-mcp
+description: "Foursquare local places search. Provides the find_restaurants and find_attractions tools for LocalExperiencesAgent."
+spec:
+  type: mcp
+  subtype: remote
+  values:
+    server_url: "http://ec2-3-138-119-114.us-east-2.compute.amazonaws.com:3001/mcp"
+    connection_type: "sse"
+    auth_type: "none"

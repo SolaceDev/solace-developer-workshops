@@ -1,0 +1,3 @@
+kind: toolset
+name: travel-planner
+description: "Compiles day-by-day travel itineraries and calculates full trip budgets from flight, hotel, and local-experience data. Provides the compile_itinerary and calculate_budget tools used by the TravelOrchestratorAgent."

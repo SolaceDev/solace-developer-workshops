@@ -1,0 +1,12 @@
+kind: connector
+name: hotels-db
+description: "World hotel listings, room types, and nightly rates. Queried by HotelSearchAgent through the hotel_offers view."
+spec:
+  type: sql
+  subtype: postgres
+  values:
+    database: travel
+    hostname: ec2-3-15-151-170.us-east-2.compute.amazonaws.com
+    port: 5432
+    username: travel
+    password: ${TRAVEL_DB_PASSWORD}

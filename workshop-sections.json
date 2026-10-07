@@ -2,31 +2,67 @@
   {
     "id": "s1",
     "title": "Getting Started",
-    "description": "Set up your local Solace Agent Mesh environment and understand the Go-based architecture",
-    "triggerFile": "guides/100_Getting_Started.md"
+    "description": "Get an overview of the workshop, the concepts it covers, and the multi-agent travel planning use case you will build",
+    "triggerFile": "guides/01_Getting_Started.md"
   },
   {
     "id": "s2",
-    "title": "What is Solace Agent Mesh",
-    "description": "Understand what Solace Agent Mesh is, the challenges it addresses, and why an event-driven architecture on a proven message broker is the foundation for enterprise-grade agentic deployments",
-    "triggerFile": "guides/101_Solace_Agent_Mesh.md"
+    "title": "[Hands-on] Launch Solace Agent Mesh",
+    "description": "Launch Solace Agent Mesh in a GitHub Codespace, or install and configure SAM Desktop on your machine",
+    "triggerFile": "guides/02_Handson_launch_agent_mesh.md"
   },
   {
     "id": "s3",
-    "title": "Working with Built-in Tools",
-    "description": "Hire your first set of specialist agents using Solace Agent Mesh built-in tools and explore multi-agent collaboration through the orchestrator",
-    "triggerFile": "guides/200_Builtin_tools.md"
+    "title": "The Agent Development Lifecycle",
+    "description": "Understand why agents need their own lifecycle and the five stages of the ADLC: Build, Test, Deploy, Observe, and Improve",
+    "triggerFile": "guides/03_ADLC.md"
   },
   {
     "id": "s4",
-    "title": "Solace Agent Mesh CLI",
-    "description": "Learn the sam CLI: running components locally, managing authentication, packaging toolsets and skills, and driving declarative configuration changes against a live platform",
-    "triggerFile": "guides/300_sam_cli.md"
+    "title": "What is Solace Agent Mesh",
+    "description": "Understand the Solace Agent Mesh architecture, why it is built on an event broker, Quick Build, and its components: agents, tools, connectors, and entrypoints",
+    "triggerFile": "guides/04_Solace_Agent_Mesh.md"
   },
   {
     "id": "s5",
-    "title": "Working with Connectors",
-    "description": "Onboard agents to external systems using connectors — connect to SQL databases, REST APIs, MCP servers, and knowledge bases without writing code",
-    "triggerFile": "guides/400_Connectors.md"
+    "title": "Declarative SAM and the CLI",
+    "description": "Learn the sam CLI and declarative configuration: config repositories, manifests, plan and apply, secrets, targets, and AI-assisted authoring",
+    "triggerFile": "guides/05_Declarative_SAM_CLI.md"
+  },
+  {
+    "id": "s6",
+    "title": "[Hands-on] Using Built-in Tools",
+    "description": "Build general-purpose agents that use built-in tools with Quick Build, and have the orchestrator use them together",
+    "triggerFile": "guides/06_Handson_builtin_tools.md"
+  },
+  {
+    "id": "s7",
+    "title": "[Hands-on] Using Custom Tools",
+    "description": "Add the travel-planner custom Go toolset with sam config apply, or package it and upload it through the web UI",
+    "triggerFile": "guides/07_Handson_custom_tools.md"
+  },
+  {
+    "id": "s8",
+    "title": "[Hands-on] Connectors",
+    "description": "Connect to the flights and hotels databases and the Places MCP server",
+    "triggerFile": "guides/08_Handson_connectors.md"
+  },
+  {
+    "id": "s9",
+    "title": "[Hands-on] Agents",
+    "description": "Create the flight, hotel, local experiences, and travel orchestrator agents",
+    "triggerFile": "guides/09_Handson_agents.md"
+  },
+  {
+    "id": "s10",
+    "title": "[Hands-on] A2A Proxy",
+    "description": "Connect the external LangChain weather advisor agent to the mesh through an A2A proxy",
+    "triggerFile": "guides/10_Handson_a2a_proxy.md"
+  },
+  {
+    "id": "s11",
+    "title": "[Hands-on] Run the System",
+    "description": "Test each agent on its own, then plan a full trip through the travel orchestrator",
+    "triggerFile": "guides/11_Handson_run_the_system.md"
   }
 ]

@@ -1,0 +1,8 @@
+kind: manifest
+name: 07-custom-tools
+description: Adds the travel-planner custom toolset
+target:
+  url: http://localhost:8800
+resources:
+  toolsets:
+    - travel-planner

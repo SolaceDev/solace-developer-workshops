@@ -1,0 +1,12 @@
+kind: connector
+name: flights-db
+description: "World flight schedules, routes, and pricing. Queried by FlightSearchAgent through the flight_offers view."
+spec:
+  type: sql
+  subtype: postgres
+  values:
+    database: travel
+    hostname: ec2-3-15-151-170.us-east-2.compute.amazonaws.com
+    port: 5432
+    username: travel
+    password: ${TRAVEL_DB_PASSWORD}

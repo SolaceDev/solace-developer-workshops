@@ -1,0 +1,16 @@
+kind: manifest
+name: 09-agents
+description: Adds the hotel, local experiences, and orchestrator agents
+target:
+  url: http://localhost:8800
+resources:
+  toolsets:
+    - travel-planner
+  connectors:
+    - flights-db
+    - hotels-db
+    - places-mcp
+  agents:
+    - HotelSearchAgent
+    - LocalExperiencesAgent
+    - TravelOrchestratorAgent

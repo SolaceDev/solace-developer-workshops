@@ -1,0 +1,17 @@
+kind: manifest
+name: prod
+description: The complete travel planning system. WeatherAdvisorAgent is added through the web UI.
+target:
+  url: http://localhost:8800
+resources:
+  toolsets:
+    - travel-planner
+  connectors:
+    - flights-db
+    - hotels-db
+    - places-mcp
+  agents:
+    - FlightSearchAgent
+    - HotelSearchAgent
+    - LocalExperiencesAgent
+    - TravelOrchestratorAgent

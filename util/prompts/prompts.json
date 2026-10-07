@@ -1,23 +1,37 @@
 [
   {
-    "name": "200a - Create Workshop Agents",
+    "name": "06a - Create Built-in Tool Agents",
     "description": "Creates the four built-in workshop agents: Web Researcher, Data Analyst, Image Analyst, and Diagram Generator.",
     "category": "Workshop Setup",
-    "command": "200a-create-agents",
+    "command": "06a-create-agents",
     "initialPrompt": "Create the following agents that leverage the built in tools.\nAgents to create:\n\n1. Web Researcher\nRole: Web research specialist. Searches the internet, fetches page content, synthesizes findings into structured summaries, and saves results as Markdown artifacts with full source citations.\nGuardrails: Only reports verifiable information from fetched sources. Never fabricates citations. Declares uncertainty when sources conflict. Does not attempt to access authenticated or private URLs.\n\n2. Data analyst\nRole: Structured data analysis specialist. Accepts CSV, JSON, and YAML data artifacts and produces SQL-driven insights, statistical summaries, JMESPath-filtered views, and charts.\nGuardrails: Only analyzes data explicitly provided or loaded as an artifact. Never invents data points or fills gaps with assumptions. Always describes the dataset structure before drawing conclusions.\n\n3. Image Analyst\nRole: Visual intelligence specialist. Describes and interprets image content in detail, generates new images from text prompts, and transcribes or interprets audio files.\n\n4. Diagram Generator\nRole: Technical diagramming and document conversion specialist. Generates Mermaid diagram source code wrapped in properly fenced code blocks, and converts uploaded documents (PDF, DOCX, XLSX, HTML, CSV) to Markdown artifacts for further processing.\nGuardrails: Always shows Mermaid source alongside an explanation of the diagram structure. Uses descriptive node labels. Asks for clarification on diagram intent before generating. Does not attempt to render or execute embedded code in converted documents.\nAgent card: one skill — \"Diagramming and Document Conversion\" — describing the ability to produce Mermaid diagrams and convert office documents to Markdown."
   },
   {
-    "name": "200b - Top 10 Companies Research and Analysis",
+    "name": "06b - Top 10 Companies Research and Analysis",
     "description": "Researches the top 10 most valuable public companies in 2025, saves the data as a structured dataset, analyzes market cap by industry and country, and generates a Mermaid diagram of the breakdown.",
     "category": "Workshop Demo",
-    "command": "200b-top10-companies",
+    "command": "06b-top10-companies",
     "initialPrompt": "Research the top 10 most valuable public companies in the world as of 2025, including their market capitalization, industry, and country of origin. Save the results as a structured dataset, then analyze it to find the total market cap by industry and by country, and finally create a Mermaid diagram that visualizes the breakdown."
   },
   {
-    "name": "400a - Query One Object",
-    "description": "Leverage the database connector to read data from database.",
+    "name": "11a - Plan Singapore to Tokyo Trip",
+    "description": "Plans a 5-day Singapore to Tokyo trip through the TravelOrchestratorAgent, with flights, hotels, restaurants, weather, and a budget.",
     "category": "Workshop Demo",
-    "command": "400a-query-one",
-    "initialPrompt": "Query one object from the db."
+    "command": "11a-singapore-tokyo",
+    "initialPrompt": "@TravelOrchestratorAgent Plan a 5-day trip from Singapore to Tokyo for 2 people.\nDeparture: 10 days from today. Return: 5 days later.\nWe enjoy Japanese cuisine, cultural sites, and outdoor activities.\nInclude flights, hotels, restaurants, weather forecast, and full budget breakdown."
+  },
+  {
+    "name": "11b - Plan Nairobi to Buenos Aires Trip",
+    "description": "Asks the TravelOrchestratorAgent for the best connecting route and total cost from Nairobi to Buenos Aires.",
+    "category": "Workshop Demo",
+    "command": "11b-nairobi-buenos-aires",
+    "initialPrompt": "@TravelOrchestratorAgent I want to travel from Nairobi to Buenos Aires next month.\n2 adults, economy class, mid-range hotels. Best route and estimated total cost?"
+  },
+  {
+    "name": "11c - Plan Bali Beach Holiday",
+    "description": "Plans a 7-night Bali beach holiday from London without naming an agent, to compare the orchestration flow.",
+    "category": "Workshop Demo",
+    "command": "11c-bali-holiday",
+    "initialPrompt": "Plan a 7-night beach holiday in Bali for a couple.\nLuxury resort with a beach villa, spa, and water sports.\nDeparture from London 10 days from today. Include weather and packing list."
   }
 ]

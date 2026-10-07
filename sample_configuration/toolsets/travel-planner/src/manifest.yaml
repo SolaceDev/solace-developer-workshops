@@ -1,0 +1,6 @@
+version: 1
+tools:
+  travel_planner_tools:
+    runtime: go
+    executable: ./travel-planner
+    timeout_seconds: 60

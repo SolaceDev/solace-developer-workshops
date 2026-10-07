@@ -20,7 +20,7 @@
 
 ## Getting Started
 
-New to this workshop? Head over to the [Getting Started guide](./guides/100_Getting_Started.md) for a walkthrough of the environment and first steps.
+New to this workshop? Head over to the [Getting Started guide](./guides/01_Getting_Started.md) for a walkthrough of the environment and first steps.
 
 ## Required Resources - Please verify access before hands-on exercises 
 - [ ] Access to Github - Reach https://github.com/SolaceDev/solace-developer-workshops
@@ -69,7 +69,7 @@ To confirm that the Solace broker is running:
 1. Enter `admin` `admin` as the username password credentials for the solace broker manager
 
 ### 2. Solace Cloud
-To spin up a solace cloud broker, please follow the [Solace Cloud Signup guide](./solace-agent-mesh/solace-cloud-signup-workshop.md)
+To spin up a solace cloud broker, please follow the [Solace Cloud Signup guide](https://github.com/SolaceDev/solace-developer-workshops/blob/main/solace-agent-mesh/solace-cloud-signup-workshop.md)
 
 ## Running locally with DevContainers and VsCode
 
