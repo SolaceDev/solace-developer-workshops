@@ -64,5 +64,11 @@
     "title": "[Hands-on] Run the System",
     "description": "Test each agent on its own, then plan a full trip through the travel orchestrator",
     "triggerFile": "guides/11_Handson_run_the_system.md"
+  },
+  {
+    "id": "s12",
+    "title": "[Hands-on] Workflows",
+    "description": "Learn how workflows differ from dynamic orchestration, add a travel planning workflow, and have the orchestrator route complete trip plans to it",
+    "triggerFile": "guides/12_Handson_workflows.md"
   }
 ]

@@ -1,0 +1,174 @@
+kind: workflow
+name: TravelPlanningWorkflow
+description: "Plans a complete trip in a fixed sequence: searches flights, hotels, and local experiences in parallel, then compiles a day-by-day itinerary and calculates the budget."
+spec:
+  appConfig:
+    description: "Deterministic trip planning: flights, hotels, and local experiences in parallel, then itinerary and budget."
+    version: "1.0.0"
+
+    input_schema:
+      type: object
+      properties:
+        origin:
+          type: string
+          description: Departure city, for example "Singapore"
+        destination:
+          type: string
+          description: Destination city, for example "Tokyo"
+        destination_location:
+          type: string
+          description: Destination as "City, Country", for example "Tokyo, Japan"
+        start_date:
+          type: string
+          description: Departure date in YYYY-MM-DD format
+        end_date:
+          type: string
+          description: Return date in YYYY-MM-DD format
+        travelers:
+          type: integer
+          description: Number of travelers
+        cabin:
+          type: string
+          enum: [ECONOMY, PREMIUM_ECONOMY, BUSINESS, FIRST]
+          description: Cabin class
+        preferences:
+          type: string
+          description: Traveler preferences, such as cuisine, activities, and hotel style or budget
+      required: [origin, destination, destination_location, start_date, end_date, travelers, cabin]
+
+    skills:
+      - id: plan_full_trip
+        name: Plan Full Trip
+        description: Plans a complete trip end to end — flights, hotel, restaurants and attractions, day-by-day itinerary, and budget — from an origin, destination, travel dates, and number of travelers.
+        tags: [travel, planning, itinerary, budget, workflow]
+        examples:
+          - Plan a 5-day trip from Singapore to Tokyo for 2 people
+        inputModes: [text]
+        outputModes: [text]
+
+    toolsets:
+      - travel-planner
+
+    fail_fast: false
+    default_node_timeout: "4m"
+    workflow_timeout: "10m"
+
+    nodes:
+      # --- Step 1: three independent searches, run in parallel ---
+
+      - id: flights
+        type: agent
+        agent_name: FlightSearchAgent
+        input:
+          origin: "{{workflow.input.origin}}"
+          destination: "{{workflow.input.destination}}"
+          travelers: "{{workflow.input.travelers}}"
+          cabin: "{{workflow.input.cabin}}"
+        instruction: >-
+          Find flights from the origin to the destination for the given number of travelers
+          and cabin class. Choose the best value option as your recommendation. Return a JSON
+          object with exactly these keys: flight_no, airline, route, departure_time, duration,
+          stops, price_per_traveler_usd, total_price_usd, and options_summary (a short Markdown
+          summary of the top options).
+        output_schema_override:
+          type: object
+          properties:
+            flight_no: { type: string }
+            airline: { type: string }
+            route: { type: string, description: "Origin and destination airport codes, for example SIN-HND, or SIN-HKG-HND for a connection" }
+            departure_time: { type: string }
+            duration: { type: string }
+            stops: { type: integer }
+            price_per_traveler_usd: { type: number }
+            total_price_usd: { type: number }
+            options_summary: { type: string }
+          required: [flight_no, airline, route, departure_time, duration, stops, price_per_traveler_usd, total_price_usd, options_summary]
+        retry_strategy:
+          limit: 1
+          retry_policy: "Always"
+
+      - id: hotels
+        type: agent
+        agent_name: HotelSearchAgent
+        input:
+          destination: "{{workflow.input.destination}}"
+          check_in: "{{workflow.input.start_date}}"
+          check_out: "{{workflow.input.end_date}}"
+          guests: "{{workflow.input.travelers}}"
+          preferences: "{{workflow.input.preferences}}"
+        instruction: >-
+          Find hotels in the destination for the given guests. Count the nights between
+          check_in and check_out. Choose the best match for the preferences as your
+          recommendation. Return a JSON object with exactly these keys: hotel_name,
+          star_rating, room_type, price_per_night_usd, nights, rooms, total_cost_usd
+          (price_per_night_usd × nights × rooms), and options_summary (a short Markdown
+          summary of the top options).
+        output_schema_override:
+          type: object
+          properties:
+            hotel_name: { type: string }
+            star_rating: { type: integer }
+            room_type: { type: string }
+            price_per_night_usd: { type: number }
+            nights: { type: integer }
+            rooms: { type: integer }
+            total_cost_usd: { type: number }
+            options_summary: { type: string }
+          required: [hotel_name, star_rating, room_type, price_per_night_usd, nights, rooms, total_cost_usd, options_summary]
+        retry_strategy:
+          limit: 1
+          retry_policy: "Always"
+
+      - id: local
+        type: agent
+        agent_name: LocalExperiencesAgent
+        input:
+          location: "{{workflow.input.destination_location}}"
+          preferences: "{{workflow.input.preferences}}"
+        instruction: >-
+          Find restaurants and attractions in the location that match the preferences.
+          Return a JSON object with exactly two keys: activities_json, a JSON-encoded string
+          of the form {"restaurants": [{"name", "category", "address"}], "attractions":
+          [{"name", "category", "address"}]}, and summary, a short Markdown summary grouped
+          by neighbourhood where the addresses make that clear.
+        output_schema_override:
+          type: object
+          properties:
+            activities_json: { type: string, description: "JSON-encoded restaurants and attractions" }
+            summary: { type: string }
+          required: [activities_json, summary]
+        retry_strategy:
+          limit: 1
+          retry_policy: "Always"
+
+
+      # --- Step 2: deterministic tool calls, no LLM ---
+
+      - id: itinerary
+        type: tool
+        tool_name: travel-planner__compile_itinerary
+        depends_on: [flights, hotels, local]
+        input:
+          destination: "{{workflow.input.destination}}"
+          travel_dates: "{{workflow.input.start_date}} to {{workflow.input.end_date}}"
+          travelers: "{{workflow.input.travelers}}"
+          flights: '{"flight_no": "{{flights.output.flight_no}}", "airline": "{{flights.output.airline}}", "route": "{{flights.output.route}}", "departure_time": "{{flights.output.departure_time}}", "duration": "{{flights.output.duration}}", "stops": {{flights.output.stops}}, "price_per_traveler_usd": {{flights.output.price_per_traveler_usd}}}'
+          hotels: '{"hotel_name": "{{hotels.output.hotel_name}}", "star_rating": {{hotels.output.star_rating}}, "room_type": "{{hotels.output.room_type}}", "price_per_night_usd": {{hotels.output.price_per_night_usd}}, "nights": {{hotels.output.nights}}, "rooms": {{hotels.output.rooms}}}'
+          activities: "{{local.output.activities_json}}"
+
+      - id: budget
+        type: tool
+        tool_name: travel-planner__calculate_budget
+        depends_on: [flights, hotels]
+        input:
+          flight_cost: "{{flights.output.price_per_traveler_usd}}"
+          hotel_cost: "{{hotels.output.total_cost_usd}}"
+          num_days: "{{hotels.output.nights}}"
+          travelers: "{{workflow.input.travelers}}"
+
+    output_mapping:
+      flight: "{{flights.output}}"
+      hotel: "{{hotels.output}}"
+      local_experiences: "{{local.output}}"
+      itinerary: "{{itinerary.output}}"
+      budget: "{{budget.output}}"

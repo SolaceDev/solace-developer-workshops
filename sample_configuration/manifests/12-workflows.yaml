@@ -1,6 +1,6 @@
 kind: manifest
-name: prod
-description: The complete travel planning system. WeatherAdvisorAgent is added through the web UI.
+name: 12-workflows
+description: Adds the travel planning workflow and routes the orchestrator to it
 target:
   url: http://localhost:8800
 resources:
@@ -11,7 +11,6 @@ resources:
     - hotels-db
     - places-mcp
   agents:
-    - FlightSearchAgent
     - HotelSearchAgent
     - LocalExperiencesAgent
     - TravelOrchestratorAgent

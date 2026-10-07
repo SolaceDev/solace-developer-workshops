@@ -33,5 +33,12 @@
     "category": "Workshop Demo",
     "command": "11c-bali-holiday",
     "initialPrompt": "Plan a 7-night beach holiday in Bali for a couple.\nLuxury resort with a beach villa, spa, and water sports.\nDeparture from London 10 days from today. Include weather and packing list."
+  },
+  {
+    "name": "12a - Plan London to Paris Trip with the Workflow",
+    "description": "Plans a 4-day London to Paris trip; the TravelOrchestratorAgent routes it to TravelPlanningWorkflow and WeatherAdvisorAgent.",
+    "category": "Workshop Demo",
+    "command": "12a-london-paris-workflow",
+    "initialPrompt": "@TravelOrchestratorAgent Plan a 4-day trip from London to Paris for 2 people.\nDeparture: 10 days from today. Return: 4 days later.\nWe love French food, museums, and parks.\nInclude flights, hotels, restaurants, weather forecast, and full budget breakdown."
   }
 ]

@@ -49,6 +49,7 @@ The workshop follows the Agent Development Lifecycle (ADLC). This is a structure
 | Connectors | Connecting agents to databases and MCP servers without writing code |
 | Multi-agent orchestration | Having an orchestrator agent delegate work to specialist agents |
 | A2A proxy | Bringing an external agent, built with another framework, into the mesh |
+| Workflows | Running a known process as a deterministic graph of agent and tool steps, and how that differs from dynamic orchestration |
 
 ---
 
