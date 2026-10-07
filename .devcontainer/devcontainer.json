@@ -40,6 +40,7 @@
         "workshopTracker.webhookUrl": "https://2n3yr1kp0h.execute-api.us-east-2.amazonaws.com/prod/track",
         "files.autoSave": "afterDelay",
         "markdown.preview.openPreviewToSide": true,
+        "workbench.editor.enablePreview": false,
         "workbench.editorAssociations": {
           "*.md": "vscode.markdown.preview.editor"
         }

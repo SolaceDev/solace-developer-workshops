@@ -3,5 +3,6 @@
   "markdown.preview.openMarkdownLinks": "inPreview",
   "files.autoSave": "afterDelay",
   "files.autoSaveDelay": 1000,
-  "markdown.preview.doubleClickToSwitchToEditor": false
+  "markdown.preview.doubleClickToSwitchToEditor": false,
+  "workbench.editor.enablePreview": false
 }
