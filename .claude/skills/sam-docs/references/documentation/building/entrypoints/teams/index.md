@@ -1,4 +1,5 @@
 ---
+published: true
 title: Microsoft Teams Entrypoints
 description: Connect Agent Mesh to Microsoft Teams so users can drive agents from personal chats, group chats, and team channels through a Teams bot.
 sidebar_position: 1
@@ -152,7 +153,7 @@ The following steps create a Teams entrypoint called `Company Assistant` that di
 
 5. Select **Create and Deploy** to save the entrypoint and bring it online. Its deployment status moves to `deployed` and its runtime status moves to `running` after the HTTP endpoint is ready.
 
-6. Open the deployed entrypoint's detail panel from the entrypoints list. The panel shows the messaging endpoint under the entrypoint's connection info. Copy that URL, open the Azure Bot resource in the Azure Portal, and paste it into **Configuration** > **Messaging endpoint**.
+6. Open the deployed entrypoint's detail panel from the entrypoints list. The panel shows the messaging endpoint under the entrypoint's connection information. Copy that URL, open the Azure Bot resource in the Azure Portal, and paste it into **Configuration** > **Messaging endpoint**.
 
 7. In Microsoft Teams, install the Teams app you built in Prerequisites, then send the bot a message. The bot dispatches to the default agent and replies in the same conversation.
 
@@ -193,6 +194,14 @@ sequenceDiagram
     Connector->>Teams: Deliver reply
     Teams->>User: Show reply
 ```
+
+## Identity in Channels
+
+In a **1:1 direct message**, a Teams request runs as the real user, and that user's own RBAC scopes apply. In a **shared channel** (a channel or group chat), it runs instead as the entrypoint's system user — a confused-deputy protection, so a task in a shared space cannot act with the asker's personal credentials or reach their private data.
+
+Set `run_as` to the system user that shared-channel messages run as — `default` for the built-in default, or a custom scoped one. With no `run_as` configured, shared-channel messages still run as the built-in default system user, which can invoke any agent or workflow that does not declare `required_scopes` — leaving `run_as` empty widens what a shared channel can reach rather than restricting it. Set `use_user_identity_in_channels: true` to opt out and run shared-channel messages as the real user as well.
+
+Addressing a specific agent by name (an `@mention` of a discovered agent) routes directly to that agent, bounded by the system user's scopes — so if you need to limit which agents a shared channel can reach, point `run_as` at a scoped custom system user rather than the permissive `default`. See [Machine Entrypoints and System Users](../../../administering/enabling-rbac.md#machine-entrypoints-and-system-users).
 
 ## Managing Teams Entrypoints
 

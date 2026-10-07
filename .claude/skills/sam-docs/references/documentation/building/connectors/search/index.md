@@ -1,4 +1,5 @@
 ---
+published: true
 title: Search Connectors (Experimental)
 description: Configure Search connectors so agents can query Elasticsearch clusters or Amazon OpenSearch domains through natural language.
 sidebar_position: 1

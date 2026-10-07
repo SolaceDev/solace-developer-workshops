@@ -1,4 +1,5 @@
 ---
+published: true
 title: Installing in an Air-Gapped Environment
 description: Deploy Agent Mesh on Kubernetes in disconnected environments by obtaining the delivery package, loading images into a private registry, and installing without internet access.
 sidebar_position: 353
@@ -52,6 +53,16 @@ environmentVariables:
 
 The chart's default `NO_PROXY` excludes only in-cluster traffic—the embedded event broker, database, and object store, which an evaluation install reaches over cluster-internal addresses. A production install that puts an external event broker, database, or object store behind the same forward proxy must extend `NO_PROXY` with those services' hostnames, so the cluster reaches them directly instead of through the proxy.
 
+The deployment makes no outbound connection for licensing, usage reporting, or update checks. Every outbound connection it makes to a service you operate is listed in the preceding egress table.
+
+Product analytics is the one exception. A release that includes product analytics sends anonymous usage data to an external analytics service over HTTPS on port 443. Collection is on unless the installation turns it off, and the destination is on the public internet, so an air-gapped cluster has no route to it and the attempt fails. Turn it off explicitly rather than relying on the network to refuse it, so the deployment stops attempting the connection:
+
+```bash
+sam analytics disable
+```
+
+Run `sam analytics status` to confirm. It reports both whether the release includes product analytics and whether it is collecting anything, so the same command answers either case. For more information, see [`sam analytics`](../../reference/cli.md#sam-analytics).
+
 ### Ingress (Inbound to the Cluster)
 
 These are the connections that users and clients make to reach the Console and its APIs.
@@ -62,8 +73,6 @@ These are the connections that users and clients make to reach the Console and i
 | Users (HTTPS) | 443 | 8443 |
 
 The HTTPS port is added when you enable TLS on the service. You open the port on the ingress controller or load balancer that fronts the deployment, not on the cluster itself: the Console containers listen on 8080 and 8443 internally, and your edge forwards to them. The externally reachable port is therefore whichever one your ingress or load balancer terminates—commonly 443. NodePort exposure instead assigns ports in the 30000–32767 range. For the access methods and ingress values, see [Installing Kubernetes for Production](./production.md). An evaluation install reaches the Console through a port-forward and needs no inbound port opened.
-
-Agent Mesh does not phone home: it makes no connection to Solace or to any model vendor for licensing, telemetry, or update checks.
 
 ## Stage the Container Images
 

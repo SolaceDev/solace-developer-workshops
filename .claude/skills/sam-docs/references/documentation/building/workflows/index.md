@@ -1,4 +1,5 @@
 ---
+published: true
 title: Creating Workflows (Early Access)
 description: Build a workflow, a directed acyclic graph of typed nodes run by the Agent-Workflow Executor, with Quick Build in the Agent Mesh UI.
 sidebar_position: 1
@@ -16,16 +17,7 @@ A workflow runs inside the Agent-Workflow Executor, the same process that hosts 
 
 ## Workflow Nodes
 
-A workflow is built from typed nodes wired together into a graph. Each node type does one job:
-
-- **Agent** — Delegates a step to an agent by name.
-- **Switch** — Routes to one of several branches based on a condition.
-- **Map** — Runs the same step once for each item in a collection.
-- **Loop** — Repeats a step while a condition holds.
-- **Tool** — Calls a configured tool directly, without an agent.
-- **Workflow** — Runs another workflow as a nested step.
-
-You connect nodes into a graph by declaring which nodes each node depends on. Agent Mesh runs a node after all of its dependencies have completed.
+A workflow is built from typed nodes wired together into a graph. You connect nodes by declaring which nodes each node depends on, and Agent Mesh runs a node after all of its dependencies have completed. For the node types available, see [What a Workflow Is Made Of](../../concepts/what-are-workflows.md#what-a-workflow-is-made-of).
 
 ## Two Ways to Build a Workflow
 
@@ -33,8 +25,6 @@ You can build a workflow in either of two ways, and the result is the same deplo
 
 - **With Quick Build, from the Agent Mesh UI.** Describe the process you want in plain language, and Quick Build proposes the nodes and wiring, then deploys the workflow for you. For more information, see [Quick Build (Experimental)](../quick-build.md).
 - **As declarative config.** Author the workflow as version-controllable YAML and apply it with `sam config apply`. For more information, see [Creating Workflows with the CLI (Early Access)](./cli.md).
-
-To decide when to configure a resource and when to write custom code, see [Extending Agent Mesh: Configuration or Code](../../concepts/configured-vs-built.md).
 
 ## Building a Workflow with Quick Build
 
@@ -52,10 +42,6 @@ For the full Quick Build walkthrough, including how to review the plan, refine i
 
 A deployed workflow appears on the **Workflows** page in the Agent Mesh UI, which lists each workflow with its version and status. Select a workflow to open its detail view, which shows the workflow as a graph diagram. The diagram is a read-only visualization; to change a workflow, select **Edit** to reopen it in Quick Build, or update its declarative config and reapply.
 
-## Define Workflows as Code Instead
-
-Quick Build creates workflows through the Agent Mesh UI. If you prefer to describe a workflow as version-controllable YAML and reconcile it with `sam config apply` (the path that suits GitOps and automation), see [Creating Workflows with the CLI (Early Access)](./cli.md).
-
 ## What Next?
 
-You have a workflow running in Agent Mesh. Most readers next want to give the agents a workflow delegates to richer capabilities, covered in [Creating Agents](../agents/index.md).
+Quick Build creates any agents your workflow delegates to as part of the same plan. If you're authoring a workflow with the CLI instead, build the agents it delegates to first. In both cases, to give those agents richer capabilities, see [Creating Agents](../agents/index.md).

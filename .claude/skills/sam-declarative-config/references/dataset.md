@@ -10,7 +10,10 @@ Per-example content is authored through an `examples_file:` field under
 `spec:` that points at a CSV sidecar (path relative to the dataset YAML).
 The examples are reconciled separately during `sam config apply` — they
 are applied via the examples API after the dataset itself, so they never
-appear on the dataset create/update request.
+appear on the dataset create/update request. `sam config plan` diffs them
+against the stored examples, so a CSV-only edit plans as an update. Apply
+makes the stored examples match the file, deleting rows the file no longer
+lists, without `--prune`.
 
 The CSV uses a header row and RFC 4180 quoting (quote fields containing
 commas, quotes, or newlines):
@@ -23,6 +26,13 @@ commas, quotes, or newlines):
 `sam config pull` writes each dataset as `<name>.yaml` plus a
 `<name>.examples.csv` sidecar (rows sorted by `sequence_number`) and sets
 `examples_file` to point at it, so a pulled tree re-applies with no diff.
+
+The CSV carries no attachments. An example can also hold one optional
+input file (delivered to the agent) and one optional expected file (the
+evaluator's reference), uploaded per example through the platform API, and
+`examples_file` can neither declare nor restore them. `sam config pull`
+warns for each dataset whose examples carry attachments; re-applying that
+tree leaves the prompts intact and the files detached.
 
 Example — `datasets/support-qa.yaml`:
 

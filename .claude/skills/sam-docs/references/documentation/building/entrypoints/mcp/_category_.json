@@ -1,0 +1,8 @@
+{
+  "label": "MCP Entrypoints",
+  "position": 50,
+  "link": {
+    "type": "doc",
+    "id": "documentation/building/entrypoints/mcp/index"
+  }
+}

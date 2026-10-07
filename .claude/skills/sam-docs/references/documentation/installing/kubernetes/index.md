@@ -1,4 +1,5 @@
 ---
+published: true
 title: Deploying with Kubernetes
 description: Deploy Agent Mesh on Kubernetes using the Helm chart — quick start evaluation, production deployment, and air-gapped environments.
 sidebar_position: 0

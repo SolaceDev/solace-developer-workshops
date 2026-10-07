@@ -1,0 +1,8 @@
+{
+  "label": "Connecting External Agents",
+  "position": 3,
+  "link": {
+    "type": "doc",
+    "id": "documentation/building/external-agents/index"
+  }
+}

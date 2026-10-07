@@ -1,4 +1,5 @@
 ---
+published: true
 title: Configuring Models with the CLI
 description: Define a model configuration as declarative-config YAML and apply it into Agent Mesh with sam config.
 sidebar_position: 2

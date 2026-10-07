@@ -1,4 +1,5 @@
 ---
+published: true
 title: Kubernetes Quick Start
 description: Deploy Agent Mesh on Kubernetes in minutes using the Helm chart with an embedded event broker, bundled PostgreSQL, and bundled storage. Evaluation and proof of concept use only.
 sidebar_position: 351
@@ -20,7 +21,8 @@ Before you begin, make sure you have the following:
 - A node with at least 6 vCPU and 16 GiB of allocatable memory. The embedded event broker and datastore require both the specified minimum vCPU and memory to operate correctly. For sizing guidance, see [Compute Resources](./compute-resources.md).
 - `kubectl` installed and configured to talk to your cluster.
 - The Helm command-line interface (CLI) version 3.0 or later.
-- The Agent Mesh Helm chart archive (`solace-agent-mesh-<version>.tar.gz`) and the image pull credentials file (`sam-pull-credentials.json`). Solace provides both. For how to download the chart, see [Obtain the Delivery Package](../before-you-begin.md#obtain-the-delivery-package). The credentials file is provided separately.
+- The Agent Mesh Helm chart archive (`solace-agent-mesh-<version>.tar.gz`). For how to download it, see [Obtain the Delivery Package](../before-you-begin.md#obtain-the-delivery-package).
+- The image pull credentials file (`sam-pull-credentials.json`), required for a connected install. Solace issues this to your organization as part of onboarding to Agent Mesh; if you do not have it, see [Image Pull Credentials](../before-you-begin.md#image-pull-credentials). For an air-gapped install, see [Installing in an Air-Gapped Environment](./airgap.md).
 - An API key for a supported large language model (LLM) provider. You enter this key on first login, so you do not need it at install time.
 
 The image pull credentials file must be in `dockerconfigjson` format:

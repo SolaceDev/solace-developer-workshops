@@ -1,4 +1,5 @@
 ---
+published: true
 title: Managing Projects
 description: "Create projects to ground an agent in your own documents, give a project its own instructions and default agent, and work with saved prompts from the Agent Mesh UI."
 sidebar_position: 652
@@ -42,6 +43,8 @@ An open project has two areas:
 
 From the workspace header you can **Edit Details** (change the name and description), **Share** the project (when sharing is enabled), and delete it. If you are not the project's owner, the editing controls are hidden and you work with the project read-only.
 
+A description can contain up to 1,000 characters by default, and a character count beneath the text box shows how much of the limit you've used. You can't save the project while the description is over the limit. An operator can change the limit with `gateway_max_project_description_chars`. For more information, see [Task Handling Fields](../reference/config-schema.md#task-handling-fields).
+
 ## Add Documents to a Project
 
 Upload your files in the project's **Knowledge** section. You can drag files onto the drop zone or select **Upload File**, then add an optional description for each file to help the agent understand its purpose.
@@ -67,9 +70,18 @@ If the agent isn't using your documents, check these items in order:
 
 A project's **Instructions** are a block of guidance carried into every chat started in the project: a place to set standing direction such as a persona, a preferred answer format, or rules about which documents to trust. Select **Edit** in the **Instructions** section to write them. The instructions are separate from the agent's own configured behavior; they layer the project's context on top of whichever agent runs.
 
+Instructions can contain up to 32,000 characters by default, and a character count beneath the text box shows how much of the limit you've used. You can't save the instructions while they are over the limit. An operator can change the limit with `gateway_max_project_instructions_chars`. For more information, see [Task Handling Fields](../reference/config-schema.md#task-handling-fields).
+
 ## Set a Default Agent
 
-A project has a default agent: the agent that new chats started in the project open with. The default is a convenience; you can still switch the agent on any individual chat. In the **Default Agent** section, select **Edit**, then select the agent best suited to the project's documents and the questions you expect to ask. If you leave it unset, new chats start with no agent preselected.
+A project has a default agent: the agent that new chats started in the project open with. The default is a convenience; you can still switch the agent on any individual chat.
+
+To set a default agent, perform these steps:
+
+1. In the **Default Agent** section, select **Edit**.
+2. Select the agent best suited to the project's documents and the questions you expect to ask.
+
+If you leave it unset, new chats in the project start with the agent you selected most recently, the same as chats outside a project.
 
 ## Chat in a Project
 

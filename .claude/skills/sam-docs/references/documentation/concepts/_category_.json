@@ -1,0 +1,8 @@
+{
+  "label": "Understanding Agent Mesh",
+  "position": 500,
+  "link": {
+    "type": "doc",
+    "id": "documentation/concepts/index"
+  }
+}

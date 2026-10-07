@@ -1,4 +1,5 @@
 ---
+published: true
 title: MCP Entrypoints
 description: Expose Agent Mesh agents as tools to MCP clients such as Claude Code, MCP Inspector, and IDE plugins over the Model Context Protocol.
 sidebar_position: 1
@@ -41,7 +42,7 @@ The following steps create an MCP entrypoint called `IDE Access` that lets IDE-b
 4. Choose the authentication mode under **Enable OAuth authentication**:
 
    - **Enabled (OAuth required)**: the entrypoint requires a bearer token on every tool call and joins the cluster's OAuth flow. Leave **Default user identity** empty in this mode; the entrypoint rejects it if set.
-   - **Disabled (default identity)**: enter a value in **Default user identity** (for example, `local-dev-user`). Every tool call is attributed to that identity, and no token is required.
+   - **Disabled (default identity)**: no token is required. Leave **Default user identity** empty to run every tool call as the entrypoint's system user, which is what carries RBAC scopes. Enter a value (for example, `local-dev-user`) only to attribute those calls to a named user instead; under enforced RBAC that identity holds only the scopes RBAC grants it, which are normally none.
 
 5. Optionally adjust the discovery metadata that MCP clients see:
 
@@ -50,8 +51,8 @@ The following steps create an MCP entrypoint called `IDE Access` that lets IDE-b
 
 6. Optionally narrow which agents and skills the entrypoint exposes:
 
-   - **Include tools**: an allowlist of tool-name patterns to expose. Empty exposes every discovered tool. Patterns are exact match (case-insensitive) or regex when they contain special characters. Filters check against agent name, skill name, and the final tool name. Select **Add pattern** to add entries.
-   - **Exclude tools**: a denylist of tool-name patterns. Takes precedence over **Include tools** when both match.
+   - **Include tools**: an allowlist of tool-name patterns to expose. Empty exposes every discovered tool. A pattern is an exact, case-insensitive match, or a regular expression when it contains special characters. Select **Add pattern** to add entries. For more information about the values a pattern matches, see [Filtering Which Agents Are Exposed](#filtering-which-agents-are-exposed).
+   - **Exclude tools**: a denylist of tool-name patterns. For more information about how the two lists interact, see [Filtering Which Agents Are Exposed](#filtering-which-agents-are-exposed).
 
 7. When **Enable OAuth authentication** is **Enabled**, an **Allowed MCP-client redirect URIs** field appears. Add one or more entries with **Add redirect URI**. Loopback hosts (`http://127.0.0.1` and `http://localhost`) match any port on the same scheme, host, and path; every other URI must match exactly. Leaving this empty with authentication on triggers a startup warning, because RFC 7591 dynamic client registration would otherwise let any caller register an attacker-controlled redirect URI.
 
@@ -65,17 +66,47 @@ The following steps create an MCP entrypoint called `IDE Access` that lets IDE-b
 
 For an authenticated entrypoint, MCP clients use the OAuth authorization-code flow to obtain a token. The client redirects the user to `https://<agent-mesh-host>/gw/<slug>/oauth/authorize`; after the user signs in and consents, the identity provider redirects back to the client at the URI on the **Allowed MCP-client redirect URIs** list. The client then presents the resulting token as a bearer credential on every MCP call.
 
-For an unauthenticated entrypoint, the client connects directly to the MCP URL and every call is attributed to the configured default user identity. Use this mode for local development only.
+For an unauthenticated entrypoint, the client connects directly to the MCP URL. Every call runs as the configured default user identity, or as the entrypoint's system user when you do not set one. Use this mode for local development only.
 
 ## Filtering Which Agents Are Exposed
 
-By default, every deployed agent in the mesh appears as an MCP tool. To hide agents or expose only a subset, use **Include tools** and **Exclude tools**:
+By default, every deployed agent in the mesh appears as an MCP tool. To hide agents or expose only a subset, use **Include tools** and **Exclude tools**.
 
-- To expose only agents whose name starts with `public-`, add `public-*` to **Include tools**.
-- To hide a specific agent, add its name to **Exclude tools**.
-- To combine both, list the allow-patterns in **Include tools** and the exceptions in **Exclude tools**. When a tool matches both, exclude wins.
+Each pattern is tested against three values: the name on the agent's card, the skill name, and the tool name. Agent Mesh matches the skill name as its author wrote it. Agent Mesh generates the name on the agent's card, in the form `agent_<underscored-uuid>` for an agent created in Agent Mesh and `workflow_<underscored-uuid>` for a deployed workflow. For more information about agent cards, see [Agent Mesh Terminology](../../../reference/terminology.md).
+
+Agent Mesh composes the tool name from two parts, joined by an underscore, lowercased, with each run of other characters reduced to a single underscore, and prefixed with `tool_` when the result would otherwise begin with a digit. The first part identifies the agent and comes from the name on the agent's card, never from the display name. For an agent or workflow created in Agent Mesh, that card name carries a UUID, and the first part is `agent_` or `workflow_` followed by the last eight hexadecimal digits of the UUID, such as `agent_ad2fe230`. For a component published under a plain name, such as a built-in agent or an agent defined in YAML, the first part is that name unchanged. The second part is the skill name, or the skill's ID when the skill name contains no character in the ranges a-z, A-Z, or 0-9. Agent Mesh shortens a composed name longer than 64 characters and gives it a trailing hash.
+
+For a component created in Agent Mesh, a tool name comes from the component's ID rather than its display name, so renaming it does not rename its tools and a pattern written against a tool name keeps working. For a component published under a plain name, the first part is that name, so changing the name changes the tool names with it. The display name appears instead in the tool's description, which opens with `Agent: <display name>`, and in the title that MCP clients show in place of the tool name, which takes the form `<display name>: <skill name>`. Use either one to identify the agent a tool belongs to.
+
+A component created in Agent Mesh has a generated card name and a generated tool name, so neither is a name you typed. A card name is also not the dashed ID that RBAC scopes use, so an ID copied from an RBAC scope matches nothing. Take the names you write patterns against from the MCP client's `tools/list` response.
+
+Agent Mesh matches a pattern that contains a regular-expression character as an unanchored regular expression, so the pattern matches anywhere in a name rather than the whole of it. Anchor a pattern with `^` and `$` where you mean the whole name. Glob patterns are not supported.
+
+When a tool matches patterns on both lists, **Exclude tools** takes precedence over **Include tools**, with one exception. Agent Mesh applies exact patterns before regular expressions, so an exact **Include tools** pattern exposes a tool that an **Exclude tools** regular expression also matches. In every other combination, the tool stays hidden.
+
+:::warning
+Write patterns against the values Agent Mesh generates, not the names you typed. Agent Mesh reports no error when a pattern matches nothing, and the consequence differs by list: a non-empty **Include tools** list whose patterns match nothing exposes no tools at all, while a non-matching **Exclude tools** pattern has no effect.
+:::
+
+The following examples show common filters:
+
+- To expose one agent's tools and nothing else, add the prefix its tool names share, such as `^agent_ad2fe230_`, to **Include tools**. The leading `^` anchors the match to the start of the tool name. Copy the prefix from that agent's tools in the MCP client's `tools/list` response.
+- To hide a specific agent, add the name on its agent card to **Exclude tools**.
+- To expose one tool from a group that an **Exclude tools** regular expression hides, add that tool's exact name to **Include tools**.
 
 The entrypoint rediscovers agents on a schedule. New agents that match the include filter show up automatically; agents that stop matching are removed.
+
+## Identity Under RBAC
+
+When OAuth is enabled, each tool call runs as the authenticated caller, and that user's own RBAC scopes apply.
+
+When OAuth is disabled, the call has no end-user identity and runs as the entrypoint's system user: the one named in `run_as`, or the built-in default system user when `run_as` is empty. Turning OAuth off disables authentication, not authorization. Under enforced RBAC, Agent Mesh still authorizes the call against the scopes that system user holds, and narrows the entrypoint's `tools/list` response to the tools that system user can invoke. When that system user holds no invoke scopes, the client receives an empty tool list.
+
+:::warning
+Under enforced RBAC, an unauthenticated MCP entrypoint that names no system user reaches every agent and workflow that does not declare `required_scopes`. With RBAC enforcement off, it reaches every agent and workflow. Use this mode for local development only. Where that reach is broader than you want, create a scoped system user and name it in the entrypoint's `run_as` setting, which you configure in the declarative-config file. For more information, see [MCP Entrypoints with the CLI](./cli.md).
+:::
+
+A default user identity overrides the system-user fallback. Set one in development to attribute unauthenticated calls to a named user instead of a system user. Under enforced RBAC that identity holds only the scopes granted to it, which are normally none, so leave the field empty when you want the invoke scopes the system user carries. The value must not begin with `system:`. To name a system user, set `run_as` instead. For more information, see [Machine Entrypoints and System Users](../../../administering/enabling-rbac.md#machine-entrypoints-and-system-users).
 
 ## How Tool Calls Flow
 
@@ -154,13 +185,19 @@ To resolve, verify that:
 
 ### Expected Agents Do Not Appear in the Client's Tool List
 
-Some agents are missing from the client's tool list even though they are deployed in the mesh.
+An agent is missing from the client's tool list, or an agent appears without all of its skills, even though the agent is deployed. Common causes are that a filter excludes the tool, that Agent Mesh cannot build a tool name for a skill, that another agent already uses the tool name, that two skills on the same agent card produce the same tool name, or that the caller's identity lacks the invoke scope. The Entrypoint Executor logs record the name-related causes at warning level when Agent Mesh discovers the agent: search for `MCP tool name`, and for `MCP tools omitted`, which also matches the debug-level filter record below. Every record names the agent in `agentName`. A record about a name conflict carries the affected tool names in `toolNames` and the agent that holds the name in `conflictingAgentNames`. A record about a dropped or renamed skill carries `skillNames` and `skillIDs`, and adds `toolNames` when Agent Mesh composes a name for the skill. Agent Mesh logs a tool that a filter excludes, or that RBAC hides, only at debug level, so raise the log level to see either record. The filter record shares the `MCP tools omitted` prefix; the RBAC record reads `MCP tools/list: hidden by RBAC`. Access the logs through your deployment's log tooling. For log configuration options, see [Monitoring Your Agent Mesh](../../../administering/observability.md).
 
 To resolve, verify that:
 
 - **Include tools** patterns match the agent, skill, or tool name.
 - **Exclude tools** patterns do not hide the tool.
+- Each skill has a name or an ID that contains at least one character in the ranges a-z, A-Z, or 0-9.
+- No two agents contend for one tool name. Contention arises when two agents, or two workflows, created in Agent Mesh have IDs that end in the same eight hexadecimal digits, or when two components published under plain names have names that reduce to the same first part. In both cases, a skill on each must also compose to the same second part. For two components created in Agent Mesh, the second one's tool uses its full card name as the first part instead, so look for a renamed tool rather than a missing one, and Agent Mesh omits the skill only when that name is taken as well. For two plain names, the fallback composes the same name, so Agent Mesh omits the skill. For more information, see [Filtering Which Agents Are Exposed](#filtering-which-agents-are-exposed).
+- No two skills on one agent card produce the same tool name. When two do, Agent Mesh registers only the first and omits the rest.
 - The agent's deployment status is `deployed` and its runtime status is `running`.
+- The identity the call runs as holds the invoke scope for the target component: `agent:<id>:invoke` for an agent, or `workflow:<id>:invoke` for a deployed workflow. A grant of `agent:*:invoke` does not cover deployed workflows. For more information, see [RBAC Reference](../../../reference/rbac-reference.md).
+
+Under enforced RBAC, Agent Mesh filters the tool list to what that identity can invoke, so an agent the identity cannot invoke does not appear at all. On an entrypoint with OAuth disabled, that identity is the **Default user identity** when set, otherwise the entrypoint's system user; an identity with no invoke scopes produces an empty tool list. For more information, see [Machine Entrypoints and System Users](../../../administering/enabling-rbac.md#machine-entrypoints-and-system-users).
 
 ## Define MCP Entrypoints as Code Instead
 

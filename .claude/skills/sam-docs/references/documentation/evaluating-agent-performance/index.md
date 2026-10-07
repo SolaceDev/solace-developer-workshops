@@ -1,4 +1,5 @@
 ---
+published: true
 title: Evaluating Agent Performance
 description: Run evaluations against deployed agents, score outputs against datasets, compare experiments across binary versions, and use eval results as an upgrade gate.
 sidebar_position: 0
@@ -28,12 +29,12 @@ Both interfaces share the same datasets, evaluators, experiments, and runs. The 
 
 - [Evaluators](./evaluators.md): the rule-based and LLM-as-a-Judge scorers that grade agent responses.
 - [Datasets](./datasets.md): the named collections of prompts and expected responses that runs score against.
-- [Experiments](./experiments.md): binding a dataset to a target agent and a set of evaluators, and running an experiment from the CLI.
+- [Experiments](./experiments.md): binding a dataset to a target agent and a set of evaluators, choosing the system user the runs execute as, connecting the tools they need, and running an experiment with `sam eval run`.
 - [Reading Results](./reading-results.md): retrieving per-run artifacts, comparing experiments, and using eval results as an upgrade gate.
 
 ## Operational Notes
 
-Eval responses use a dedicated event broker topic family (`<namespace>/eval/v1/response/{runId}/{taskId}`), and the Platform service publishes the trigger on `<namespace>/eval/v1/run/trigger`. Agent-side task delivery, though, reuses the standard Agent-to-Agent (A2A) agent-request topic, so request-side traffic is mixed with live traffic at the topic level. To separate the two on the request side, filter on the eval-runner system user identity or the per-task metadata, not the topic.
+Eval responses use a dedicated event broker topic family (`<namespace>/eval/v1/response/{runId}/{taskId}`), and the Platform service publishes the trigger on `<namespace>/eval/v1/run/trigger`. Agent-side task delivery, though, reuses the standard Agent-to-Agent (A2A) agent-request topic, so request-side traffic is mixed with live traffic at the topic level. To separate the two on the request side, filter on the system user principal the run carries or on the per-task metadata, not the topic. The run's principal is `system:eval` unless the experiment names another in `runAs`. For more information, see [The System User an Experiment Runs As](./experiments.md#the-system-user-an-experiment-runs-as).
 
 Because eval requests share the agent's task processing with live user traffic, a large concurrent eval run can throttle live user experience on the agent under test. Schedule heavy runs off-peak or against a staging deployment when possible.
 
@@ -61,3 +62,4 @@ Several environment variables tune the execution loop:
 
 - To configure backups for datasets and run history, see [Managing Backups and Data Retention](../administering/backups-and-data-retention.md).
 - To correlate failing eval tasks with the underlying log stream, see [Monitoring Your Agent Mesh](../administering/observability.md).
+- To diagnose a run that fails on authorization, see [Troubleshooting Authorization Failures](./experiments.md#troubleshooting-authorization-failures).

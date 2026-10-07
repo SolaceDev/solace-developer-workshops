@@ -1,4 +1,5 @@
 ---
+published: true
 title: Configuring Models
 description: Create and manage the model configurations your agents use from the Agent Mesh UI.
 sidebar_position: 1

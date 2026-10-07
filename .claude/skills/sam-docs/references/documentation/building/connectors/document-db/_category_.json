@@ -1,0 +1,8 @@
+{
+  "label": "Document Database Connectors",
+  "position": 60,
+  "link": {
+    "type": "doc",
+    "id": "documentation/building/connectors/document-db/index"
+  }
+}

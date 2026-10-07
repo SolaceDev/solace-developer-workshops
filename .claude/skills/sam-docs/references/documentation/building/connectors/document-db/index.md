@@ -1,4 +1,5 @@
 ---
+published: true
 title: Document Database Connectors (Experimental)
 description: Configure Document Database connectors so agents can query MongoDB collections or Amazon DynamoDB tables through natural language.
 sidebar_position: 1
@@ -65,7 +66,7 @@ The connector creates exactly one tool per connector. To query multiple collecti
 
 Each connector exposes one tool. Its name is derived from the connector: it combines the collection, `mongo_query`, and a short unique suffix, for example `events_mongo_query_a1b2c3d4`. The tool supports four operations:
 
-- `aggregate` (default) executes an aggregation pipeline. The agent uses `[{"$match": {...}}]` for simple filters and the full pipeline syntax for more complex reads.
+- `aggregate` (default) executes an aggregation pipeline. The agent uses `[{"$match": {...}}]` for filters and the full pipeline syntax for more complex reads.
 - `insert` inserts a JSON array of documents.
 - `update` updates all documents matching a filter using MongoDB update operators such as `$set`.
 - `delete` removes documents matching a filter. An empty filter is rejected to prevent accidental full-collection deletion.

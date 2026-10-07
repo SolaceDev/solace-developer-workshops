@@ -1,0 +1,8 @@
+{
+  "label": "Configuring Entrypoints",
+  "position": 5,
+  "link": {
+    "type": "doc",
+    "id": "documentation/building/entrypoints/index"
+  }
+}

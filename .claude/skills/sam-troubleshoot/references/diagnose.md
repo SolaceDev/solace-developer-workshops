@@ -9,7 +9,7 @@ Set `LOG_FORMAT=json` on every component so slog fields parse cleanly. Logging i
 Field roles when reading a chain:
 - `traceID` — one per user task, end to end. The thing you grep.
 - `taskID` — entrypoint-minted task addressing (SSE, cancel, artifacts).
-- `corrID`/`reqID` — STR / peer-router pending-request key.
+- `corrID`/`reqID` — pending-request key for Secure Tool Runtime (STR) calls and peer delegation.
 - `contextID` — A2A session/conversation grouping.
 - `eventSeq` + `publisherId` — per-publisher monotonic sequence (gap detector input).
 
@@ -28,11 +28,11 @@ The chain crosses entrypoint → agent (AWE) → STR → tool, and survives peer
 
 **"Agent never discovered" check:** before chasing logs, confirm the entrypoint even knows the agent exists — the agent should appear in the UI's agent list (agents publish an agent card on the discovery topic at startup; a healthy AWE logs the card publish). If the agent isn't listed, the problem is registration/discovery (agent not started, broker namespace mismatch, or card never published), not request routing.
 
-**Per-publisher stream gaps** (silent-failure detector): the entrypoint and task-logger watch `(taskID, publisherId, eventSeq)`. A `>+1` jump logs `slog.Error event sequence: gap detected on per-publisher stream` (fields `taskID`, `publisherID`, `lastSeq`, `currentSeq`, `gap`); a non-increase logs `slog.Warn ... duplicate or out-of-order event`. Either means events were dropped/split — suspect a shared broker subscription, duplicate `agent_name` or entrypoint id across pods, or a misrouted queue, **before** suspecting the tool.
+**Per-publisher stream gaps** (silent-failure detector): the entrypoint watches `(taskID, publisherId, eventSeq)`. A `>+1` jump logs `event sequence: gap detected on per-publisher stream` at ERROR (fields `taskID`, `traceID`, `publisherID`, `lastSeq`, `currentSeq`, `gap` — the `traceID` on the line is your pivot back to the full chain); a non-increase logs `event sequence: duplicate or out-of-order event` at WARN. Either means events were dropped/split — suspect a shared broker subscription, duplicate `agent_name` or entrypoint id across pods, or a misrouted queue, **before** suspecting the tool.
 
 ## sam-doctor — preflight checks
 
-Validates the environment independent of a running SAM. Runs as the Helm pre-install/pre-upgrade hook automatically, or as the `sam doctor` CLI subcommand.
+Validates the environment independent of a running Agent Mesh. Runs as the Helm pre-install/pre-upgrade hook automatically, or as the `sam doctor` CLI subcommand.
 
 ```
 SAM_DOCTOR_CONTEXT=helm  sam-doctor               # cluster preflight
@@ -51,13 +51,20 @@ Controls:
 1. **Entrypoint request-path `/health`** — shallow liveness ("the HTTP listener is up"), returns 200. Fine for an LB ping; **not** diagnostic of component health.
 2. **Workload health server** — the real one. `GET /health` returns 200 `{"status":"healthy"}` or 503 `{"status":"unhealthy","error":"component <name> unhealthy: ..."}` aggregating every component's `Health()`. `GET /ready` returns readiness (`/ready` also reflects broker-connection status). Point Kubernetes liveness/readiness probes here.
 
-Default health-server ports (multi-pod): GWE `:9090`, Platform `:9091`, AWE `:8090`, STR `:8090` (own pod) or `:8092` (colocated with AWE). Desktop / single-process mode: a single `:8090` speaks for all. Override with `--health-addr` or `SAM_<ROLE>_HEALTH_ADDR`.
+   **A 200 does not mean every agent is serving.** On an AWE hosting several agents or workflows, one instance failing to start is deliberately isolated so it cannot crash-loop the pod and take its healthy neighbours down with it — the aggregate stays 200 while that one instance is absent. So `/health` 200 plus "agent not found" from a caller is a consistent, expected combination, not a contradiction. When an agent is missing, do **not** stop at the health endpoint:
+
+   - Check what is actually serving rather than assuming everything deployed is: `sam api /api/v1/platform/agents` (workflows: `/api/v1/platform/workflows`) lists platform-managed components with a `runtimeStatus` **object** — filter on `.runtimeStatus.status`, never the field itself. `running` means live on the mesh now; `degraded` means live but reporting problems (read `.runtimeStatus.problems`); `starting` is the short post-deploy grace window (agents only — workflows skip it); a **deployed** agent that stays `disconnected` is hosted nowhere. The status does not name the failed phase — the recorded cause does; read it in the AWE log line below, then redeploy (see `sam-operate`). A failed *deploy* never reaches `disconnected`: it shows `stopped` with `deploymentStatus` of `deploy_failed` in the same listing, and the AWE log carries no failure line — the error went back over the control response only — so read the platform log instead. (There is no `sam control` command and no `/api/v1/control` HTTP API — both were removed; live lifecycle actions go through the builder UI.)
+   - Search the AWE log at startup for `instance failed to initialize` / `instance failed to start` (both ERROR, one per failed instance, with `name` and the underlying cause). This is the primary signal, and it is emitted once at boot — if the pod has been up a long time and logs have rotated, use the agents listing above instead.
+   - A 503 from an AWE means *nothing* is serving there, not "something is wrong". An AWE where every instance fails to start — whether at init or at start — exits during boot instead, so a pod in `CrashLoopBackOff` is that case and its logs name the cause. A 503 on a pod that booted fine usually means the instances died afterwards — but not always: a control-plane `enabled=true` on the pod's only instance, whose Start then fails, also lands `alive == 0` and returns 503 with nothing having died.
+   - Statically configured (YAML) instances have no platform row at all — they never appear in `/api/v1/platform/agents`. A running one publishes a card (`GET /api/v1/agentCards`); a failed one is absent there, and the failure shows up **only** in the AWE log — there is no deployment status to inspect in the UI.
+
+Health-server ports on Kubernetes: the gateway pod (which also hosts the platform service) `:9090`, the AWE `:8090`, and the STR `:8090`; change one with the `--health-addr` flag or YAML `management_server.port`. Under local `sam run`, the spawned processes share the host's loopback, so each gets its own default: gateway `:9090`, platform `:9091`, AWE `:8090`, STR `:8092`. The desktop app picks its gateway and platform ports at launch (it prefers the defaults and falls back to any free port) and prints the bound addresses on the `embedded SAM started` log line. Its health server does not float: it binds loopback `:8090` (override with `HEALTH_ADDR`), and if that port is taken it logs a `management endpoint failed to bind` ERROR and runs without health probes. The address it did bind is on the `management server listening` line.
 
 ## Per-deployment-mode log access
 
 | Mode | Components | Get logs |
 |---|---|---|
-| Kubernetes / Helm | GWE, AWE, STR, Platform as separate pods | `kubectl logs <pod>` (`--previous` on crashloop); `kubectl describe pod <pod>` for events |
+| Kubernetes / Helm | GWE, AWE, STR as separate pods; the platform service runs inside the GWE pod | `kubectl logs <pod>` (`--previous` on crashloop); `kubectl describe pod <pod>` for events |
 | Desktop (single process) | all components run in one process | the app's log output / stdout |
 
 Do **not** assume pod label selectors (e.g. `app=solace-agent-mesh`) — they depend on the Helm chart's conventions; list pods and read the names rather than guessing a selector.
@@ -70,6 +77,8 @@ Do **not** assume pod label selectors (e.g. `app=solace-agent-mesh`) — they de
 | `solace broker: connect to <url>: ...` (Access denied / VPN not found / tls: ... unknown authority) | broker connectivity / auth / TLS | check broker URL, credentials, VPN, trust store; `sam-doctor` broker check |
 | `environment variable <KEY> not set for provider <p>` | LLM key missing | set the key on the component that runs the LLM (the agent/AWE) |
 | `open ... database: ...` / `run migrations: goose up ...` | DB unreachable or migration failed | check DSN + permissions; see sam-operate upgrades for migration failures |
+| `goose up (table=..., versions=[...]): ... lock timeout` / `migration still running` | a migration waited on a table lock held by another session | the `blockedBy` field on `migration still running` names the holding sessions; end or wait them out, then let the pod restart (sam-operate upgrades) |
+| `async index build gave up after repeated failures` (ERROR), or after a restart `async index builds gave up and are skipped until attempts is reset` (WARN) | a background index build on the gateway failed 10 times | read `last_error` in `gateway_async_indexes`, fix the cause, reset the row and restart the gateway (sam-operate upgrades) |
 | `listen :<port>: bind: address already in use` | port conflict | `lsof -i :<port>`; kill stale process or change port |
 | `... agent delegation denied` | caller lacks `agent:<name>:invoke` scope | RBAC config → sam-operate |
 

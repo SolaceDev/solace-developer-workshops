@@ -1,0 +1,8 @@
+{
+  "label": "Managing Configuration as Code",
+  "position": 9,
+  "link": {
+    "type": "doc",
+    "id": "documentation/building/declarative-config/index"
+  }
+}

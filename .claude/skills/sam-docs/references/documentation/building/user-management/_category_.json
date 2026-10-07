@@ -1,0 +1,8 @@
+{
+  "label": "Managing Users and Roles",
+  "position": 10,
+  "link": {
+    "type": "doc",
+    "id": "documentation/building/user-management/index"
+  }
+}

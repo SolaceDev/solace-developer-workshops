@@ -1,4 +1,5 @@
 ---
+published: true
 title: Building Your Agent Mesh
 description: Author the agents your deployment runs, plus the models, entrypoints, connectors, toolsets, and skills that support them, from the Agent Mesh UI or as declarative config.
 sidebar_position: 0
@@ -15,6 +16,8 @@ You author almost every resource in one of two ways, and you can mix them:
 - **From the Agent Mesh UI.** Build and deploy from the Builder in the Agent Mesh UI, with no YAML and no restart. Every page in this section includes a UI walkthrough.
 - **As declarative config.** Describe the same resources as version-controllable YAML and reconcile them with `sam config apply`, the path that suits GitOps and automation. Each resource has a companion CLI page, and the shared workflow is covered in [Managing Configuration as Code (Early Access)](./declarative-config/index.md).
 
+With the Agent Mesh authoring skills installed, an AI coding assistant such as OpenAI Codex CLI or Claude Code can draft and review declarative config and tool code for you. See [Building with an AI Coding Assistant (Early Access)](./ai-coding-assistant.md).
+
 For help deciding when to configure a resource and when to write custom code, see [Extending Agent Mesh: Configuration or Code](../concepts/configured-vs-built.md).
 
 ## What You Can Build
@@ -24,10 +27,11 @@ For help deciding when to configure a resource and when to write custom code, se
 - [Creating Workflows (Early Access)](./workflows/index.md)—Orchestrate several agents as a deterministic, multi-step graph.
 - [Connecting External Agents](./external-agents/index.md)—Bring an Agent-to-Agent (A2A) agent that runs outside Agent Mesh into your deployment.
 - [Configuring Connectors](./connectors/index.md)—Give agents no-code access to databases, knowledge bases, APIs, and other systems.
-- [Configuring Entrypoints](./entrypoints/index.md)—Expose agents through Slack, Microsoft Teams, Model Context Protocol (MCP), and event-mesh entrypoints.
+- [Configuring Entrypoints](./entrypoints/index.md)—Expose agents through Slack, Microsoft Teams, Model Context Protocol (MCP), event-mesh, webhook, and WhatsApp entrypoints.
 - [Configuring Models](./models/index.md)—Register the large language model (LLM) providers and models your agents use.
 - [Creating Toolsets](./toolsets.md)—Package custom tool code and attach it to your agents.
 - [Creating Skills](./skills.md)—Bundle on-demand instructions and tools that agents load when needed.
+- [Managing Users and Roles](./user-management/index.md)—Define roles, grant them to people or to identity-provider groups, and control what each user can reach.
 
 ## Next Steps
 

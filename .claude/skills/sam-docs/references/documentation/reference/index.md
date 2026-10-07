@@ -1,6 +1,7 @@
 ---
+published: true
 title: Reference
-description: "Lookup material for a running deployment: the configuration schema, environment variables, Helm values, CLI commands, built-in tools, the RBAC scope catalog, and the glossary."
+description: "Lookup material for a running deployment: the configuration schema, environment variables, Helm values, CLI commands, built-in tools, the RBAC scope catalog, and the terminology reference."
 sidebar_position: 0
 ---
 
@@ -18,13 +19,13 @@ Come here when you already know what you are looking for and need the exact name
 
 ## Commands and Tools
 
-- [CLI Reference](./cli.md)—Every `sam` command and flag, from authentication and declarative configuration to tasks, evaluations, tools and skills, and local run orchestration.
+- [CLI Reference](./cli.md)—Every `sam` command and flag, from authentication and declarative configuration to tasks, evaluations, tools, skills, and local run orchestration.
 - [Built-In Tools](./built-in-tools.md)—The tools an agent can attach without writing code, with the group each tool belongs to, its parameters, what it returns, and any scope or availability requirement.
 
 ## Access Control
 
-- [RBAC Reference](./rbac-reference.md)—How Agent Mesh authorizes users with role-based access control (RBAC): the access model, the scope catalog, the YAML and `sam config apply` authoring surfaces, and how to diagnose a denial.
+- [RBAC Reference](./rbac-reference.md)—How Agent Mesh authorizes users with role-based access control (RBAC): the access model, the scope catalog, the three authoring surfaces (YAML, `sam config apply`, and the Agent Mesh UI), and how to diagnose a denial.
 
 ## Terminology
 
-- [Glossary](./glossary.md)—The domain terms used throughout Agent Mesh, gathered into one canonical dictionary.
+- [Agent Mesh Terminology](./terminology.md)—The terms specific to Solace Agent Mesh, gathered into one reference.

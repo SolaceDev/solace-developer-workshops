@@ -1,4 +1,5 @@
 ---
+published: true
 title: Managing Configuration as Code (Early Access)
 description: Describe your Agent Mesh resources as YAML and reconcile them with sam config plan, apply, and pull.
 sidebar_position: 0

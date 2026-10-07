@@ -9,6 +9,13 @@ free-form map whose required keys depend on `provider`; secret-shaped
 keys (`apiKey`, `token`, `password`) are redacted in plan output and
 rewritten as `${VAR}` placeholders by `sam config pull`.
 
+`sam config apply --prune` deletes models after it applies agents and
+workflows (and, unless `--no-deploy`, after it redeploys them), so
+re-pointing an agent at a new model and dropping the old one converges in
+one apply. The apply fails before any change when an agent's
+`modelProvider` in the manifest still names a model it would delete;
+`sam config plan` shows this as a warning.
+
 
 ## Schema
 

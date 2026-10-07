@@ -1,0 +1,8 @@
+{
+  "label": "Administering Agent Mesh",
+  "position": 800,
+  "link": {
+    "type": "doc",
+    "id": "documentation/administering/index"
+  }
+}

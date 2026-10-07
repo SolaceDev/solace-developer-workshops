@@ -1,4 +1,5 @@
 ---
+published: true
 title: The Configuration Repo
 description: The directory layout of a declarative-config repo, the shape of a resource file, how resources reference each other, and how to discover the fields a kind accepts.
 sidebar_position: 1
@@ -113,7 +114,7 @@ sam config schema example connector --type sql --subtype postgres
 Add `--format json` to `show` or `list` when you want to process the schema with another tool.
 
 :::tip
-For AI-assisted authoring, run `sam ai-assistance skill install` at your repo root. Your AI coding assistant then knows the declarative-config kinds and their fields, generated from the same schema, and can draft or review resource files for you.
+Install the Agent Mesh authoring skills, and your AI coding assistant can draft or review resource files for you. See [Building with an AI Coding Assistant (Early Access)](../ai-coding-assistant.md).
 :::
 
 ## Related Topics

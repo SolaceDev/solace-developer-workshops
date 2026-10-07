@@ -1,0 +1,8 @@
+{
+  "label": "Graph Database Connectors",
+  "position": 70,
+  "link": {
+    "type": "doc",
+    "id": "documentation/building/connectors/graph-db/index"
+  }
+}

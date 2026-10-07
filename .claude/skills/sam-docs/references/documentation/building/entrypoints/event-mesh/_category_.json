@@ -1,0 +1,8 @@
+{
+  "label": "Event Mesh Entrypoints",
+  "position": 10,
+  "link": {
+    "type": "doc",
+    "id": "documentation/building/entrypoints/event-mesh/index"
+  }
+}

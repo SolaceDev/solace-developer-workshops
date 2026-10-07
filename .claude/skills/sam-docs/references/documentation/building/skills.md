@@ -1,4 +1,5 @@
 ---
+published: true
 title: Creating Skills
 description: Author, package, upload, and attach a skill bundle — the end-to-end flow for shipping named instruction and tool bundles into a running mesh through the Platform service.
 sidebar_position: 640
@@ -33,8 +34,8 @@ This writes a `skills/weather/` directory with a `SKILL.md`, a `references/` dir
 
 Use `sam skill sync` from the skill directory to re-vendor the embedded SDK for Go-tool skills after upgrading `sam`.
 
-:::tip Let your AI coding assistant write the tool
-Run `sam ai-assistance skill install` at your repository root to install the Solace Agent Mesh authoring skills. Your AI coding assistant (Claude Code, Cursor, and similar) then knows the `samtoolsdk` (Go) and `sam-tool-sdk` (Python) APIs and can fill in the scaffolded skill tool for you.
+:::tip Let Your AI Coding Assistant Write the Tool
+Install the Agent Mesh authoring skills, and your AI coding assistant can use the `samtoolsdk` (Go) and `sam-tool-sdk` (Python) APIs to fill in the scaffolded skill tool for you. See [Building with an AI Coding Assistant (Early Access)](./ai-coding-assistant.md).
 :::
 
 ### The Bundle Layout
@@ -102,6 +103,17 @@ tools:
 
 `executable` is the binary or script the Secure Tool Runtime invokes; `tool_dir` is the subdirectory of `tools/` that holds the tool's files. The same tool is invoked from the agent's perspective as `manim__render_manim` — the prefix comes from the bundle's directory name.
 
+The `timeout_seconds` field sets the wall-clock budget for a single invocation. The Secure Tool Runtime terminates a tool process that overruns that budget. When the manifest omits the field, a timeout the tool declares itself applies instead (`samtoolsdk.WithTimeout` in a Go tool). When neither sets a value, the sandbox `default_timeout_seconds` of 300 seconds applies. For the full list of sandbox settings, see [The `sandbox` Block](../reference/config-schema.md#the-sandbox-block) in Configuration Schema.
+
+:::warning
+For any tool that calls an LLM from its own process, set `timeout_seconds` to a value between 241 and 300 seconds, or leave it unset to get the 300-second default.
+
+The range has a floor and a ceiling, and both matter:
+
+- **Below 241 seconds**, the Secure Tool Runtime terminates the process mid-call. An in-tool LLM call carries its own 240-second cap, and the tool can turn that cap into an error it reports itself only when its execution timeout outlasts the cap. Below the cap the invocation fails with `TOOL_TIMEOUT` instead.
+- **Above 300 seconds**, the calling agent stops waiting before the tool answers. A skill-bundled tool's manifest timeout governs only the Secure Tool Runtime; the agent's own wait window is fixed at the default. The tool keeps running, its result is discarded, and the agent reports a timeout that says nothing about what the tool was doing.
+:::
+
 A bundled tool can be Python or Go. The two share the manifest structure; what differs is whether the executable is a Python script run from a virtual environment alongside it, or a compiled Go binary.
 
 #### Python Tools
@@ -143,9 +155,9 @@ The tool is offered to the agent automatically whenever any loaded skill has an 
 
 ```text
 instantiate_template(
-  # source — one of:
+  # source - one of:
   skill_name:      string,            # a skill-bundled asset: the skill that owns it (+ asset)
-  asset:           string,            #   path under assets/ — a template `.samt`, or a plain file to copy
+  asset:           string,            #   path under assets/ - a template `.samt`, or a plain file to copy
   source_artifact: string,            # OR a standalone packaged template (.samt) in this session
 
   output_filename: string,            # optional: name for the saved artifact
@@ -180,10 +192,10 @@ A template's contract is a `.template.yaml` **sidecar**. You author it when pack
 template:
   file: report.html                       # the asset this sidecar describes, relative to assets/
   output_filename: quarterly_report.html  # default output name; the tool's output_filename arg overrides
-  mime_type: text/html                    # MIME the output is saved with — must be a text type
+  mime_type: text/html                    # MIME the output is saved with - must be a text type
   description: Quarterly sales summary with a per-month table
 
-substitutions:                            # Layer 1 — bound at instantiate time
+substitutions:                            # Layer 1 - bound at instantiate time
   report_title:
     description: H1 title shown at the top of the report
     default: "Quarterly Report"
@@ -192,7 +204,7 @@ substitutions:                            # Layer 1 — bound at instantiate tim
     description: Name the report is attributed to
     required: true
 
-data_inputs:                              # Layer 2 — bound at serve time, satisfied by session artifacts
+data_inputs:                              # Layer 2 - bound at serve time, satisfied by session artifacts
   sales_rows:
     description: One row per month, oldest first
     artifact: sales_data.json             # the artifact name the template's embeds/Liquid reference
@@ -286,13 +298,13 @@ Select a skill's row to open its side panel, which shows the skill description, 
 
 ### Built-In Skills
 
-The skills list also shows curated built-in skills that you attach to an agent by name without uploading anything. The current built-ins are `sam-docs`, `sam-excel`, `sam-knowledge`, `sam-scheduling`, and `sam-templates`. The `sam-` name prefix is reserved for these. The attach dialog surfaces each by its human-readable display name — for example, `sam-excel` appears as **Excel Workbooks** and `sam-templates` as **Reusable Report Templates**.
+The skills list also shows curated built-in skills that you attach to an agent by name without uploading anything. The current built-ins are `sam-docs`, `sam-docx`, `sam-excel`, `sam-knowledge`, `sam-scheduling`, and `sam-templates`. The `sam-` name prefix is reserved for these. The Skills panel lists each by its human-readable display name. For example, `sam-excel` appears as **Excel Workbooks**, `sam-docx` as **Word Documents**, and `sam-templates` as **Reusable Report Templates**.
 
 ## Step 5: Attach the Skill to an Agent
 
 A skill does nothing until an agent references it. Open an agent for editing (or create a new one) and select **Add Skills** in the **Skills** section:
 
-1. The agent-edit page swaps in an inline **Skills** panel with two sections: **Built-in Skills** (the curated `sam-*` catalog, listed by human-readable display name — for example `sam-excel` appears as **Excel Workbooks**) and **Custom Skills** (skills your organization has uploaded). Select the checkbox next to each skill you want to attach, then select **Apply**.
+1. The agent-edit page swaps in an inline **Skills** panel with two sections: **Built-in Skills** (the curated `sam-*` catalog, listed by human-readable display name) and **Custom Skills** (skills your organization has uploaded). Select the checkbox next to each skill you want to attach, then select **Apply**.
 2. For a skill whose bundled tools declare configuration fields, the agent editor renders a per-skill configuration form. Fill in the values for this agent: one agent might point the skill at staging, another at production. Secret fields show a masked input; a stored secret displays as unchanged until you clear and replace it.
 
 Save and deploy the agent. The agent loads its attached skills on demand at runtime: the LLM calls `load_skill` when it decides a skill applies to the current task, which injects the body of `SKILL.md` into the conversation and registers the skill's bundled tools so they become callable on the next turn.
@@ -313,9 +325,9 @@ This lazy-loading model is the point of the skill abstraction. An agent with 20 
 
 A skill has two consumers — the Agent-Workflow Executor that runs the agent's LLM loop, and the Secure Tool Runtime that executes the skill's tools. Only the Secure Tool Runtime touches the filesystem; the Agent-Workflow Executor learns about skills indirectly.
 
-The Secure Tool Runtime scans the skills directory at startup, reads each `SKILL.md`, parses the bundled-tool manifest, and stands up a worker that subscribes to the broker topics carrying invocations for each `<skill>__<tool>` name. It also broadcasts a skill-init message per skill carrying the metadata (description, bundled tools, whether the skill has `references/`). When the skill bundle changes — a re-built tool, an edited `SKILL.md` — the Secure Tool Runtime rediscovers and broadcasts again.
+The Secure Tool Runtime scans the skills directory at startup, reads each `SKILL.md`, parses the bundled-tool manifest, and stands up a worker that subscribes to the event broker topics carrying invocations for each `<skill>__<tool>` name. It also broadcasts a skill-init message per skill carrying the metadata (description, bundled tools, whether the skill has `references/`). When the skill bundle changes — a re-built tool, an edited `SKILL.md` — the Secure Tool Runtime rediscovers and broadcasts again.
 
-The agent subscribes to skill-init messages, filters by the names in its `skills` list, and uses the broadcast metadata to populate `load_skill`'s catalogue. When `load_skill` runs, the agent registers the bundled tools as built-in tools routed to the Secure Tool Runtime under the prefixed name. Invocations from the LLM flow through the Agent-Workflow Executor to the Secure Tool Runtime worker over the broker.
+The agent subscribes to skill-init messages, filters by the names in its `skills` list, and uses the broadcast metadata to populate `load_skill`'s catalogue. When `load_skill` runs, the agent registers the bundled tools as built-in tools routed to the Secure Tool Runtime under the prefixed name. Invocations from the LLM flow through the Agent-Workflow Executor to the Secure Tool Runtime worker over the event broker.
 
 The implication: if you change a skill's directory structure or rename it, the Secure Tool Runtime has to see the change. Re-upload through the Agent Mesh UI, or restart the Secure Tool Runtime when running from a filesystem path.
 
@@ -354,7 +366,7 @@ During development, symlink each skill from your repository into `~/.config/sam/
 ln -s "$PWD/skills/weather" ~/.config/sam/skills/weather
 ```
 
-To distribute a skill to another host, tar or zip the directory, ship it, unpack it into the target's skills directory, and restart the Agent-Workflow Executor and Secure Tool Runtime:
+To distribute a skill to another host, create a tar or zip archive of the directory, ship it, unpack it into the target's skills directory, and restart the Agent-Workflow Executor and Secure Tool Runtime:
 
 ```bash
 tar -czf weather-skill.tar.gz -C ~/.config/sam/skills weather

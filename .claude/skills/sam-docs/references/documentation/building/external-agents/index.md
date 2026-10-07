@@ -1,4 +1,5 @@
 ---
+published: true
 title: Connecting External Agents
 description: Connecting an A2A-speaking agent that lives outside Agent Mesh, through the Agent Mesh UI external-agent wizard.
 sidebar_position: 1
@@ -12,7 +13,7 @@ This page covers how to bring an external A2A agent into your deployment from th
 
 ## When to Connect an External Agent
 
-Connecting an external agent is the right choice when the external service already speaks A2A over HTTPS, for example a vendor's hosted analytics agent, and you want your orchestrator and peer agents to delegate to it without any HTTPS integration work. The agent runs on infrastructure you do not control, yet appears in agent-card discovery and accepts the standard peer delegation calls as if it were native.
+Connecting an external agent is the right choice when the external service already speaks A2A over HTTPS, for example a vendor's hosted analytics agent, and you want your orchestrator and peer agents to delegate to it without any HTTPS integration work. The agent runs on infrastructure you do not control, yet appears in agent-card discovery and accepts the standard peer delegation calls as if it were running inside Agent Mesh.
 
 It is the wrong choice when the external service is a generic HTTP API rather than an A2A agent. For that, configure an OpenAPI tool instead.
 
@@ -23,7 +24,7 @@ The following table contrasts a connected external agent with an agent you autho
 | Transport to the external code | A2A over HTTPS | A2A over Solace event mesh |
 | Where the agent runs | Outside Agent Mesh, on infrastructure you do not control | Inside Agent Mesh, on the runtime you deploy |
 | Authentication to the external code | The Platform service stores credentials and presents them on every call | Not applicable, the agent is part of your deployment |
-| Discoverability to peers | Appears in agent-card discovery as if native | Appears in agent-card discovery directly |
+| Discoverability to peers | Appears in agent-card discovery like an agent inside Agent Mesh | Appears in agent-card discovery directly |
 | Use case | Third-party, partner, or legacy A2A agents | Agents you author |
 
 ## How External Agent Connections Work
@@ -33,7 +34,7 @@ When you connect an external agent, the Platform service stores an external-agen
 - A2A over HTTPS, used by the external agent.
 - A2A over the Solace event mesh, used by every agent inside your deployment.
 
-The proxy fetches the external agent's card so other agents can discover it, forwards task requests from the broker to the external agent's HTTPS endpoint, and streams responses back onto the event broker. Heartbeats and discovery work the same way they do for an agent running inside Agent Mesh, so peer agents and the orchestrator do not need to know that the agent is external.
+The proxy fetches the external agent's card so other agents can discover it, forwards task requests from the event broker to the external agent's HTTPS endpoint, and streams responses back onto the event broker. Heartbeats and discovery work the same way they do for an agent running inside Agent Mesh, so peer agents and the orchestrator do not need to know that the agent is external.
 
 ```mermaid
 flowchart LR

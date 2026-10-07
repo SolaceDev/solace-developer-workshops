@@ -1,4 +1,5 @@
 ---
+published: true
 title: Exporting and Migrating
 description: Export a running Platform service into editable YAML with sam config pull, and convert older configuration into clean YAML with sam config migrate.
 sidebar_position: 5
@@ -90,7 +91,7 @@ Migrate writes a report grouped into four buckets: what it migrated, what it mig
 sam config migrate ./legacy-config ./migrated --report migration-report.json
 ```
 
-Treat the output as a starting point, not a finished repo. Review the report, re-home anything that belongs to the environment rather than the resource (authentication, identity, broker connection), then run `sam config plan` against a Platform service before you trust it.
+Treat the output as a starting point, not a finished repo. Review the report, re-home anything that belongs to the environment rather than the resource (authentication, identity, event broker connection), then run `sam config plan` against a Platform service before you trust it.
 
 ## Related Topics
 

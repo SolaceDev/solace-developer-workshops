@@ -1,4 +1,5 @@
 ---
+published: true
 title: Creating Toolsets
 description: Author, package, upload, and attach a toolset — the end-to-end flow for shipping custom tool code into a running mesh through the Platform service.
 sidebar_position: 7
@@ -48,8 +49,8 @@ toolsets/
 
 Use `--lang go` instead to scaffold a Go toolset. The Go skeleton vendors the `samtoolsdk` package under `src/_sdk/` so it builds without network access.
 
-:::tip Let your AI coding assistant write the tool
-Run `sam ai-assistance skill install` at your repo root to install the Solace Agent Mesh authoring skills. Your AI coding assistant (Claude Code, Cursor, and similar) then knows the `samtoolsdk` (Go) and `sam-tool-sdk` (Python) APIs and can fill in the scaffolded tool for you.
+:::tip Let Your AI Coding Assistant Write the Tool
+Install the Agent Mesh authoring skills, and your AI coding assistant can use the `samtoolsdk` (Go) and `sam-tool-sdk` (Python) APIs to fill in the scaffolded tool for you. See [Building with an AI Coding Assistant (Early Access)](./ai-coding-assistant.md).
 :::
 
 Write your tools inside `src/`. The scaffolded Python tool lives in `src/<name>/__main__.py`, with `src/<name>/__init__.py` re-exporting the entry-point callable for the console script. The authoring patterns (Python function-style tools wrapped with `tool_cli`, multi-tool provider classes with `provider_cli`, and Go tools built with `pkg/samtoolsdk`) are identical to any other remote tool. Replace the scaffolded `greet` example with your own tool:
@@ -94,6 +95,63 @@ tools:
 ### Tools That Take Operator Configuration
 
 A tool can declare configuration the operator supplies when attaching it to an agent: an API key, an endpoint, a default. Declare it on the tool (the SDK's config-schema decorator for Python, `WithConfigSchema` for Go) and mark secret fields `secret: true`. The Platform service renders a form for these fields on the agent-edit page and masks secret values.
+
+### Restricting Who Can Run a Tool
+
+By default, any caller who can invoke an agent can run every tool attached to it. To gate one tool behind role-based access control (RBAC), add a `required_scopes` key to the toolset's configuration, keyed by tool name. Each value is a list of scope strings. The caller must hold every scope in the list to invoke that tool:
+
+```yaml
+# weather.yaml
+kind: toolset
+name: weather
+spec:
+  config:
+    required_scopes:
+      get_forecast:
+        - tool:weather__get_forecast:invoke
+```
+
+Use the shape `tool:<toolset>__<tool>:<verb>`. The middle segment is the registered tool name, `weather__get_forecast`, which is the name the agent's configuration preview shows. A tool with no entry stays ungated beyond the agent's own invoke scope. For more information about the scope grammar, see [RBAC Reference](../reference/rbac-reference.md).
+
+The `sam config apply` command enforces two rules:
+
+- Keys must be tool names the package registers. Because this is a security control, it fails closed. If the toolset has not finished discovery, Agent Mesh rejects every entry rather than accepting it.
+- Each value must be a non-empty list of concrete `tool:` scopes, written as exact strings. The `*` wildcard and the `_` sentinel are not supported in a required scope.
+
+A tool also cannot declare a configuration field named `required_scopes`, because the key is reserved. That collision surfaces later, when the Secure Tool Runtime discovers the package. The Secure Tool Runtime skips the offending tool, and the toolset reports a discovery error rather than a validation failure.
+
+To remove a gate, set `required_scopes: {}`. Omitting the key preserves whatever is already stored, the same way the per-tool `auth` block behaves.
+
+Renaming or removing a gated tool in a later package version fails discovery closed. The toolset goes to `Failed` with an error naming the tool the gate points at, reports that the package no longer registers that tool, and does not reach `Ready`. This behavior is deliberate. Accepting the upload would deploy the tool ungated while the stored configuration still reports it as protected. The toolset configuration stays editable in this state so that you can recover in place. Point the entry at the new tool name or delete the entry, and the toolset returns to `Ready`.
+
+:::warning
+Authoring a gate does not create a grant. In the scope picker, scopes in the `tool` category are not available, and the **Roles** page has no free-text scope field. To grant the scope, add it to a `kind: rbacRole` resource and run `sam config apply`. For more information, see [Enabling Role-Based Access Control (RBAC)](../administering/enabling-rbac.md).
+
+Until a role grants the scope, any caller holding a wildcard that covers it can still run the gated tool. Both `tool:*:*` and the `*:*:*` superadmin grant cover it. Verify a new gate as an identity that holds neither, because the accounts most likely to test it hold one. The built-in `sam_manager` role grants `tool:*:*` alongside the `toolset:*:*` that you need to author the gate, and the starter `agent_user` role grants it as well.
+:::
+
+#### Narrowing a Gate for One Agent
+
+The `required_scopes` key also works in the per-agent overlay. Agent Mesh merges the overlay with the toolset default as a union rather than replacing it:
+
+```yaml
+# forecaster.yaml
+kind: agent
+name: forecaster
+spec:
+  toolsets:
+    - weather
+  toolsetConfigs:
+    - toolsetName: weather
+      configValues:
+        required_scopes:
+          get_forecast:
+            - tool:weather__get_forecast:invoke
+```
+
+Because the caller must hold every listed scope, an agent overlay can only add requirements. It can never remove one that the toolset owner authored. This restriction is deliberate. The two layers sit behind different permissions, so editing an agent cannot weaken a toolset owner's gate. To loosen a gate, change the toolset default.
+
+Keep both layers on the same verb unless you intend the conjunction. A toolset default of `tool:weather__get_forecast:read` plus an overlay of `tool:weather__get_forecast:invoke` requires both, and nothing warns at author time if no role holds the whole set.
 
 ## Step 2: Test Locally
 
@@ -211,13 +269,13 @@ To fix a bug, add a parameter, or change behavior in a deployed toolset, re-uplo
 1. Open the toolset's detail page and click Edit. Inside the edit form, choose Re-Import Toolset File and select the new `weather.zip`. Save the form. The Secure Tool Runtime re-syncs the package and re-runs discovery, and each attached agent picks up the new tool code automatically.
 2. If the toolset is currently attached to running agents, Agent Mesh shows a confirmation dialog naming how many agents use it, because the re-import replaces their tools and redeploys them. Confirm to proceed: the upload succeeds and every bound agent — and every workflow that binds the toolset — is automatically redeployed with the new package. You do not need to detach the toolset from agents first.
 
-A re-upload that fails validation leaves the existing package intact. A re-upload that uploads cleanly but then fails discovery transitions the toolset to `Failed`. The new package is active and the old one is not retained.
+A re-upload that fails validation leaves the existing package intact. A re-upload that uploads cleanly but then fails discovery transitions the toolset to `Failed`. The new package is active and the old one is not retained. There is one exception. Agent Mesh deliberately holds back a re-upload that renames or removes a tool that an existing `required_scopes` entry still gates, rather than shipping it. For more information, see [Restricting Who Can Run a Tool](#restricting-who-can-run-a-tool).
 
 ## Debugging Deployment and Runtime Errors
 
 Toolset errors fall into two categories:
 
-- Discovery failures show up as a `failed` status with the error list on the toolset detail page. These are package or schema problems, caught before any agent calls the tool.
+- Discovery failures show up as a `failed` status with the error list on the toolset detail page. These are usually package or schema problems, caught before any agent calls the tool. A `required_scopes` entry that gates a tool the package no longer registers produces the same status, and holds the toolset back until you correct the gate. For more information, see [Restricting Who Can Run a Tool](#restricting-who-can-run-a-tool).
 - Agent Mesh propagates runtime failures (a tool that raises an exception or exits non-zero during an invocation) back through the agent and reports them in the chat conversation, with secrets and environment values redacted from the captured output. You see the failure where you are talking to the agent, not only in server logs.
 
 ## Next Steps

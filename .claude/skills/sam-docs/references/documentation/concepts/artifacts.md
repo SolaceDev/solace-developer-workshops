@@ -1,4 +1,5 @@
 ---
+published: true
 title: Artifacts
 description: "Versioned blob storage every tool and agent in Agent Mesh shares: what an artifact is, the five backends, scoping rules, versioning, and how artifacts reach the LLM context."
 sidebar_position: 590
@@ -26,13 +27,13 @@ Agent Mesh ships five artifact backends. All five satisfy the same artifact-serv
 | `gcs` | Object-store durable. | Yes. Any process with bucket credentials sees the same artifacts. | Production Google Cloud deployments. |
 | `azure` | Object-store durable. | Yes. Any process with container credentials sees the same artifacts. | Production Azure deployments. |
 
-Every cross-process visibility story in the preceding table assumes the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime processes have read access to the same store. In a distributed deployment that means pointing each component's `artifact_service` block at the same bucket or the same volume; the artifact service does not transit bytes over the broker. For the per-backend configuration block, see [Creating Agents](../building/agents/index.md) and [Configuring Agent Mesh](../installing/configure.md).
+Every cross-process visibility story in the preceding table assumes the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime processes have read access to the same store. In a distributed deployment that means pointing each component's `artifact_service` block at the same bucket or the same volume; the artifact service does not transit bytes over the event broker. For the per-backend configuration block, see [Creating Agents](../building/agents/index.md) and [Configuring Agent Mesh](../installing/configure.md).
 
 ## Scoping the Namespace
 
 The artifact service has two scope modes, set per component via `artifact_scope` (default: `namespace`):
 
-- **`namespace` (default).** Every component in the same broker namespace shares the same artifact bucket. An artifact written by one agent is addressable by every other agent in that namespace. This default fits when several agents collaborate on the same conversation. An orchestrator agent and the peer agents it delegates to all see the same files without negotiation.
+- **`namespace` (default).** Every component in the same event broker namespace shares the same artifact bucket. An artifact written by one agent is addressable by every other agent in that namespace. This default fits when several agents collaborate on the same conversation. An orchestrator agent and the peer agents it delegates to all see the same files without negotiation.
 - **Component-scoped (per-agent or per-entrypoint).** The component name becomes the storage prefix, isolating one component's artifacts from every other in the same namespace. Use this when a component must own its working files alone. Examples: two agents in the same namespace happen to use the same filename for different content, or you want a sharp blast radius on a delete. The YAML label depends on which schema is validating the block: write `artifact_scope: global` inside an agent's `artifact_service` block, and `artifact_scope: app` inside an entrypoint's. The two labels are functionally identical (the runtime branches on `namespace` versus anything-else), but operators must type the label their schema expects or configuration validation rejects it.
 
 Inside whichever scope you select, every artifact is addressed by four dimensions:
@@ -71,22 +72,22 @@ The takeaway: artifacts are the long-lived shared store; the context window is t
 
 ## Lifecycle
 
-An artifact's lifetime is bounded only by the operator's retention policy. Agent Mesh does not run an automatic sweep.
+An artifact's lifetime is bounded only by the operator's retention policy. The automatic data-retention sweep does not touch artifact stores.
 
-- **Create.** A tool running inside the Secure Tool Runtime writes bytes through the artifact service and receives a version number in return. The Secure Tool Runtime worker fires an `artifact_saved` A2A signal so the Agent-Workflow Executor observes that a new artifact is part of the conversation. The Agent-Workflow Executor updates the live conversation state, then publishes a status update through the broker. The Entrypoint Executor streams that update over Server-Sent Events (SSE) to whichever client is subscribed to the task. The browser sees a new file in the conversation, or the Slack bot can reference it in its next reply.
+- **Create.** A tool running inside the Secure Tool Runtime writes bytes through the artifact service and receives a version number in return. The Secure Tool Runtime worker fires an `artifact_saved` A2A signal so the Agent-Workflow Executor observes that a new artifact is part of the conversation. The Agent-Workflow Executor updates the live conversation state, then publishes a status update through the event broker. The Entrypoint Executor streams that update over Server-Sent Events (SSE) to whichever client is subscribed to the task. The browser sees a new file in the conversation, or the Slack bot can reference it in its next reply.
 - **Read.** Any tool, on any subsequent turn, in any process that mounts the same store, can call `load_artifact` (or one of the higher-level artifact-management tools) to read the bytes back. Reads do not produce A2A signals.
 - **Update.** A new version of the same filename is a fresh write; the previous versions are still readable.
 - **Delete.** `delete_artifact` removes every version of one artifact name. Deletes are a deliberate operator or agent action, not a side effect of a session ending.
-- **Retain.** Agent Mesh does not ship a background retention sweep. Filesystem stores grow until you trim them; object-store buckets grow until you set a bucket lifecycle policy. Operational guidance for sizing, snapshots, and retention lives in [Managing Backups and Data Retention](../administering/backups-and-data-retention.md).
+- **Retain.** The automatic data-retention sweep prunes the session store's tables, not the artifact store. Filesystem stores grow until you trim them; object-store buckets grow until you set a bucket lifecycle policy. Operational guidance for sizing, snapshots, and retention lives in [Managing Backups and Data Retention](../administering/backups-and-data-retention.md).
 
 ## Cross-Process Visibility
 
-The artifact subsystem touches every workload class in Agent Mesh: the Secure Tool Runtime creates artifacts on behalf of tools, the Agent-Workflow Executor references them in the conversation, and the Entrypoint Executor streams the status events out to the browser and serves the bytes on HTTP fetch. The broker carries the small status-and-pointer traffic; the artifact store itself carries the bytes.
+The artifact subsystem touches every workload class in Agent Mesh: the Secure Tool Runtime creates artifacts on behalf of tools, the Agent-Workflow Executor references them in the conversation, and the Entrypoint Executor streams the status events out to the browser and serves the bytes on HTTP fetch. The event broker carries the small status-and-pointer traffic; the artifact store itself carries the bytes.
 
 ```mermaid
 flowchart LR
   tool[Tool] -->|writes bytes| str[Secure Tool Runtime]
-  str -->|artifact_saved signal| broker[(Broker)]
+  str -->|artifact_saved signal| broker[(Event Broker)]
   broker -->|status stream| awe[Agent-Workflow Executor]
   awe -->|conversation update| broker
   broker -->|SSE event| epe[Entrypoint Executor]
@@ -95,7 +96,7 @@ flowchart LR
   epe -.->|bytes read from| store
 ```
 
-The solid arrows are the small messages: signals, status events, SSE notifications. The dashed arrows are the bytes. The Secure Tool Runtime writes them when a tool produces an artifact; the Entrypoint Executor reads them when a client requests the content. The broker never carries artifact bytes; it carries the names and metadata that let every process know an artifact exists and where to fetch it. The same design principle governs the rest of the runtime: small typed events flow over the broker, large payloads flow through purpose-built services. For the broader topic of what does and does not belong on the broker, see [The Event-Driven Mesh](./event-driven-mesh.md).
+The solid arrows are the small messages: signals, status events, SSE notifications. The dashed arrows are the bytes. The Secure Tool Runtime writes them when a tool produces an artifact; the Entrypoint Executor reads them when a client requests the content. The event broker never carries artifact bytes; it carries the names and metadata that let every process know an artifact exists and where to fetch it. The same design principle governs the rest of the runtime: small typed events flow over the event broker, large payloads flow through purpose-built services. For the broader topic of what does and does not belong on the event broker, see [The Event-Driven Mesh](./event-driven-mesh.md).
 
 ## What Next?
 

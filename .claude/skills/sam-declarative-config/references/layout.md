@@ -1,6 +1,6 @@
 ## Directory Layout
 
-A canonical SAM declarative-config repo looks like:
+A canonical Agent Mesh declarative-config repo looks like:
 
 ```
 repo-root/
@@ -23,15 +23,37 @@ repo-root/
 │     └─ <toolset-name>.zip     # mirror flow: pre-built bundle (from pull)
 ├─ connectors/
 │  └─ <connector-name>.yaml
-└─ skills/
-   └─ <skill-name>/          # skills are *directories*, not files
-      ├─ SKILL.md
-      └─ assets/...
+├─ datasets/
+│  └─ <dataset-name>.yaml
+├─ evaluators/
+│  └─ <evaluator-name>.yaml
+├─ experiments/
+│  └─ <experiment-name>.yaml
+├─ skills/
+│  └─ <skill-name>/          # skills are *directories*, not files
+│     ├─ SKILL.md
+│     └─ assets/...
+└─ rbac/                     # four kinds share one top-level dir
+   ├─ roles/
+   │  └─ <role-name>.yaml            # kind: rbacRole
+   ├─ grants/
+   │  └─ <local-name>.yaml           # kind: rbacGrant
+   ├─ claim-mappings/
+   │  └─ <local-name>.yaml           # kind: rbacClaimMapping
+   └─ system-users/
+      └─ <system-user-name>.yaml     # kind: systemUser
 ```
 
 The resolver walks `<repo-root>/<plural-kind>/` for each kind declared
 in the manifest's `resources:` block. The `<plural-kind>` is the
 directory name shown above (e.g. `models`, `agents`, `connectors`).
+
+The four RBAC kinds are the exception. Their manifest keys are
+`rbacRoles`, `rbacGrants`, `rbacClaimMappings` and `systemUsers`, but
+their files live under `rbac/roles/`, `rbac/grants/`,
+`rbac/claim-mappings/` and `rbac/system-users/` — not under a directory
+named after the key. Putting a role in `rbacRoles/` fails the plan with
+`resources.rbacRoles: "<name>" not found under rbac/roles`.
 
 Manifests can live anywhere on disk; the convention is
 `manifests/<env>.yaml` so `--manifest manifests/dev.yaml` discovers

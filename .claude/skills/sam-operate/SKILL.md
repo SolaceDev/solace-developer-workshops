@@ -1,42 +1,31 @@
 ---
 name: sam-operate
-description: Use when operating a deployed Solace Agent Mesh instance — managing the runtime lifecycle of running components (list, start, stop, restart, or remove a specific running agent or workflow via the builder UI or the `/api/v1/control` API), turning on SSO/OIDC login for the entrypoint (Keycloak, Azure AD, Okta), configuring RBAC roles and scopes (including which users can use an agent or manage connectors), managing secrets and promoting config across dev/staging/prod, or upgrading SAM to a new version. Not for diagnosing why something failed or reading task event logs (sam-troubleshoot), authoring agents/tools/entrypoints/connectors (those skills), or first-time install (sam-install-run / sam-deploy).
-version: main-v2.249.1-dirty
+description: Use when operating a deployed Solace Agent Mesh instance — managing the runtime lifecycle of components (list, redeploy, undeploy, or remove a specific agent or workflow via the builder UI), turning on SSO/OIDC login for the entrypoint (Keycloak, Azure AD, Okta), configuring RBAC roles and scopes (including which users can use an agent or manage connectors), managing secrets and promoting config across dev/staging/prod, or upgrading Agent Mesh to a new version. Not for diagnosing why something failed or reading task event logs (sam-troubleshoot), authoring agents/tools/entrypoints/connectors (those skills), or first-time install (sam-install-run / sam-deploy).
+metadata:
+  version: main-v2.381.3
 ---
 
 # sam-operate
 
-Operator configuration for a running Solace Agent Mesh (the Go product, SAM-Go): **SSO/OIDC, RBAC, secrets/promotion, upgrades.** Morgan's skill. This is a Go runtime — its auth is **native and in-process**, not the Python SAM model: there is **no separate `oauth2-proxy` service and no `oauth2_config.yaml`**. If you're about to reach for those, stop. Diagnosis ("X is broken/failing", reading task logs) is `sam-troubleshoot`, not here.
+Operator configuration for a running Solace Agent Mesh: **SSO/OIDC, RBAC, secrets/promotion, upgrades.** This is a Go runtime — its auth is **native and in-process**, not the Python Agent Mesh model: there is **no separate `oauth2-proxy` service and no `oauth2_config.yaml`**. If you're about to reach for those, stop. Diagnosis ("X is broken/failing", reading task logs) is `sam-troubleshoot`, not here.
 
 ## Picking the area
 
 | Operator task | Reference |
 |---|---|
-| List / start / stop / restart / remove a **running** agent or workflow instance | [Runtime lifecycle](#runtime-lifecycle) (below) |
+| List what's live / redeploy / undeploy / remove an agent or workflow instance | [Runtime lifecycle](#runtime-lifecycle) (below) |
 | Log users in via an IdP (Keycloak/Azure/Okta), self-signed IdP certs | [references/sso-oidc.md](references/sso-oidc.md) |
 | Roles & scopes — gate an agent, gate connector management, map IdP groups to roles | [references/rbac.md](references/rbac.md) |
 | Secrets, `${VAR}` substitution, dev→staging→prod promotion, rotation | [references/secrets-and-upgrades.md](references/secrets-and-upgrades.md) |
-| Upgrade SAM, migrations, rollback | [references/secrets-and-upgrades.md](references/secrets-and-upgrades.md) |
+| Upgrade Agent Mesh, migrations, rollback | [references/secrets-and-upgrades.md](references/secrets-and-upgrades.md) |
 
 ## Runtime lifecycle
 
-Manage the components (agents, workflows, other AWE-hosted instances) **currently running** in a deployed mesh, via the broker-routed control plane. This is the imperative "act on what's live right now" surface — distinct from `sam config apply`, which changes the *declared* set of resources and lets the reconciler converge. To bounce one misbehaving agent without redeploying or touching the others, this is the surface.
+Manage the components (agents, workflows, other AWE-hosted instances) **currently running** in a deployed mesh, via the broker-routed control plane. This is the imperative "act on what's live right now" surface — distinct from `sam config apply`, which changes the *declared* set of resources and lets the reconciler converge. To bounce one misbehaving agent without touching the others, redeploy it here.
 
-Two paths reach the same control plane:
+The **builder UI** is the operator surface for live lifecycle, and its action vocabulary is **deploy, update, undeploy, and delete** — there is no stop/start-in-place anywhere in the product. `sam control` was removed, and so was the `/api/v1/control` HTTP API that briefly succeeded it — never offer a `sam api` recipe against `/api/v1/control/...`, and never offer a "stop" or "start" action; the verbs do not exist. For scripted **status** checks (not lifecycle actions), `sam api /api/v1/platform/agents` and `/api/v1/platform/workflows` list platform-managed components with a `runtimeStatus` **object** — filter on `.runtimeStatus.status` (`running` / `degraded` / `starting` / `disconnected` / `stopped`), never on the field itself; `degraded` means serving but reporting problems, listed in `.runtimeStatus.problems`. Statically configured (YAML) agents appear only as live cards in `GET /api/v1/agentCards`.
 
-- **Builder UI** — the operator-facing surface for managing running agents and workflows.
-- **Platform control API** — for scripting, hit `/api/v1/control/apps` with `sam api`, which reuses your `sam auth login` token. Needs a reachable entrypoint proxy. There is no `sam control` CLI command; it was removed in favour of this API.
-
-| Task | `sam api` call |
-|---|---|
-| List running components | `sam api /api/v1/control/apps` |
-| Show one component | `sam api /api/v1/control/apps/<NAME>` |
-| Stop a running instance | `sam api -X PATCH /api/v1/control/apps/awe/instances/<NAME> --field enabled=false` |
-| Start a stopped instance | `sam api -X PATCH /api/v1/control/apps/awe/instances/<NAME> --field enabled=true` |
-| Stop **and remove** an instance | `sam api -X DELETE /api/v1/control/apps/awe/instances/<NAME>` |
-| Create an instance from a config file | `sam api -X POST /api/v1/control/apps/awe/instances --input <CONFIG-FILE>` |
-
-"Restart just one agent" = stop then start the same instance. See [`sam api`](../../../docs/docs/documentation/reference/cli.md) for target/token resolution (`--target`, `--url`, `SAM_WEBUI_URL`).
+"Restart just one agent" = **redeploy it** from the builder UI. **Undeploy is permanent removal of the running instance** (its durable broker queues are deprovisioned), not a "stop" — the agent's definition stays in the platform and can be deployed again. An instance that failed to *initialize* has nothing running to bounce: redeploy it, and for a statically configured instance fix the YAML and restart the pod.
 
 ## What lives where (ownership)
 
@@ -47,14 +36,17 @@ Two paths reach the same control plane:
 
 ## Hard rules (each counters an observed failure)
 
-- **Native OIDC, not a proxy.** SAM-Go's entrypoint does OIDC in-process via a top-level `providers:` catalog. Never describe an `oauth2-proxy` sidecar or `oauth2_config.yaml` — that's Python SAM and it will mislead.
-- **Use the real `authorization_service.type` values:** `none` (all authenticated users get all scopes — dev only), `default_rbac` (YAML + platform DB), `deny_all` (secure default when omitted). Baselines invented `type: default` — that's wrong.
-- **Scopes are verified strings, not guesses.** Real (3-segment `<category>:<resource>:<verb>`): `*`, `tool:*:*`, `agent:<name>:invoke`, `connector:_:create` / `connector:*:read`, `rbac:_:read|create|update|delete`, `agent_builder:*:*`. **`agent:<name>:invoke` gates BOTH direct user invocation through the entrypoint AND peer routing (one agent delegating to another)** — same scope, both call paths. If you're unsure a scope exists, say so rather than emit a plausible invention (baselines fabricated `*:*:*` style and mis-scoped agent access). The full catalog ships with the entrypoint; defer to the RBAC reference doc if you need the exhaustive list.
-- **Role providers:** YAML files (`role_to_scope_definitions_path`, `user_to_role_assignments_path`) plus the optional **`idp_claims`** provider mapping an OIDC claim (e.g. `groups`) to roles. `idp_claims` is the supported claim-based provider today, SCIM is the planned next one — **there is no MS Graph provider**; don't offer one.
+- **Native OIDC, not a proxy.** The Agent Mesh entrypoint does OIDC in-process via a top-level `providers:` catalog. Never describe an `oauth2-proxy` sidecar or `oauth2_config.yaml` — that's Python Agent Mesh and it will mislead.
+- **Use the real `authorization_service.type` values:** `none` (all authenticated users get all scopes — dev only), `default_rbac` (YAML + platform DB), `deny_all` (no scopes granted). When the block is omitted an entrypoint defaults to `none` unless `frontend_use_authorization: true` (then `deny_all`); the platform defaults to `deny_all`. Set `type` explicitly rather than rely on the default. Baselines invented `type: default` — that's wrong.
+- **Scopes are verified strings, not guesses.** Real (3-segment `<category>:<resource>:<verb>`): `*` and `*:*:*` (the two spellings of the superadmin grant — `*:*:*` is canonical), `tool:*:*`, `agent:<name>:invoke`, `connector:_:create` / `connector:*:read`, `rbac:_:read`, `agent_builder:*:*`. **`agent:<name>:invoke` gates BOTH direct user invocation through the entrypoint AND peer routing (one agent delegating to another)** — same scope, both call paths. RBAC *writes* need the superadmin grant, not a scope: `rbac:_:read` is the only RBAC scope in the catalog, so never offer a `create`/`update`/`delete` RBAC scope as a way to delegate RBAC administration — no such scope exists ([rbac.md](references/rbac.md)). If you're unsure a scope exists, say so rather than emit a plausible invention — the failure mode is a wildcard-shaped guess for a category that has no such grant, or an agent scope built from the wrong segment 2. The full catalog ships with the entrypoint; defer to the RBAC reference doc if you need the exhaustive list.
+- **Role providers:** YAML files (`role_to_scope_definitions_path`, `user_to_role_assignments_path`) plus the optional **`idp_claims`** provider mapping an OIDC claim (e.g. `groups`) to roles. `idp_claims` is the supported claim-based provider — **there is no MS Graph provider**; don't offer one.
 - **Secrets never inline, never echoed.** `${VAR}` / `*_file` only. A secret pasted into chat is exposed — say so once, advise rotation, reference it as `${VAR}` thereafter. **Rotating `SESSION_SECRET_KEY` logs every user out** — flag that before suggesting it.
 - **Don't write resource YAML from memory.** For agent/connector/toolset/entrypoint YAML, defer to `sam-declarative-config`. The auth/secrets shapes in this skill's references are the verified operator surface and are fine to show; resource definitions are not.
 - **No edition split, no `pip`.** Auth/RBAC are features you configure, never a different build. Upgrades are image-tag rolls (Helm) + auto-applied migrations, not `pip install`.
-- **Live lifecycle is this skill — not config-apply, not troubleshoot.** Stopping/starting/restarting/removing a *running* instance goes through the builder UI or the `/api/v1/control` API via `sam api` (this skill). Don't push it to `sam-declarative-config` (that changes the declared set, not the live one) or to `sam-troubleshoot` (that's diagnosing *why* something failed, not acting on it). Diagnose with troubleshoot, then act via the control API/UI. Never guess a `sam agent …` / `sam control …` / `kubectl …` command for this — `sam control` was removed; the live surface is the `/api/v1/control` API (via `sam api`) and the builder UI.
+- **Live lifecycle is this skill — not config-apply, not troubleshoot.** Redeploying/undeploying/removing a *running* instance goes through the builder UI (this skill). Don't push it to `sam-declarative-config` (that changes the declared set, not the live one) or to `sam-troubleshoot` (that's diagnosing *why* something failed, not acting on it). Diagnose with troubleshoot, then act via the UI. Never guess a `sam agent …` / `sam control …` / `kubectl …` command for this, and never offer a `sam api` recipe against `/api/v1/control/...` — `sam control` and the `/api/v1/control` HTTP API were both removed; the live surface is the builder UI, and its verbs are deploy/update/undeploy/delete (no stop/start).
+
+
+- **Turning telemetry off (or on).** Product analytics collects unless an installation records a refusal, and is additionally gated by the build: only the `-desktop-free-` artifacts compile in the collection path; the standard desktop installers, the `sam` CLI, and the Helm/container images do not, and have no `sam analytics` command at all. `sam analytics status | enable | disable` manages the per-installation decision where it exists, and each prints the decision; `status` reads it without changing anything. Point `--database-url`, or `SAM_ANALYTICS_DATABASE_URL` when it carries a password, at the deployment's `session_service.database_url` so you read or change the record the running deployment actually reads. Details in `sam-install-run`.
 
 ## References
 
@@ -62,4 +54,4 @@ Two paths reach the same control plane:
 |---|---|
 | SSO/OIDC — providers catalog, fields, provider selection, self-signed certs, session secret | [references/sso-oidc.md](references/sso-oidc.md) |
 | RBAC — authorization service types, scope syntax + real scopes, role providers, two sources of truth | [references/rbac.md](references/rbac.md) |
-| Secrets/env promotion + upgrades — substitution forms, file mounts, rotation, roll order, migrations, rollback | [references/secrets-and-upgrades.md](references/secrets-and-upgrades.md) |
+| Secrets/env promotion + upgrades — substitution forms, file mounts, rotation, upgrade essentials and where the runbook lives | [references/secrets-and-upgrades.md](references/secrets-and-upgrades.md) |

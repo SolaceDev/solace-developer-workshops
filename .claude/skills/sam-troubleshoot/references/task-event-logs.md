@@ -1,6 +1,6 @@
 # Task event logs (STIM)
 
-A **task event log** — called a **STIM file** in SAM-Go — is a YAML record of the full broker event flow for one task: every request, status update, LLM call, tool invocation + result, artifact event, and the final response. It's the tool for "what exactly did this task do, and where did it go wrong." ("STIM" is the file/feature name; it isn't an acronym worth expanding.)
+A **task event log** — called a **STIM file** in Solace Agent Mesh (Agent Mesh) Go — is a YAML record of the full broker event flow for one task: every request, status update, LLM call, tool invocation and result, artifact event, and the final response. It's the tool for "what exactly did this task do, and where did it go wrong."
 
 ## Enable capture (two requirements, both needed)
 
@@ -23,31 +23,23 @@ Without **both**, the STIM endpoint returns 404 even though tasks run. The `task
 
 Common enable-time pitfalls:
 - **SQLite path needs 4 slashes** for an absolute path (`sqlite:////abs/path`); 3 slashes is a relative path that silently produces an empty DB.
-- A stale `sam` process still bound to the port means `sam task send` talks to the old process — `lsof -i :8800` and kill stragglers.
+- A stale `sam` process still bound to the port means `sam task send` talks to the old process — `lsof -i :<port>` and kill stragglers.
 - Between local runs, remove `.db`, `.db-wal`, `.db-shm` to avoid SQLite lock errors.
-
-The `task_logging` **feature flag** (`SAM_FEATURE_TASK_LOGGING`) only gates the *UI* log surface; backend capture is the `task_logging.enabled` YAML above. Don't conflate them.
 
 ## Locate / download the file for a specific task
 
-- **Via the API:** `GET /api/v1/tasks/{taskId}` returns the STIM as a downloadable attachment, `Content-Type: application/yaml`, filename `{rootTaskId}.stim`. It includes the parent task chain + all descendants, so a workflow's sub-tasks come in one file.
-- **Via the CLI:** `sam task send "<msg>" -u http://localhost:8800 -a <AgentName>` auto-saves the STIM under the task output dir (e.g. `/tmp/sam-task-{id}/{id}.stim`). `--no-stim` disables that. (`8800` is the entrypoint's default port; use your own entrypoint URL for a remote/K8s deployment.)
+- **Via the API:** `GET /api/v1/tasks/{taskId}` returns the STIM as a downloadable attachment, `Content-Type: application/yaml`, filename `{rootTaskId}.stim`. It includes the parent task chain + all descendants, so a workflow's subtasks come in one file.
+- **Via the CLI:** `sam task send "<msg>" --target desktop -a <AgentName>` (or `-u <entrypoint-url>` for any other deployment) auto-saves the STIM under the task output dir, for example `/tmp/sam-task-{id}/{id}.stim`. `--no-stim` disables that.
 - **Find the taskId:** list tasks (`GET /api/v1/tasks`, paginated) or read it from the UI / the entrypoint log line for the conversation.
 - **Auth against a deployed entrypoint:** a remote entrypoint with SSO/OIDC on rejects an unauthenticated CLI call with **401**. Run `sam auth login <entrypoint-url>` once first — `sam task send` / `sam api` then reuse the cached token (auto-refreshed), so you can drop `-u` and use `--target <name>`. Bearer tokens are refused over plain `http://` unless you pass `--insecure`. The full CLI-auth surface (`sam auth login/logout/status/list`, token precedence) is owned by `sam-declarative-config`'s CLI-auth reference — go there for details, don't guess token flags.
 
-## Read it: the `stim-analyze` CLI
+## Read it
 
-```
-stim-analyze <file>.stim          # human-readable summary
-stim-analyze <file>.stim --json   # machine-readable
-stim-analyze <file>.stim --verbose
-```
+Read the `.stim` YAML directly, using the [event schema](#event-schema-for-reading-the-raw-yaml) below. It records task id, status, timing, every LLM call and tool call, token usage, the subtask tree, and artifact operations — the "which step failed / which tool ran / how many tokens" view.
 
-`stim-analyze` ships with the SAM tooling (run it on PATH; if it isn't present, fall back to reading the `.stim` YAML directly using the schema below). The summary surfaces task id, status, duration, LLM calls, tool calls, token usage, the sub-task tree, artifact operations, and a flow summary — i.e. exactly the "which step failed / which tool ran / how many tokens" view.
-
-Reading it for a silent tool failure:
-- A `tool_invocation_start` with **no matching `tool_result`** → the tool died mid-call (STR crash, timeout, sandbox kill).
-- A `tool_result` **carrying an error** → the tool ran and reported failure.
+For a silent tool failure, look for:
+- A `tool_invocation_start` with **no matching `tool_result`**.
+- A `tool_result` **carrying an error**, in any of four places: `result_data.status` (a string), `result_data.status.state` (a delegated subtask returns the whole Agent-to-Agent (A2A) Task), a non-empty `result_data.error`, or the same shapes under `result` when `result_data` is absent. An explicit success status wins over a descriptive `error` field.
 - The flow **ends right after the `request`** with no LLM response or tool events → the task never got past the entrypoint→agent or agent→LLM hop. That's not a tool problem — go back to `traceID` correlation and the broker/LLM checks in [diagnose.md](diagnose.md).
 
 ## Event schema (for reading the raw YAML)
@@ -59,17 +51,21 @@ invocation_flow:           # ordered array of events, sorted by created_time
   - id: evt-<prefix>-<seq>
     task_id: <uuid>
     created_time: <epoch-ms>
-    topic: <namespace>/a2a/v1/<direction>/<agent|gateway>/<taskId>
+    topic: <see below — role comes before direction, and the tail differs per family>
     direction: request | status | response | error
     payload: <JSON-RPC envelope>
 ```
 
-`direction` meanings: **request** (user/parent → agent), **status** (progress: LLM request/response, tool start/result, artifact ops — the signal is in `payload.result.status.message.parts[*].data.type`, e.g. `tool_invocation_start`, `tool_result`, `llm_response`), **response** (final, with token usage), **error** (JSON-RPC error envelope). Events are ordered by `created_time`.
+Topic forms (role first, then direction):
 
-## User-facing vs contributor-facing
+```
+<namespace>/a2a/v1/agent/request/<agentName>              # no taskId in the topic
+<namespace>/a2a/v1/gateway/status/<gatewayID>/<taskID>
+<namespace>/a2a/v1/gateway/response/<gatewayID>/<taskID>
+<namespace>/a2a/v1/discovery/agentcards
+```
 
-Safe to walk a user through: enabling capture, downloading the `.stim`, running `stim-analyze`, reading the flow. Deep mechanics — capture internals, the DB schema, mock-LLM closed-loop generation — are contributor-facing (`sam-closed-loop-debug` skill, the internal stim-capture doc); point there only if the user is debugging SAM itself rather than their own task.
+Match on the `direction` field rather than parsing the topic: a request topic ends in the
+agent name and carries no task id, so matching on the topic does not find a request event.
 
-## Docs gap
-
-There is currently **no published customer page** for task logging / STIM (it's mentioned only briefly under the entrypoints doc and the eval docs). Until one lands, this reference is the user-facing source; don't invent a doc URL for it.
+`direction` meanings: **request** (user/parent → agent), **status** (progress: LLM request/response, tool start/result, artifact ops — the signal is in `payload.result.status.message.parts[*].data.type`, such as `tool_invocation_start`, `tool_result`, `llm_response`), **response** (final, with token usage), **error** (JSON-RPC error envelope). Events are ordered by `created_time`.

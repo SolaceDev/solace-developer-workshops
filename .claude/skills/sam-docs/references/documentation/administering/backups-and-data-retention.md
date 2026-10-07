@@ -1,4 +1,5 @@
 ---
+published: true
 title: Managing Backups and Data Retention
 description: Routine day-two tasks — what to back up, how the built-in log rotation and data-retention cleanup work, and what is delegated to the underlying storage.
 sidebar_position: 870
@@ -17,12 +18,12 @@ Adjacent day-two topics live on their own pages:
 
 ## What to Back Up
 
-Agent Mesh persists state in two surfaces. Everything else is either ephemeral (in-memory caches, broker topic state) or already shipped to your log aggregator (audit and operational logs).
+Agent Mesh persists state in two surfaces. Everything else is either ephemeral (in-memory caches, event broker topic state) or already shipped to your log aggregator (audit and operational logs).
 
 | Surface | Backed by | Backup mechanism |
 |---|---|---|
-| Session store (sessions, tasks, feedback, event buffer) | A SQLite file or a Postgres database, selected by the session store's `database_url` | The underlying engine's native tooling — `sqlite3 .backup` or `pg_dump`. The runtime exposes no online-snapshot API. |
-| Artifact store | A filesystem path, an S3 bucket, a GCS bucket, or an Azure Blob container | The backend's native tooling — filesystem snapshot, `aws s3 sync`, `gsutil cp -r`, `azcopy`. |
+| Session store (sessions, tasks, feedback, event buffer) | A SQLite file or a Postgres database, selected by the session store's `database_url` | The underlying engine's own backup tooling — `sqlite3 .backup` or `pg_dump`. The runtime exposes no online-snapshot API. |
+| Artifact store | A filesystem path, an S3 bucket, a GCS bucket, or an Azure Blob container | The backend's own tooling — filesystem snapshot, `aws s3 sync`, `gsutil cp -r`, `azcopy`. |
 
 The runtime does not stamp or hash backups for tamper detection. If your compliance posture requires write-once storage, configure that on the destination (S3 Object Lock, an immutable Postgres replica, an append-only filesystem volume). Audit immutability follows the same pattern — it is a property of your log aggregator, not the runtime; see [Managing Audit and Compliance](./audit-and-compliance.md).
 
@@ -75,7 +76,7 @@ Filesystem stores grow with use. The session store's automatic data-retention sw
 ### What Is Not Persisted
 
 - **Operational and audit logs** go to the slog stream and from there to your log aggregator. Retention and backups belong to the aggregator. See [Managing Audit and Compliance](./audit-and-compliance.md).
-- **Agent discovery and broker topic state** are kept in the broker, not in Agent Mesh. Standard broker backup procedures apply.
+- **Agent discovery and event broker topic state** are kept in the event broker, not in Agent Mesh. Standard event broker backup procedures apply.
 - **In-memory caches** (profile cache, scope cache, OAuth state cache) are not persistent by design. They warm up after a restart and have configured time-to-live windows.
 
 ## Log Rotation
@@ -88,7 +89,7 @@ Every component — the `sam` CLI, the Entrypoint Executor, the Agent-Workflow E
 log:
   format: json
   stdout_log_level: INFO
-  log_file_level: DEBUG
+  log_file_level: INFO
   log_file: /var/log/sam/agent.log
   max_size_mb: 50
   max_backups: 10
@@ -110,7 +111,9 @@ Audit records use the same slog handler as operational logs. There is no separat
 
 ## Automatic Data-Retention Sweep
 
-The entrypoint runs an in-process background sweep that prunes old rows from the session store's task, feedback, and event tables. It is the only built-in maintenance routine the runtime exposes.
+The entrypoint runs an in-process background sweep that prunes old rows from the session store's task, feedback, and event tables.
+
+When the sweep deletes a task, it also deletes that task's event rows. The sweep deletes the streaming text-delta rows within those events sooner, after `task_event_delta_retention_days` (default 7 days). The remaining event rows stay until the task itself is pruned. The runtime stores each distinct system prompt and tool schema once, in a shared table, and the sweep removes the ones that no remaining event row references. That shared table has no retention window of its own.
 
 ```yaml
 # gateway runtime config
@@ -119,7 +122,8 @@ data_retention:
   enabled: true
   task_retention_days: 90
   feedback_retention_days: 90
-  sse_event_retention_days: 30
+  sse_event_retention_days: 7
+  task_event_delta_retention_days: 7
   cleanup_sse_events: true
   cleanup_interval_hours: 24
   batch_size: 1000
@@ -131,10 +135,13 @@ data_retention:
 | `enabled` | `true` | Disable the sweep entirely — for example, during a database migration. |
 | `task_retention_days` | `90` | Age threshold for task pruning. Tasks past the threshold are deleted on every sweep when the sweep is enabled. |
 | `feedback_retention_days` | `90` | Age threshold for feedback pruning. Feedback past the threshold is deleted on every sweep when the sweep is enabled. |
-| `sse_event_retention_days` | `30` | Age threshold for pruning the event buffer. |
+| `sse_event_retention_days` | `7` | Age threshold for pruning the event buffer. |
+| `task_event_delta_retention_days` | `7` | Age threshold for pruning streaming text-delta event rows. Structural event rows are not affected; they are deleted with their task under `task_retention_days`. |
 | `cleanup_sse_events` | `true` | Default-on switch for event-buffer pruning specifically. Tasks and feedback have no per-table switch — they are pruned unconditionally when the sweep is enabled. |
 | `cleanup_interval_hours` | `24` | Sweep cadence. |
 | `batch_size` | `1000` | Rows deleted per transaction. Tune this downward when the underlying database is contended. |
+
+The entrypoint also keeps a short-lived record of each chat task while it runs, so that any entrypoint replica can answer whether a task is still running. Those records are removed by the entrypoint that finishes the task. When a replica stops, a running replica of the same entrypoint takes over its records and times out any task that does not finish. A separate in-process reaper removes the records of an entrypoint that has no running replica. That reaper is independent of the settings below and runs whether or not this sweep is enabled. It needs no configuration and keeps nothing beyond the life of a running task.
 
 There are no dedicated per-field environment variables for the sweep — every key is set in the `data_retention` block. Any individual value can still be driven from the environment through the standard `${VAR, default}` substitution that applies to any configuration value.
 
@@ -142,7 +149,7 @@ The task and feedback tables are the same ones the audit channel correlates agai
 
 ## Database Engine Maintenance
 
-The runtime does not expose a `VACUUM`, `REINDEX`, or `ANALYZE` command. Use the database engine's native tooling when needed.
+The runtime does not expose a `VACUUM`, `REINDEX`, or `ANALYZE` command. Use the database engine's own tooling when needed.
 
 - **SQLite** — `VACUUM;` is safe to run against a quiesced database: stop the entrypoint, run `sqlite3 <path> 'VACUUM;'`, then start it again. Page-level fragmentation becomes meaningful only after sustained write churn; most deployments never need it.
 - **Postgres** — autovacuum runs by default. If autovacuum is disabled on your cluster, schedule a periodic `VACUUM ANALYZE` against the Agent Mesh database the same way you would for any other application schema. The runtime does not require manual maintenance against any specific table.

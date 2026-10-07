@@ -22,15 +22,15 @@ the live list for your instance.
 | `builtin_web_request_tools` | `web_tools` | HTTP GET/POST/PUT/DELETE requests to external services |
 | `builtin_research_tools` | `research` | Iterative multi-step web research + Google search |
 | `builtin_image_tools` | `image_tools` | Describe, generate, and edit images; describe audio |
-| `builtin_file_tools` | `general_agent_tools` † | Convert PDF, DOCX, XLSX, HTML, CSV, PPTX to Markdown |
+| `builtin_file_tools` | `general_agent_tools` † | Convert PDF, DOCX, XLSX, HTML, CSV, PPTX to Markdown; extract per-page PDF text |
 | `builtin_time_tools` | `general_agent_tools` † | Get current time and date |
 | `hil_tools` | `hil_tools` | Human-in-the-loop: `ask_user_question` |
 | `data_analysis` | `data_analysis` | SQL queries, JMESPath transforms, SQLite, structured merge |
 | `scheduling_tools` | `scheduling_tools` | Create and manage scheduled tasks in-chat: `schedule_task` (create), `list_scheduled_tasks`, `update_scheduled_task`, `delete_scheduled_task`, `set_scheduled_task_enabled` |
 
 † `builtin_file_tools` and `builtin_time_tools` carve specific tools out of
-the legacy `general_agent_tools` group (file-conversion tools, and
-`get_current_time`, respectively); there is no exact one-to-one legacy alias.
+the legacy `general_agent_tools` group (the file-conversion and
+text-extraction tools, and `get_current_time`, respectively); there is no exact one-to-one legacy alias.
 
 ```yaml
 # agents/my-agent.yaml
@@ -105,7 +105,7 @@ picks up purely from filesystem state:
   `apply` runs the build pipeline, zips `dist/`, and uploads.
 - **Mirror flow** — `toolsets/<name>/<name>.zip` exists. The pre-built
   zip is uploaded as-is. This is the canonical output of
-  `sam config pull`: pull from SAM-A, apply to SAM-B without rebuilding.
+  `sam config pull`: pull from Agent Mesh-A, apply to Agent Mesh-B without rebuilding.
 
 Both `src/` and `<name>.zip` present at the same toolset is a hard
 error — the two workflows are mutually exclusive. Delete whichever path
@@ -159,8 +159,10 @@ bundling them — Go and Python sources compile via convention, anything
 else can ship a `build.sh` / `build.bat` pair. Built bundles are cached
 per-toolset AND per-target under
 `toolsets/<name>/.sam-cache/build/<os>-<arch>/` keyed by source content
-hash + target tuple, so warm-cache plans are no-ops and a local
-`darwin/arm64` build can't poison a `linux/arm64` deploy. `--no-build`
+hash + target tuple + bundler format version, so warm-cache plans are
+no-ops, a local `darwin/arm64` build can't poison a `linux/arm64`
+deploy, and a CLI upgrade that changes how a source tree maps onto zip
+entries invalidates the cache instead of re-uploading a stale bundle. `--no-build`
 skips builds (soft-skip on plan, hard-error on apply).
 
 `sam config cache prune` walks every `toolsets/*/.sam-cache/` under the
@@ -229,6 +231,7 @@ spec:
         client_id: ${ATLASSIAN_OAUTH_CLIENT_ID}
       scheme:
         audience: api.atlassian.com               # optional
+        resource: https://mcp.example.com/mcp     # optional (RFC 8707 resource indicator)
         refresh_url: https://auth.example/refresh # optional
         token_endpoint_auth_method: none          # optional
 ```
@@ -237,8 +240,10 @@ Validator rules (enforced on `sam config apply`):
 
 - `auth.credential` accepts **only** `client_id`. Secrets (`client_secret`,
   `token`, `password`, …) are rejected — they must flow through the
-  per-user credential store at runtime, never through declarative config.
-- `auth.scheme` accepts **only** `audience`, `refresh_url`, and
+  per-user credential store at runtime, never through declarative config. That
+  store is keyed by principal, so it also holds the credential a system user
+  carries when unattended work (an evaluation run, for instance) needs one.
+- `auth.scheme` accepts **only** `audience`, `resource`, `refresh_url`, and
   `token_endpoint_auth_method`. The SDK-declared `authorization_url`,
   `token_url`, and `scopes` are authoritative — overriding them is rejected
   with HTTP 400 to prevent silent drift.
@@ -297,6 +302,78 @@ for a given tool replaces the toolset default for that tool. At deploy time
 the platform emits the resolved entry as the per-tool `hil:` block in the
 runtime YAML AWE consumes.
 
+### Reserved key: `required_scopes` (per-tool RBAC)
+
+To gate a **custom STR tool package's** tools behind RBAC — so only callers
+whose identity holds the scope may invoke them — set a reserved
+`required_scopes` key inside the config map. (Built-in toolset groups can't be
+gated this way — they have no package config surface.) Like `hil` it is keyed
+by **tool name**, and each value is a non-empty list of scope strings the
+caller must satisfy (**all** of them — AND semantics):
+
+```yaml
+kind: toolset
+name: compliance_tools
+spec:
+  config:
+    required_scopes:
+      run_migrations:                                    # the tool name
+        - tool:compliance_tools__run_migrations:invoke   # tool:<toolset>__<tool>:<verb>
+```
+
+Use the canonical shape `tool:<toolset>__<tool>:<verb>` — segment 2 is the
+registered tool name the deployer emits (`<toolset>__<tool>`), so a grant of
+that scope (or a wildcard like `tool:compliance_tools__*:invoke` /
+`tool:*:*`) matches. A tool with no entry is ungated beyond the agent's own
+invoke scope.
+
+Validator rules (enforced on `sam config apply`):
+
+- Keys must be tool names the package registers; an unknown name is a 422.
+  Because this is a security control it fails **closed**: if the package has
+  no discovered tools yet, every entry is rejected rather than accepted.
+- Each value must be a non-empty list of concrete `tool:` scopes — segment 1
+  must be `tool`, and a required scope may **not** contain a `*` wildcard or
+  the `_` sentinel (those match only on the granted side, so as a requirement
+  they can only fail closed). Empty strings and a per-tool empty list are
+  rejected.
+- Tools cannot declare a `ConfigSchemaField` whose `key` is `required_scopes`.
+
+**Removing a gate:** set `required_scopes: {}` (the explicit "clear all"
+spelling — it converges under `sam config apply`). Simply *omitting* the key
+does **not** remove a stored gate — like `auth`/`hil`, an absent key is
+preserved from the stored value.
+
+`required_scopes` works in the per-agent `toolsetConfigs` overlay too. The
+overlay is **union-merged** with the toolset default per tool: since a caller
+must hold *every* listed scope (AND), adding scopes only makes the gate
+stricter. So an agent overlay can **only add** requirements (narrow the gate) —
+it can never remove a scope the toolset owner authored. This matters because
+the two layers sit behind different route scopes (`agent_builder:*:update` vs
+`toolset:*:update`); union-merge guarantees an agent editor cannot weaken a
+toolset-owner's gate. An absent or ill-typed overlay value contributes nothing,
+so the toolset default always stands.
+
+Because the union is AND-ed, the caller needs **every** scope across both
+layers: a toolset default of `…:read` plus an overlay of `…:invoke` requires
+both, not either. Nothing warns at author time if no role holds the whole set,
+so keep the two layers on the same verb unless you intend the conjunction —
+and note there is deliberately no way to *relax* a toolset gate for a single
+agent; to loosen it, change the toolset default.
+
+**Granting the scope:** authoring a gate does not create a grant. `tool:`
+scopes are not in the assignable catalog and the roles UI has no free-text
+scope field, so the gate must be granted declaratively — add the scope to a
+role in your RBAC roles manifest and `sam config apply` it. Until a role
+grants it, the gated tool is invokable only by holders of `tool:*:*`, which the
+built-in `sam_manager` role grants; the role editor cannot grant it.
+
+At deploy time the platform emits the resolved list as the per-tool
+`required_scopes:` block. Enforcement is **agent-side**: the agent process
+checks it at dispatch (`Set.Dispatch` → `AuthorizeTool`) and hides the tool
+from the model at list time (`FilterTools`). The STR worker itself does not
+re-check per-tool scopes.
+
 ## Per-agent overlay (`toolsetConfigs`)
 
 A toolset's `spec.config` is the **shared default** — every agent that
@@ -315,9 +392,17 @@ spec:
   toolsetConfigs:
     - toolsetName: openai-tools
       configValues:
-        api_base: https://api.openai.example.internal/v1   # agent-specific override
-        verbose: true                                      # not set at toolset level
+        chat_completion:            # tool name the toolset registers
+          api_base: https://api.openai.example.internal/v1   # agent-specific override
+          verbose: true                                      # not set at toolset level
 ```
+
+`configValues` is **nested by tool name**: each top-level key is a tool
+the toolset registers, mapping to that tool's `field → value` config.
+This differs from the toolset's own `spec.config`, which you write flat —
+`sam config apply` fans each flat key out to every tool that declares it.
+The overlay is sent as written, so a flat overlay is rejected with
+`unknown tool name for this toolset`.
 
 At deploy time the runtime merges the two sources per key:
 **`toolsetConfigs[*].configValues` wins where keys collide**, otherwise
@@ -325,12 +410,13 @@ the toolset-level `spec.config` value falls through. Keys that appear
 only in `spec.config` are inherited unchanged; keys that appear only in
 the agent overlay are added on top.
 
-The shape of `configValues` depends on the toolset's nature:
+The shape of `configValues` is the same for both toolset natures;
+only validation differs:
 
 | Toolset nature | `configValues` shape | Validation |
 |---|---|---|
-| `kind: toolset` package (this kind) | **Flat** map of `field → value`, e.g. `{api_key: …, timeout: 30}`. | Schema-validated against the toolset's `config_schema` (the same fields each tool's `samtoolsdk.ConfigSchemaField` describes). |
-| Builtin toolset (e.g. `builtin_research_tools`) | **Nested by tool name**, e.g. `{deep_research: {max_iterations: 2, sources: [web]}}`. Top-level keys must be tools the toolset registers. | The AWE runtime validates the inner per-tool config shape at parse time. |
+| `kind: toolset` package (this kind) | **Nested by tool name**, e.g. `{fetch_report: {api_key: …, timeout: 30}}`. The reserved `auth`, `hil`, and `required_scopes` keys stay at the top level. | Schema-validated against each tool's `config_schema`. A package that declares no `config_schema` on any tool skips validation and stores whatever you send, but those values reach no tool. |
+| Builtin toolset (e.g. `builtin_research_tools`) | **Nested by tool name**, e.g. `{deep_research: {max_iterations: 2, sources: [web]}}`. Top-level keys must be tools the toolset registers. | The agent runtime validates the inner per-tool config shape when it loads the config. |
 
 Authoring guidance:
 
@@ -359,7 +445,7 @@ Authoring guidance:
 - `toolsets/<name>/<name>.zip` — the platform's stored bundle bytes,
   verbatim.
 
-A subsequent `sam config apply` against a different SAM instance picks
+A subsequent `sam config apply` against a different Agent Mesh instance picks
 up the zip, skips the build pipeline, and uploads the bundle as-is.
 Secrets are not pulled — the placeholders must be filled by env vars or
 `<SAM home>/secrets/<toolset>.env` before apply succeeds.

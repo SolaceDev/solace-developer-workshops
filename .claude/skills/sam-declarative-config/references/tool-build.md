@@ -21,7 +21,7 @@ you don't recognise.
 
 ## Scaffolding a new tool
 
-The SAM tool SDK ships **embedded in the `sam` CLI binary** for both
+The Agent Mesh tool SDK ships **embedded in the `sam` CLI binary** for both
 Go and Python:
 
 - **Go SDK** — the full `pkg/samtoolsdk/` source tree is baked into
@@ -139,55 +139,12 @@ first, every freshly-scaffolded toolset takes the **script path**, not
 the convention path. The scripts themselves shell out to the language
 toolchain — they're thin wrappers, not custom builds.
 
-Generated Go `build.sh`:
+Both generated `build.sh` scripts require `SAM_TOOL_TARGET_OS` and
+`SAM_TOOL_TARGET_ARCH` (`sam config apply` exports them; export both
+yourself for a manual build) and write their output to
+`$SAM_TOOL_BUILD_OUT`. Read the scaffolded script for the exact steps.
 
-```sh
-#!/usr/bin/env bash
-set -euo pipefail
-
-OUT_DIR="${SAM_TOOL_BUILD_OUT:-dist}"
-NAME="${SAM_TOOL_NAME:-<name>}"
-
-mkdir -p "$OUT_DIR"
-CGO_ENABLED=0 go build -o "$OUT_DIR/$NAME" .
-cp manifest.yaml "$OUT_DIR/manifest.yaml"
-```
-
-Generated Python `build.sh`:
-
-```sh
-#!/usr/bin/env bash
-set -euo pipefail
-
-OUT_DIR="${SAM_TOOL_BUILD_OUT:-dist}"
-# The target arch is a property of the deployment, not the toolset — sam
-# config apply discovers it from the target platform and exports these.
-# Never default the arch; a wrong guess ships an unrunnable binary.
-: "${SAM_TOOL_TARGET_OS:?must be set by sam config apply, or exported for a manual build (e.g. linux)}"
-: "${SAM_TOOL_TARGET_ARCH:?must be set by sam config apply, or exported for a manual build (e.g. amd64)}"
-TARGET_OS="$SAM_TOOL_TARGET_OS"
-TARGET_ARCH="$SAM_TOOL_TARGET_ARCH"
-PYTHON_VERSION="${SAM_TOOL_PYTHON_VERSION:-3.11}"
-
-case "$TARGET_OS-$TARGET_ARCH" in
-  linux-arm64)   PLATFORM=manylinux2014_aarch64 ;;
-  linux-amd64)   PLATFORM=manylinux2014_x86_64 ;;
-  darwin-arm64)  PLATFORM=macosx_11_0_arm64 ;;
-  darwin-amd64)  PLATFORM=macosx_10_9_x86_64 ;;
-esac
-
-mkdir -p "$OUT_DIR/python"
-python3 -m pip install --target "$OUT_DIR/python" \
-  --platform "$PLATFORM" \
-  --python-version "$PYTHON_VERSION" \
-  --only-binary=:all: \
-  --upgrade \
-  .
-
-cp manifest.yaml "$OUT_DIR/manifest.yaml"
-```
-
-The `pip install --target dist/<os>-<arch>/python .` step installs the
+For Python, the `pip install --target dist/<os>-<arch>/python .` step installs the
 tool's own package (declared in `pyproject.toml`), plus every transitive
 dep including `sam-tool-sdk`, into `python/`. The `[project.scripts]`
 entry is dropped as a console script at `python/bin/<name>` — the path
@@ -267,8 +224,7 @@ match wins:
 4. **Pre-built artifact.** A non-source executable named `<name>` /
    `<name>.exe` at the source dir root with no Go/Python/script source
    alongside is bundled as-is.
-5. **Fallback.** Anything else is bundled as-is — the legacy WI-7
-   behavior. Useful for raw-asset toolsets that need no compilation.
+5. **Fallback.** Anything else is bundled as-is. Useful for raw-asset toolsets that need no compilation.
 
 ## Build script contract
 
@@ -319,9 +275,9 @@ left behind from a local laptop build) are ignored.
 
 | Strategy | What lands in `dist/<os>-<arch>/` |
 |---|---|
-| `Script` | Whatever the script writes to `$SAM_TOOL_BUILD_OUT`. Authoring contract is yours — but honour `SAM_TOOL_TARGET_OS`/`ARCH` in every cross-compile. |
-| `GoConvention` | The single compiled binary (`dist/<os>-<arch>/<name>` or `dist/<os>-<arch>/<name>.exe`). Source files are NOT copied. |
-| `PythonConvention` | AWS-Lambda-Layer-style: `dist/<os>-<arch>/python/` contains the tool's own package, every transitive dep including `sam-tool-sdk`, and the `[project.scripts]` console-script entry at `python/bin/<name>`. The STR adds `dist/<os>-<arch>/python/` to `PYTHONPATH` at runtime and invokes the console-script binary directly. |
+| `script` | Whatever the script writes to `$SAM_TOOL_BUILD_OUT`. Authoring contract is yours — but honour `SAM_TOOL_TARGET_OS`/`ARCH` in every cross-compile. |
+| `go` | The single compiled binary (`dist/<os>-<arch>/<name>` or `dist/<os>-<arch>/<name>.exe`). Source files are NOT copied. |
+| `python` | AWS-Lambda-Layer-style: `dist/<os>-<arch>/python/` contains the tool's own package, every transitive dep including `sam-tool-sdk`, and the `[project.scripts]` console-script entry at `python/bin/<name>`. The STR adds `dist/<os>-<arch>/python/` to `PYTHONPATH` at runtime and invokes the console-script binary directly. |
 
 The bundler always wipes and re-creates the active per-target subdir
 before running a build, so stale outputs from a prior strategy can't
@@ -499,14 +455,14 @@ choice matters for LLM context budget:
   results that can grow, images, generated documents. The LLM gets a
   small reference (`artifacts_created: [{filename, version, size_bytes,
   mime_type, description}]`) and can drill in later with the built-in
-  artifact tools (`extract_jsonpath_from_artifact`,
-  `search_replace_artifact`, …) without re-fetching.
+  artifact tools (`load_artifact`, `artifact_grep`,
+  `transform_data_with_jmespath`, …) without re-fetching.
 
 A `DataObject.Disposition` controls how the agent routes each one:
 
 | Disposition | Behavior |
 |---|---|
-| `DispositionAuto` *(default if unset)* | Save as artifact when content is binary OR larger than `ToolOutputSaveThresholdBytes` (default 4 KB); otherwise inline (truncated at `ToolOutputLLMReturnMaxBytes`, default 8 KB). |
+| `DispositionAuto` *(default if unset)* | Binary content, or text larger than the agent's `tool_result_auto_artifact_threshold_bytes` (default 8192), is saved as an artifact and the LLM gets a reference. Text at or below the threshold is shown inline and also saved. `tool_result_inline_truncation_bytes` (default 102400) is the absolute inline ceiling. |
 | `DispositionArtifact` | Always save as artifact. Use for content the LLM never benefits from seeing inline (images, large blobs, anything the user-facing UI will render from storage). |
 | `DispositionInline` | Always return content directly to the LLM as a string under `inline_outputs[].content`. Use sparingly — the artifact path is almost always better. |
 | `DispositionArtifactWithPreview` | Save as artifact AND emit a short `preview` string the LLM sees alongside the reference. |
@@ -540,7 +496,7 @@ func getOrgChart(ctx context.Context, p Params, tc *sdk.ToolContext) (*sdk.Resul
         // keep it inline so it shows up directly in the tool result.
         sdk.WithData(map[string]any{"markdown": markdown}),
         // The full JSON tree can be 50+ records deep; let the framework
-        // promote it to an artifact when it crosses 4 KB.
+        // promote it to an artifact when it crosses the auto-artifact threshold (8 KB by default).
         sdk.WithDataObjects(sdk.DataObject{
             Name:        "org_chart.json",
             Content:     treeJSON,
@@ -592,7 +548,7 @@ covers:
 
 `WithData` for the body is a footgun: a single oversized response
 balloons every subsequent turn's prompt and silently degrades the
-agent. `DispositionAuto` keeps small responses inline (≤4 KB by
+agent. `DispositionAuto` keeps small responses inline (≤8 KB by
 default, after which the framework promotes to an artifact) so you
 get the right behavior on both ends of the size spectrum for free.
 
@@ -668,7 +624,7 @@ stable across runs and self-explanatory in a listing.
 target tuple, source files, build script bytes, SDK version). A cache
 hit short-circuits the build entirely (`[BUILD: cache-hit <os>/<arch>]`).
 If a build was once produced with a stale SDK (or with a `build.sh`
-that ignored `SAM_TOOL_TARGET_*` on an older sam-go) that bad zip
+that ignored `SAM_TOOL_TARGET_*` on an older CLI) that bad zip
 stays in the cache and the cache-hit keeps re-uploading it.
 
 Cross-target poisoning specifically is prevented by segmenting both
@@ -681,7 +637,7 @@ platform's binary is being reused.
 
 Symptoms: platform `discoveryStatus: failed` with `exec format error`
 after a `[BUILD: cache-hit]` run (only possible now if the toolset was
-ever built on an old sam-go without the segmented layout); or new
+ever built on an old CLI without the segmented layout); or new
 tools you registered in `main.go` are missing from `--schema` output
 of the cached binary.
 
@@ -728,13 +684,16 @@ choosing how to shape your tools.
 ### Skill bundles vs STR toolsets
 
 A `kind: skill` can attach **built-in** tools via its SKILL.md
-`tools:` frontmatter — that's a closed list of tools registered in
-the agent binary. It cannot directly attach an STR toolset's tools.
+`tools:` frontmatter, and uploaded Secure Tool Runtime toolsets via its
+`toolsets:` frontmatter — a flat list of toolset names, expanded into
+that toolset's tools when the skill is published. Each listed toolset
+must already be uploaded to the platform.
 
-To use an STR toolset, list it in the **agent's** `toolsets:` block.
-The skill body can name the resulting tools (`<toolset>__<tool>`,
-double-underscore separator — see [skill design](./design/skill-design.md))
-as prompt guidance, but the toolset itself is wired on the agent.
+Alternatively, list the toolset in the **agent's** `toolsets:` block so
+every conversation with that agent gets it. Either way the skill body
+can name the resulting tools (`<toolset>__<tool>`, double-underscore
+separator — see [skill design](./design/skill-design.md)) as prompt
+guidance.
 
 ## Python tool authoring
 
@@ -812,7 +771,7 @@ mirror of Go's `sdk.OK` / `sdk.Error` / `sdk.Partial` / `sdk.Pending`:
 | Constructor | Use |
 |---|---|
 | `ToolResult.ok(message, data=, data_objects=)` | success |
-| `ToolResult.error(message, error_code=)` | failure the LLM should see |
+| `ToolResult.error(message, code=, data=)` | failure the LLM should see |
 | `ToolResult.partial(message, data=, data_objects=)` | partial success |
 | `ToolResult.pending(message, ...)` | long-running / deferred |
 | `ToolResult.auth_required(message, ...)` | tool needs credentials first |
@@ -898,15 +857,13 @@ async def call_api(tool_config, query: str) -> ToolResult:
     ...
 ```
 
-### Timeouts and volumes
+### Timeouts
 
 ```python
-from sam_tool_sdk import tool_timeout, with_volume_params, VolumeParam
+from sam_tool_sdk import tool_timeout
 
 @tool_timeout(seconds=120)                                       # per-invocation timeout
-@with_volume_params([VolumeParam(name="scratch", mount_path="/scratch")])
 async def long_job(ctx=None) -> ToolResult:
-    path = ctx.get_volume_mount_path("/scratch")    # keyed by mount_path, not name
     ...
 ```
 
@@ -946,7 +903,7 @@ async def add(self, a: float, b: float) -> dict:
 Wrap the class/provider for the console script with `dynamic_tool_cli(...)`
 or `provider_cli(...)` instead of `tool_cli(...)`.
 
-### Migrating an existing Python SAM tool
+### Migrating an existing Python Agent Mesh tool
 
 A tool written for the full `solace_agent_mesh` package needs a small,
 mechanical rewrite — typically 30–60 minutes, no logic redesign:

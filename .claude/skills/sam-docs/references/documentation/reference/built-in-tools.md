@@ -1,4 +1,5 @@
 ---
+published: true
 title: Built-In Tools
 description: Reference catalog of the tools an agent in Solace Agent Mesh can attach without writing any code, covering the group each tool belongs to, its parameters, what it returns, and any scope or availability requirement.
 sidebar_position: 1050
@@ -18,7 +19,7 @@ Attach tools by selecting a toolset in the agent editor's **Toolsets** picker, o
 | Data Analysis Tools | `data_analysis` | `query_data_with_sql`, `create_sqlite_db`, `transform_data_with_jmespath`, `merge_structured_data`, `reinterpret_artifact`, `create_chart_from_plotly_config` |
 | Diagram Tools | `builtin_diagram_tools` | `mermaid_diagram_generator` |
 | Document Tools | `builtin_document_tools` | `pptx_create_presentation`, `pdf_ops`, `render_document_to_images`, `html_to_pdf` |
-| File Tools | `builtin_file_tools` | `convert_file_to_markdown`, `convert_pdf_to_markdown` |
+| File Tools | `builtin_file_tools` | `convert_file_to_markdown`, `convert_pdf_to_markdown`, `pdf_extract_text` |
 | Human-in-Loop Tools | `hil_tools` | `ask_user_question` |
 | Image Tools | `builtin_image_tools` | `create_image_from_description`, `describe_image`, `describe_audio`, `edit_image_with_gemini`, `generate_image_with_gemini` |
 | Media Tools | `builtin_media_tools` | `ffmpeg`, `ffprobe`, `image_magick` |
@@ -141,7 +142,7 @@ An `extract_content_from_artifact_config` block carried over from a v1 agent con
 
 ## General Tools
 
-Time, prompt-the-user, and Markdown conversion.
+Time, prompt-the-user, document conversion, and text extraction.
 
 ### `get_current_time`
 
@@ -169,7 +170,7 @@ Notes: interactive agents only; do not attach to autonomous or workflow agents. 
 
 ### `convert_file_to_markdown`
 
-Converts a file artifact into a Markdown artifact. Accepts DOCX, XLSX, PPTX, EPUB, Jupyter notebooks (`.ipynb`), HTML, CSV, and plain text; JSON, XML, YAML, and Markdown pass through unchanged. PDF input goes to `convert_pdf_to_markdown` (layout-aware extraction); calling this tool with a PDF returns an error. Images and audio are not chained in; use `describe_image`, `describe_audio`, or `transcribe_audio` instead. Does not recurse into ZIP archives. `pdf_ops` is unrelated (PDF-to-PDF, not Markdown conversion).
+Converts a file artifact into a Markdown artifact. Accepts DOCX, XLSX, PPTX, EPUB, Jupyter notebooks (`.ipynb`), HTML, CSV, and plain text; JSON, XML, YAML, and Markdown pass through unchanged. PDF input goes to `convert_pdf_to_markdown` (layout-aware extraction into a Markdown artifact) or `pdf_extract_text` (per-page text carrying physical page numbers); calling this tool with a PDF returns an error. Images and audio are not chained in; use `describe_image`, `describe_audio`, or `transcribe_audio` instead. Does not recurse into ZIP archives. `pdf_ops` is unrelated (PDF-to-PDF, not Markdown conversion).
 
 | Name | Type | Required | Description |
 |---|---|---|---|
@@ -179,13 +180,51 @@ Returns: a new artifact named `<basename>_converted.md` with the `text/markdown`
 
 ### `convert_pdf_to_markdown`
 
-Converts a PDF artifact to Markdown using markitdown / pdfminer.six for layout-aware text extraction.
+Converts a PDF artifact to Markdown with layout-aware text extraction.
+
+When the PDF contains bordered tables, the tool reads them from the ruled lines that divide their cells and places them at the top of the output under a `## Tables` heading. The document text follows under a `## Document text` heading, which is always present. A PDF with no readable bordered table carries the document text alone, and a PDF whose tables could not be read carries a `## Tables` heading holding notes and no table.
 
 | Name | Type | Required | Description |
 |---|---|---|---|
 | `input_filename` | string | Yes | PDF artifact to convert. |
 
-Returns: a new artifact named `<basename>_converted.md` with the `text/markdown` MIME type and a short preview in the response data.
+Returns: a new artifact named `<basename>_converted.md` with the `text/markdown` MIME type and a short preview in the response data. The response also reports `table_extraction_status` and `table_count`, the latter being the number of tables written under the `## Tables` heading, so an agent can distinguish a PDF that contains no tables from one whose tables could not be read:
+
+| `table_extraction_status` | Meaning |
+|---|---|
+| `ok` | Nothing interrupted the scan. Every bordered table that held text appears under the `## Tables` heading. |
+| `partial` | Some tables were read, but a page could not be read or pages went unscanned. Notes at the top of the `## Tables` heading identify which. |
+| `none_found` | The scanned pages contain no readable bordered table. |
+| `failed` | No table could be read. A `## Tables` heading may still appear, carrying only the notes. The document text converts either way. |
+| `unavailable` | This deployment does not include the table reader. |
+
+A status of `ok` covers only bordered tables that held text. A borderless table is never counted, and a ruled area holding no text is omitted with a note, so `ok` does not mean the PDF held no other tables.
+
+:::warning
+Tables inside the `## Document text` section come from the position of words on the page, so a narrow column can push its value into the next one. Read values from the `## Tables` section when the answer depends on which value belongs to which column. A table drawn without ruled borders appears only in the document text, and a status of `ok` does not guarantee that columns whose cells are marked rather than typed, such as ticks or signatures, survived.
+:::
+
+Notes: the tool scans at most the first 100 pages and starts no new page after 30 seconds, so a single very large page can still run longer. A PDF that exceeds either bound still converts, and reports `partial` rather than `none_found` so that unscanned pages are not mistaken for a document without tables.
+
+### `pdf_extract_text`
+
+Extracts per-page plain text from a PDF artifact. Each entry carries its physical page number, so an agent can cite the page a passage came from. For a searchable artifact instead, use `convert_pdf_to_markdown`.
+
+The pages come back in the response for a short PDF. Extracted text larger than the Secure Tool Runtime's `tool_output_llm_return_max_bytes` (100 KB by default) is written to a JSON artifact instead and the response carries a reference to it, so a long PDF produces an artifact either way.
+
+| Name | Type | Required | Description |
+|---|---|---|---|
+| `input_document` | artifact | Yes | PDF artifact to extract text from. |
+| `max_bytes` | integer | No | Maximum input size in bytes. The tool rejects larger inputs before parsing. Defaults to `52428800` (50 MiB). |
+| `max_pages` | integer | No | Maximum number of pages to read. Defaults to `5000`. |
+
+Returns: `pages`, a list of `{number, text}` entries where `number` is the 1-indexed physical page; `num_pages`, the document's total page count; and `truncated`.
+
+Notes: a page whose `number` is `0` came from the raw content-stream fallback, used when the structured parser fails — page-accurate citation is not available for those entries. Hitting `max_pages` returns a successful but partial result with `truncated` set to `true`. Encrypted or password-protected PDFs return an error.
+
+:::note Desktop bundle
+Of the two PDF text routes, only `pdf_extract_text` runs in the desktop bundle: `convert_pdf_to_markdown` needs a Python tool worker that the bundle does not start. Prefer `pdf_extract_text` there. A Kubernetes deployment includes both. See also [Tool Availability](../installing/desktop.md#tool-availability).
+:::
 
 ## Image and Audio
 
@@ -358,7 +397,7 @@ Executes SQL queries against data artifacts (CSV, JSON, YAML, SQLite) loaded as 
 
 Returns: the query results saved as a CSV or JSON artifact.
 
-Notes: rejects queries that combine `JOIN` with a bare aggregate (`SUM`, `AVG`, `COUNT`) and `GROUP BY` at the same level; pre-aggregate each table in a CTE first.
+Notes: rejects queries that combine `JOIN` with a bare aggregate (`SUM`, `AVG`, `COUNT`) and `GROUP BY` at the same level; pre-aggregate each table in a CTE first. The response also includes `result_preview`, which holds the first rows of the result (at most 50 rows and 2,048 bytes), and `result_truncated`, which is `true` when the preview omits rows. A single row larger than the byte limit is still returned whole and marked as truncated. To change the preview limits, set `max_result_preview_rows` or `max_result_preview_bytes` in the tool's `tool_config`. If a workflow passes `result_preview` to a later node, for example as the `items` of a map node, raise `max_result_preview_bytes` so that the node receives every row; for results over 50 rows, also raise `max_result_preview_rows`. A query fails if its full result exceeds `max_result_bytes` in `tool_config` (default 256 MiB). On an agent, set these keys on the first `tools` entry that includes the tool, such as the `data_analysis` `builtin-group` entry; a later entry for the same tool has its `tool_config` ignored.
 
 ### `create_sqlite_db`
 
@@ -384,6 +423,8 @@ Applies a JMESPath expression to a JSON, YAML, or CSV artifact to filter, projec
 | `result_description` | string | No | Description for the result artifact's metadata. |
 
 Returns: the transformed data as a JSON artifact.
+
+Notes: the response also includes `result_preview`, which holds at most 50 rows and 2,048 bytes of the transformed data, and `result_truncated`, which is `true` when the preview omits data. A single list item larger than the byte limit is still returned whole and marked as truncated. To change the preview limits, set `max_result_preview_rows` or `max_result_preview_bytes` in the tool's `tool_config`. If a workflow passes `result_preview` to a later node, for example as the `items` of a map node, raise `max_result_preview_bytes` so that the node receives the complete result; for lists over 50 items, also raise `max_result_preview_rows`. On an agent, set these keys on the first `tools` entry that includes the tool, such as the `data_analysis` `builtin-group` entry; a later entry for the same tool has its `tool_config` ignored.
 
 ### `merge_structured_data`
 
@@ -460,7 +501,7 @@ Notes: a template profile in `tool_config` applies its colors, fonts, logos, and
 
 ### `pdf_ops`
 
-Performs PDF-to-PDF operations: merge multiple PDFs, split into individual pages, extract a page range, rotate pages, add a text watermark, encrypt or decrypt, or read PDF metadata.
+Performs PDF-to-PDF operations: merge multiple PDFs, split into individual pages, extract a page range, rotate pages, add a text watermark, apply encryption or decryption, or read PDF metadata.
 
 | Name | Type | Required | Description |
 |---|---|---|---|
@@ -737,7 +778,7 @@ Schedules a workflow or agent to be invoked later: once at a specific time, or r
 | `timezone` | string | No | IANA timezone for `cron` and `one_time` schedules. Defaults to UTC. |
 | `timeout_seconds` | integer | No | Maximum seconds the fired invocation may run. Defaults to 3600. |
 
-Returns: a `scheduled_task_id` once the broker has accepted the request. The call does not block until the task fires.
+Returns: a `scheduled_task_id` once the event broker has accepted the request. The call does not block until the task fires.
 
 Notes: the scheduled invocation runs under the creator's identity and re-checks their invoke scopes when it fires.
 
@@ -793,7 +834,7 @@ Sends a fire-and-forget notification to a user through their configured channels
 | `recipient_user_id` | string | No | User to notify. Defaults to the current user. Notifying a different user may require additional permissions. |
 | `channels` | array of string | No | Restrict delivery to these channel types, for example `["web", "webhook"]`. When omitted, uses all of the recipient's configured channels. |
 
-Returns: the `request_id` and recipient once the broker has accepted the request. Delivery is asynchronous.
+Returns: the `request_id` and recipient once the event broker has accepted the request. Delivery is asynchronous.
 
 Notes: requires the `notify:send` scope.
 

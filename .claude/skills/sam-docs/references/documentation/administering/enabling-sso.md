@@ -1,4 +1,5 @@
 ---
+published: true
 title: Enabling Single Sign-On (SSO)
 description: Configure OpenID Connect (OIDC) single sign-on for the Agent Mesh Web UI Entrypoint, including application registration, callback URIs, the provider catalog, and the login flow.
 sidebar_position: 820
@@ -31,6 +32,15 @@ sequenceDiagram
 
 The Entrypoint validates the state cookie on callback, exchanges the code, reads the `email` claim to identify the user (falling back to `sub` when the IdP does not return an email), and issues its own signed access token, a JSON Web Token (JWT) signed with ES256. The browser stores that token and sends it as a bearer token on every subsequent API call. Confirm a resolved identity any time by calling `GET /api/v1/user`.
 
+### When the Agent Mesh UI Is Embedded in a Frame
+
+Identity providers block their sign-in pages from loading inside a frame (an HTML `iframe`). Microsoft Entra ID, for example, sends `X-Frame-Options: DENY`. When the Agent Mesh UI runs inside a frame on another site, login therefore never happens in the frame itself:
+
+- In a Microsoft Teams tab, login opens in the Teams sign-in window, and Teams returns the session to the tab.
+- In any other frame, login opens in a pop-up window, which passes the session back to the frame and closes.
+
+Browsers open a pop-up only in response to a user action, so when a session expires inside a frame, the Agent Mesh UI shows a **Sign in** button instead of redirecting on its own. You don't change the IdP registration or callback URI for embedded use.
+
 ## Before You Begin
 
 Register one OIDC application (a confidential client) with your IdP. Regardless of the provider console's terminology, you need:
@@ -51,16 +61,16 @@ If you plan to map RBAC roles from IdP groups, also configure a group or role cl
 You express the same OIDC settings at one of two layers, depending on how you deploy:
 
 - **Kubernetes with the Helm chart**: set the camelCase `sam.oauthProvider.oidc` values (`issuer`, `clientId`, `clientSecret`). The chart injects them as the `OIDC_ISSUER`, `OIDC_CLIENT_ID`, and `OIDC_CLIENT_SECRET` environment variables, which the bundled provider catalog reads. Most production rollouts use this path.
-- **Direct runtime config**: for local runs or non-Helm deployments, declare the snake_case `providers:` catalog and the Entrypoint `app_config` keys yourself.
+- **Direct runtime config**: for local runs or non-Helm deployments, declare both the snake_case `providers:` catalog and the Entrypoint `app_config` keys yourself.
 
 Both resolve to the same runtime provider catalog. The rest of this page shows both forms where they differ.
 
 ## The Provider Catalog
 
-Configure native OIDC through a top-level `providers:` block: a map of named entries, one per IdP. The Entrypoint selects one entry via `external_auth_provider` (or, on Helm, `sam.oauthProvider.providerName`).
+Configure OIDC through a top-level `providers:` block: a map of named entries, one per IdP. The Entrypoint selects one entry via `external_auth_provider` (or, on Helm, `sam.oauthProvider.providerName`).
 
 ```yaml
-# oidc_providers.yaml — pulled into the entrypoint config with !include
+# oidc_providers.yaml - pulled into the entrypoint config with !include
 providers:
   azure:
     issuer: "${OIDC_ISSUER}"
@@ -69,9 +79,9 @@ providers:
     scopes: ["openid", "email", "profile", "offline_access"]
     # Pin a CA bundle for a self-signed or private-CA IdP:
     # ca_cert_path: "/etc/pki/custom-ca.pem"
-    # DEV ONLY — disables TLS validation, exposes tokens to MITM:
+    # DEV ONLY - disables TLS validation, exposes tokens to MITM:
     # insecure_skip_verify: true
-    # DEV ONLY — drops the Secure flag on the state cookie so login works
+    # DEV ONLY - drops the Secure flag on the state cookie so login works
     # over plain http://localhost. Leave unset in production.
     # dev_mode: true
 ```
@@ -156,7 +166,7 @@ Supply `${OIDC_CLIENT_SECRET}` from a Kubernetes Secret via `extraSecretEnvironm
 
 ### Auth0
 
-1. In the Auth0 Dashboard, under **Applications**, select **Create Application** and the **Regular Web Application** type.
+1. In the Auth0 Dashboard, go to **Applications**, select **Create Application**, then choose the **Regular Web Application** type.
 2. Under **Allowed Callback URLs**, add `https://<your-dns-name>/api/v1/auth/callback`.
 3. Copy the client ID and client secret from the application's **Settings** tab.
 4. Note the issuer: `https://<your-tenant>.auth0.com/` (including the trailing slash), or your custom domain.
@@ -164,7 +174,7 @@ Supply `${OIDC_CLIENT_SECRET}` from a Kubernetes Secret via `extraSecretEnvironm
 
 ### Keycloak
 
-1. In your realm, under **Clients**, select **Create client** and set the client type to **OpenID Connect**.
+1. In your realm, go to **Clients**, select **Create client**, then set the client type to **OpenID Connect**.
 2. Enable **Standard flow** and **Client authentication** (a confidential client).
 3. Under **Valid redirect URIs**, add `https://<your-dns-name>/api/v1/auth/callback`.
 4. Copy the client secret from the client's **Credentials** tab, and note the issuer: `https://<your-host>/realms/<your-realm>`.
@@ -213,6 +223,9 @@ To check OIDC connectivity before the first login, run `sam doctor -v`, which ch
 | Login fails with "Invalid or expired state" over plain HTTP | The state cookie carries the `Secure` flag, dropped by the browser on `http://localhost` | Set `dev_mode: true` on the catalog entry (development only) |
 | API calls return 401 and the log shows `IdP token validation failed; returning 401` | The stored token is expired or invalid; both Agent Mesh (ES256) token validation and the IdP-token fallback rejected it | Clear browser storage and log in again |
 | Startup WARN: `external_auth_service_url` is no longer supported and will be ignored | A legacy configuration key is still present | Remove `external_auth_service_url`; use the `providers:` catalog instead |
+| In an embedded Agent Mesh UI, the sign-in screen shows "Allow pop-ups for this site, then select Sign in." | The browser blocked the sign-in pop-up | Allow pop-ups for the Agent Mesh site, then select **Sign in** |
+| In an embedded Agent Mesh UI, the sign-in screen shows "Your browser blocked storing the session for this embedded app." | The browser blocks third-party cookies and site data for sites embedded in other sites, or private browsing is on | Allow third-party cookies and site data for the Agent Mesh site, or turn off private browsing, then select **Sign in** |
+| In a Microsoft Teams tab, the sign-in screen shows "Sign-in did not finish. Select Sign in to try again." | The Teams sign-in window was closed or canceled before login completed | Select **Sign in** and complete the login in the Teams sign-in window |
 
 ## What Next?
 

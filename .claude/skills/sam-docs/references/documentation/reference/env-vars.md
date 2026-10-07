@@ -1,4 +1,5 @@
 ---
+published: true
 title: Environment Variables
 description: Every environment variable the Agent Mesh runtime reads, plus the authentication and secret placeholders that appear in shipped YAML samples, grouped by concern with defaults and related YAML keys.
 sidebar_position: 1030
@@ -6,7 +7,7 @@ sidebar_position: 1030
 
 # Environment Variables
 
-This page catalogs the environment variables Solace Agent Mesh reads at runtime, together with the authentication and secret placeholders that appear in the shipped YAML samples. Variables are grouped by operator concern, and the rows within each group are alphabetical. Per-agent and per-example credentials are not listed here, because each agent declares its own in its configuration. Some variable families are read by a third-party software development kit (SDK) rather than by Agent Mesh directly; those are summarized under [Variables Read Through an SDK](#variables-read-through-an-sdk).
+This page catalogs the environment variables Solace Agent Mesh reads at runtime. It also covers the authentication and secret placeholders that appear in the shipped YAML samples. Variables are grouped by operator concern, and the rows within each group are alphabetical. Per-agent and per-example credentials are not listed here, because each agent declares its own in its configuration. Some variable families are read by a third-party software development kit (SDK) rather than by Agent Mesh directly; those are summarized under [Variables Read Through an SDK](#variables-read-through-an-sdk).
 
 Agent Mesh expands `${VAR}` references in a YAML configuration file before it parses the file. The loader recognizes the following substitution forms:
 
@@ -35,12 +36,15 @@ These variables set the directories the runtime uses for data, skills, tool bina
 | Name | Default | Scope | Description | Related YAML key |
 |---|---|---|---|---|
 | `BACKGROUND_TASKS_TIMEOUT_MS` | `3600000` | yaml | Sets the maximum wall-clock time a background task may run, in milliseconds. | `background_tasks.default_timeout_ms` |
+| `CI` | — | sam | Makes `sam config plan` and `sam config apply` non-interactive when set to any value other than `0` or `false`, the same as passing `--no-interactive`. | — |
+| `DO_NOT_TRACK` | — | sam | Stops `sam` commands from sharing or recording product analytics when set to any value other than `0` or `false`. It does not affect the product analytics that Agent Mesh reports while it runs, and it does not change the recorded analytics decision. | — |
 | `ENABLE_EMBED_RESOLUTION` | `true` | yaml | Controls whether the agent resolves late-stage `«type:params»` embed tokens. | `enable_embed_resolution` |
+| `NO_COLOR` | — | sam | Disables ANSI color in `sam config plan` and `sam config apply` output when set to any non-empty value, the same as passing `--no-color`. | — |
 | `SAM_AUTH_TOKEN` | — | sam | Sets the bearer token for `sam api`, `sam task send`, `sam task run`, and `sam eval`. These commands provide no `--token` flag. | — |
 | `SAM_BUILTIN_SKILLS_DIR` | bundled | Secure Tool Runtime | Overrides the directory of built-in skill bundles. | — |
 | `SAM_CHROMIUM_PATH` | resolves `chromium`, `chrome`, then `google-chrome` on the `PATH` | Secure Tool Runtime | Sets the path to the Chromium binary the Mermaid renderer uses. | — |
 | `SAM_CONTAINER_HOST_MOUNT_SCOPE` | — | sam, Entrypoint Executor | Sets the host mount scope for container-mode tool volumes. | — |
-| `SAM_DATA_DIR` | `./sam-data` | all | Sets the root directory for filesystem artifacts, SQLite databases, identity keys, and agent resources. | `artifact_service.base_path` |
+| `SAM_DATA_DIR` | `./sam-data` | all | Sets the root directory for filesystem artifacts, SQLite databases, identity keys, entrypoint trust signing keys, and agent resources. | `artifact_service.base_path` |
 | `SAM_HOME` | `$XDG_CONFIG_HOME/sam` | sam | Sets the root directory for `sam` CLI settings and wizard state. | — |
 | `SAM_PLATFORM_TOKEN` | — | sam | Sets the bearer-token override for `sam config apply`, `sam manifest apply`, and `sam plan`. | — |
 | `SAM_SANDBOX_DIR` | bundled with the app, with a development fallback elsewhere | sam | Sets the directory of prebuilt Linux sandbox binaries used to build the Secure Tool Runtime container image. | — |
@@ -70,7 +74,7 @@ These variables configure the event-broker connection, the HTTP listen ports, th
 | Name | Default | Scope | Description | Related YAML key |
 |---|---|---|---|---|
 | `ALL_PROXY` | — | all | Sets the proxy URL applied to outbound traffic when the scheme-specific variables are unset. | — |
-| `FASTAPI_HTTPS_PORT` | HTTPS disabled | Entrypoint Executor | Sets the optional HTTPS listen port for the entrypoint, paired with `SSL_CERTFILE` and `SSL_KEYFILE`. | — |
+| `FASTAPI_HTTPS_PORT` | HTTPS disabled | Entrypoint Executor | Sets the optional HTTPS listen port for the entrypoint. Pair it with `SSL_CERTFILE` and `SSL_KEYFILE`. | — |
 | `FASTAPI_PORT` | `8800` | Entrypoint Executor | Sets the HTTP listen port for the Entrypoint Executor. | — |
 | `HTTP_PROXY` | — | all | Sets the proxy URL for outbound HTTP requests. | — |
 | `HTTPS_PROXY` | — | all | Sets the proxy URL for outbound HTTPS requests. | — |
@@ -79,10 +83,10 @@ These variables configure the event-broker connection, the HTTP listen ports, th
 | `PLATFORM_SERVICE_URL` | — | yaml | Sets the Platform external base URL stamped onto connector specification URLs. Empty means the Platform is mounted behind this entrypoint. | — |
 | `SAM_MCP_CONNECTOR_TLS_VERIFY` | `true` | Agent-Workflow Executor, Platform | Disables TLS verification for MCP HTTP transports when set to `false`. Per-connector configuration still takes precedence. | `ssl_config.verify` |
 | `SOLACE_BROKER_PASSWORD` | `default` | all | Sets the event-broker password. | `broker_connection.broker_password` |
-| `SOLACE_BROKER_URL` | `ws://localhost:8008` | all | Sets the event-broker connection URL. An empty or unset value switches the runtime to development-broker mode. | `broker_connection.broker_url` |
+| `SOLACE_BROKER_URL` | `ws://localhost:8008` | all | Sets the event-broker connection URL. An empty or unset value switches the runtime to development event-broker mode. | `broker_connection.broker_url` |
 | `SOLACE_BROKER_USERNAME` | `default` | all | Sets the event-broker username. | `broker_connection.broker_username` |
 | `SOLACE_BROKER_VPN` | `default` | all | Sets the Message VPN on the event broker. | `broker_connection.broker_vpn` |
-| `SOLACE_DEV_MODE` | `false` | all | Forces the runtime into development-broker mode when `true`. | `broker_connection.dev_mode` |
+| `SOLACE_DEV_MODE` | `false` | all | Forces the runtime into development event-broker mode when `true`. | `broker_connection.dev_mode` |
 | `SOLACE_TLS_TRUST_STORE_DIR` | `/etc/ssl/certs/` | all | Sets the certificate authority (CA) certificate directory for `tcps://` and `wss://` event-broker connections. On macOS the runtime materializes an embedded certificate bundle when this is unset. `TRUST_STORE` is an accepted alternative name. | — |
 | `SSL_CERTFILE` | — | Entrypoint Executor | Sets the path to the TLS certificate file for the entrypoint HTTPS listener. | — |
 | `SSL_KEYFILE` | — | Entrypoint Executor | Sets the path to the TLS private-key file for the entrypoint HTTPS listener. | — |
@@ -127,7 +131,7 @@ The first-run wizard auto-detects standard provider variables (`OPENAI_API_KEY`,
 
 ## Storage
 
-These variables select the artifact storage backend (filesystem, Amazon S3, S3-compatible stores, Google Cloud Storage, and Azure Blob Storage), set per-component bucket overrides, and configure the database URLs for the Platform, the orchestrator, the notification service, and the web UI entrypoint session store. Static Amazon Web Services credentials are honored when present. For the wider AWS, Google Cloud, and Azure credential-discovery chains, see [Variables Read Through an SDK](#variables-read-through-an-sdk).
+These variables select the artifact storage backend (filesystem, Amazon S3, S3-compatible stores, Google Cloud Storage, and Azure Blob Storage), set per-component bucket overrides, and configure the database URLs for the Platform, the orchestrator, the notification service, the web UI entrypoint session store, and the product-analytics consent store. Static Amazon Web Services credentials are honored when present. For the wider AWS, Google Cloud, and Azure credential-discovery chains, see [Variables Read Through an SDK](#variables-read-through-an-sdk).
 
 | Name | Default | Scope | Description | Related YAML key |
 |---|---|---|---|---|
@@ -157,6 +161,7 @@ These variables select the artifact storage backend (filesystem, Amazon S3, S3-c
 | `S3_ENDPOINT_URL` | — | all | Sets the S3 endpoint for S3-compatible backends such as MinIO. | `endpoint_url` |
 | `S3_REGION` | `us-east-1` | Platform | Sets the S3 region the Platform writes into agent configuration. | — |
 | `S3_RETRY_MAX_ATTEMPTS` | `6` | all | Sets the maximum retry attempts for S3 requests. Per-backend configuration takes precedence; a value of `0` or less leaves the SDK default in place. | `retry_max_attempts` |
+| `SAM_ANALYTICS_DATABASE_URL` | this installation's database | sam | Sets the store that `sam analytics` reads the product-analytics decision from and records it in. Use it instead of `--database-url` when the URL carries a password. The `--database-url` flag takes precedence. By default, a `.sam/settings.yaml` file determines which installation the decision belongs to, and `SAM_DATA_DIR` applies only when no settings file is found. For more information, see [sam analytics](./cli.md#sam-analytics). | `session_service.database_url` |
 | `SESSION_SERVICE_TYPE` | `sql` | yaml | Selects the session-store backend type. | `session_service.type` |
 | `WEB_UI_GATEWAY_DATABASE_URL` | `sqlite:///<SAM_DATA_DIR>/sam.db` | Entrypoint Executor | Sets the session-store database URL for the web UI entrypoint. | `session_service.database_url` |
 | `WEB_UI_SESSION_SERVICE_TYPE` | `sql` | yaml | Selects the session-store backend type for the web UI entrypoint. | `session_service.type` |
@@ -170,6 +175,7 @@ These variables configure the OpenID Connect (OIDC) client credentials, the sing
 | `AUTHORIZATION_TYPE` | `none` | yaml | Selects the authorization backend: `default_rbac` or `none`. The Platform writes `default_rbac` into generated agent configuration. | `authorization_service.type` |
 | `DEFAULT_ROLES` | — | yaml | Sets the default role set assigned under RBAC. | `authorization_service.default_roles` |
 | `EXTERNAL_AUTH_CALLBACK` | `http://localhost:8800/api/v1/auth/callback` | yaml | Sets the OAuth redirect URI registered with the identity provider. | `external_auth_callback_uri` |
+| `EXTERNAL_AUTH_CLAIM_KEY` | `groups` | yaml | Names the OIDC claim that carries a user's group membership for RBAC role mapping. One claim key applies to the whole deployment. | `external_auth_claim_key` |
 | `EXTERNAL_AUTH_PROVIDER` | `azure` | yaml | Names the OIDC catalog entry the entrypoint uses; the value must match an entry in your OIDC provider catalog. | `external_auth_provider` |
 | `EXTERNAL_AUTH_SERVICE_URL` | `http://localhost:8080` | yaml | Sets the base URL of the external authentication service. | `external_auth_service_url` |
 | `FRONTEND_REDIRECT_URI` | `http://localhost:8800` | Agent-Workflow Executor, Entrypoint Executor | Sets the tool-OAuth redirect URI fallback used when `OAUTH_TOOL_REDIRECT_URI` is unset. | — |
@@ -211,7 +217,7 @@ These variables control the log level and format, the log file paths and rotatio
 | `NR_LICENSE_KEY` | — | yaml | Sets the New Relic license key for the New Relic observability integration. | — |
 | `OTEL_TOKEN` | — | yaml | Sets the authentication token for the OpenTelemetry exporter. | — |
 | `SAM_AUDIT_LOG` | `true` | all | Controls whether the audit logger runs. This takes precedence over the YAML audit configuration. | `audit_log` |
-| `SAM_FILE_LOG_LEVEL` | `DEBUG` | yaml | Sets the minimum level for the file logger. | `log.log_file_level` |
+| `SAM_FILE_LOG_LEVEL` | `INFO` | yaml | Sets the minimum level for the file logger. | `log.log_file_level` |
 | `SAM_LOG_COMPRESS` | `false` | yaml | Controls whether rotated log files are compressed with gzip. | `log.compress` |
 | `SAM_LOG_FILE` | `sam.log` | yaml | Sets the file path for the file logger. | `log.log_file` |
 | `SAM_LOG_MAX_AGE_DAYS` | `0` | yaml | Sets the maximum age in days for rotated log files. `0` disables age-based rotation. | `log.max_age_days` |
@@ -242,16 +248,17 @@ To validate a deployment, `sam-doctor` also reads the runtime variables document
 
 ## Entrypoint and Channel
 
-These variables configure each entrypoint: the entrypoint IDs, the web UI branding and behavior, the Cross-Origin Resource Sharing (CORS) allowlist, the topic-prefix namespace, the channel credentials for Slack, Microsoft Teams, and email, and the MCP entrypoint listen surface. Event-mesh entrypoints read their per-instance broker overrides through the `BROKER_URL_<envSuffix>` family described under [Dynamic-Name Patterns](#dynamic-name-patterns).
+These variables configure each entrypoint: the entrypoint IDs, the web UI branding and behavior, the Cross-Origin Resource Sharing (CORS) allowlist, the topic-prefix namespace, the channel credentials for Slack, Microsoft Teams, and email, and the MCP entrypoint listen surface. Event-mesh entrypoints read their per-instance event broker overrides through the `BROKER_URL_<envSuffix>` family described under [Dynamic-Name Patterns](#dynamic-name-patterns).
 
 | Name | Default | Scope | Description | Related YAML key |
 |---|---|---|---|---|
 | `CORS_ALLOWED_ORIGIN_REGEX` | — | yaml | Sets the CORS allowlist regular expression for the web UI entrypoint. | `cors_allowed_origin_regex` |
 | `EMAIL_EXTERNAL_BASE_URL` | — | Entrypoint Executor | Sets the external base URL for the email entrypoint. | — |
 | `EMAIL_GATEWAY_ID` | configured | yaml | Identifies an email entrypoint instance. | `gateway_id` |
-| `FRONTEND_BOT_NAME` | `Solace Agent Mesh` | yaml | Sets the display name shown in the web UI. | `frontend_bot_name` |
+| `FEEDBACK_PUBLISHING_ENABLED` | `false` | yaml | Controls whether the web UI entrypoint publishes each feedback submission to the event broker. | `feedback_publishing.enabled` |
+| `FRONTEND_APP_NAME` | the product name | yaml | Sets the application name that the web UI shows as the browser tab title. | `frontend_app_name` |
 | `FRONTEND_COLLECT_FEEDBACK` | `true` | yaml | Controls whether the web UI collects thumbs-up and thumbs-down feedback. | `frontend_collect_feedback` |
-| `FRONTEND_DISCLAIMER_TEXT` | empty | yaml | Sets the legal disclaimer text shown in the web UI, up to 500 characters. | `frontend_disclaimer_text` |
+| `FRONTEND_DISCLAIMER_TEXT` | empty | yaml | Sets the legal disclaimer text shown in the web UI, up to 800 characters. | `frontend_disclaimer_text` |
 | `FRONTEND_SERVER_URL` | `http://localhost:8800` | yaml | Sets the entrypoint URL surfaced to the Builder agent tools. | `gateway_url` |
 | `FRONTEND_USE_AUTHORIZATION` | `false` | all | Controls whether the web UI shows the authentication interface. | `frontend_use_authorization` |
 | `FRONTEND_WELCOME_MESSAGE` | `How can I assist you today?` | yaml | Sets the welcome banner shown in the web UI. | `frontend_welcome_message` |
@@ -271,7 +278,7 @@ These variables configure each entrypoint: the entrypoint IDs, the web UI brandi
 
 Agent Mesh constructs the following names at runtime. The concrete name depends on operator configuration, so this section documents the pattern rather than every instance.
 
-**`BROKER_URL_<envSuffix>`** (per event-mesh entrypoint). The Platform builds each event-mesh entrypoint's broker credentials from the per-instance secrets `BROKER_URL_<envSuffix>`, `BROKER_VPN_<envSuffix>`, `BROKER_USERNAME_<envSuffix>`, and `BROKER_PASSWORD_<envSuffix>`, and falls back to the generic `SOLACE_BROKER_*` family when a per-instance override is unset. The `<envSuffix>` value is the entrypoint's record identifier upper-cased with hyphens replaced by underscores — the same transform as `<connUUID>` below — for example `BROKER_URL_7F3A82C4_B15D_4A6E_9C0B_1D2E3F4A5B6C`. Slack and Teams channels use the parallel families `SLACK_BOT_TOKEN_<suffix>`, `MICROSOFT_APP_ID_<suffix>`, and `MICROSOFT_APP_PASSWORD_<suffix>`.
+**`BROKER_URL_<envSuffix>`** (per event-mesh entrypoint). The Platform builds each event-mesh entrypoint's event broker credentials from the per-instance secrets `BROKER_URL_<envSuffix>`, `BROKER_VPN_<envSuffix>`, `BROKER_USERNAME_<envSuffix>`, and `BROKER_PASSWORD_<envSuffix>`, and falls back to the generic `SOLACE_BROKER_*` family when a per-instance override is unset. The `<envSuffix>` value is the entrypoint's record identifier upper-cased with hyphens replaced by underscores — the same transform as `<connUUID>` below — for example `BROKER_URL_7F3A82C4_B15D_4A6E_9C0B_1D2E3F4A5B6C`. Slack and Teams channels use the parallel families `SLACK_BOT_TOKEN_<suffix>`, `MICROSOFT_APP_ID_<suffix>`, and `MICROSOFT_APP_PASSWORD_<suffix>`.
 
 **`BEARER_TOKEN_<connUUID>`** (per MCP connector). Connector credentials configured through the Platform administration interface are stored as `BEARER_TOKEN_<connUUID>`, `BASIC_USERNAME_<connUUID>`, `BASIC_PASSWORD_<connUUID>`, and `SERVER_URL_<connUUID>`, where `<connUUID>` is the connector record UUID upper-cased with hyphens replaced by underscores, following the same convention as `<envSuffix>`, for example `BEARER_TOKEN_7F3A82C4_B15D_4A6E_9C0B_1D2E3F4A5B6C`.
 

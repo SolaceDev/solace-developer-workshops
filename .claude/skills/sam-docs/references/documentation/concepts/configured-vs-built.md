@@ -1,4 +1,5 @@
 ---
+published: true
 title: "Extending Agent Mesh: Configuration or Code"
 description: "When to declare a resource in YAML and when to build it in Go. The split is meaningful for tools; everything else is YAML."
 sidebar_position: 5120
@@ -13,7 +14,7 @@ Agent Mesh authors most resources (agents, entrypoints, workflows, and skills) e
 - **Configuration path (declared tool).** Declare the tool on an agent's `tools:` list as a built-in (`tool_type: builtin` with a `tool_name:` like `web_request`), a Model Context Protocol (MCP) server (`tool_type: mcp`), or an OpenAPI service (`tool_type: openapi`). No Go code; just YAML.
 - **Code path (custom tool).** Write a Go binary against `pkg/samtoolsdk` (or a Python script using `sam-tool-sdk`, same idea). The runtime dispatches it through the Secure Tool Runtime at execution time. It still appears as `tool_type: builtin` on the agent's tool list; the executable behind the name is your binary.
 
-Both paths produce a tool the agent invokes through one tool-invocation protocol. The wire format, the broker topics, and the observability surface do not change based on which path the tool came from.
+Both paths produce a tool the agent invokes through one tool-invocation protocol. The wire format, the event broker topics, and the observability surface do not change based on which path the tool came from.
 
 ## Why the Other Resource Types Don't Have a Code Path
 
@@ -22,7 +23,7 @@ The configuration-or-code choice does **not** extend to agents, entrypoints, wor
 | Resource | What you author | Why there is no separate code path |
 |---|---|---|
 | **Agent** | YAML file under `configs/agents/` | The runtime owns the large language model (LLM) loop, tool dispatch, streaming, embed resolution, peer routing, session persistence, and the Agent-to-Agent (A2A) wire format. The declared surface, combined with the tool taxonomy (built-in, MCP, OpenAPI, custom), covers customer-facing flexibility. |
-| **Entrypoint** | YAML file under `configs/entrypoints/` selecting one of `httpsse`, `eventmesh`, `slack`, `email`, `mcp`, `teams` | The entrypoint transports ship in the runtime. Adding a new transport is a Solace-side change, not a customer authoring path. The MCP entrypoint is the usual answer when you want to expose Agent Mesh to an integration the runtime does not ship. |
+| **Entrypoint** | YAML file under `configs/entrypoints/` selecting one of `httpsse`, `eventmesh`, `slack`, `email`, `mcp`, `teams`, `webhook`, or `whatsapp` | The entrypoint transports ship in the runtime. Adding a new transport is a Solace-side change, not a customer authoring path. The MCP entrypoint is the usual answer when you want to expose Agent Mesh to an integration the runtime does not ship. |
 | **Workflow** | YAML using the workflow domain-specific language (DSL): `agent`, `switch`, `map`, `loop`, and nested `workflow` nodes | The DSL composes existing agent and workflow primitives. Custom node types are an internal extension point, not a customer authoring path. |
 | **Skill** | A `SKILL.md` manifest plus a directory of references and assets | A skill is a bundle. The configuration-or-code choice applies to the **tools inside** the bundle, not to the bundle itself. |
 

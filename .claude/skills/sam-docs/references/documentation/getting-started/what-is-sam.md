@@ -1,4 +1,5 @@
 ---
+published: true
 title: What Is Agent Mesh?
 description: An agent development and runtime platform that helps you build, test, deploy, monitor, and improve your agents and agent workflows, with sessions, artifacts, authentication, and observability built in.
 sidebar_position: 110

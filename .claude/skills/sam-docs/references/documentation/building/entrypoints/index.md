@@ -1,12 +1,13 @@
 ---
+published: true
 title: Configuring Entrypoints
-description: Connect Agent Mesh to external systems (Slack, Microsoft Teams, MCP clients, or the Solace event mesh) and route inbound requests to a chosen agent.
+description: Connect Agent Mesh to external systems (Slack, Microsoft Teams, MCP clients, the Solace event mesh, or inbound HTTP callers) and route inbound requests to a chosen agent.
 sidebar_position: 0
 ---
 
 # Configuring Entrypoints
 
-An entrypoint connects Agent Mesh to an external system. It translates that system's protocol into Agent-to-Agent (A2A) messages, routes inbound requests to the agent named in its configuration, and publishes the agent's responses back to the source. Each entrypoint targets one external system: a Slack workspace, a Microsoft Teams tenant, a Model Context Protocol (MCP) client, or a Solace broker.
+An entrypoint connects Agent Mesh to an external system. It translates that system's protocol into Agent-to-Agent (A2A) messages and routes inbound requests to the agent named in its configuration. Most types also publish the agent's responses back to the source. The Webhook type is the exception: it acknowledges the request and never returns the agent's response. Each entrypoint targets one external system: a Slack workspace, a Microsoft Teams tenant, a Model Context Protocol (MCP) client, a Solace event broker, an HTTP caller, or a WhatsApp Business phone number.
 
 You create and manage entrypoints from the **Entrypoints** page in the Agent Mesh UI, or you can define them as version-controllable YAML with the `sam` CLI. This page covers the shared model that every entrypoint type follows. For the fields specific to one type, see its per-type page.
 
@@ -19,7 +20,9 @@ Agent Mesh supports the following entrypoint types.
 | Slack | Drive agents from Slack channels, threads, and direct messages over Socket Mode | [Slack Entrypoints](./slack/index.md) |
 | Microsoft Teams | Drive agents from Teams personal chats, group chats, and team channels through the Bot Framework | [Microsoft Teams Entrypoints](./teams/index.md) |
 | MCP | Expose Agent Mesh agents as Model Context Protocol tools to Claude Code, MCP Inspector, and other MCP clients | [MCP Entrypoints](./mcp/index.md) |
-| Event Mesh | Subscribe to Solace broker topics and route each received event to an agent or workflow | [Event Mesh Entrypoints](./event-mesh/index.md) |
+| Event Mesh | Subscribe to Solace event broker topics and route each received event to an agent or workflow | [Event Mesh Entrypoints](./event-mesh/index.md) |
+| Webhook | Accept inbound HTTP requests from external systems (GitHub, CI pipelines, IoT platforms, and similar) and route each event to an agent or workflow | [Webhook Entrypoints](./webhook/index.md) |
+| WhatsApp (Early Access) | Drive agents from 1:1 WhatsApp chats over the Meta WhatsApp Business Cloud API | [WhatsApp Entrypoints (Early Access)](./whatsapp/index.md) |
 
 Each type has its own credentials and its own configuration fields. The rest of this page covers the parts that are the same for every type: how an entrypoint is created and deployed, what its status fields mean, how credentials are handled, how it routes to an agent, and how access to entrypoint operations is controlled.
 
@@ -41,13 +44,13 @@ When you save a new entrypoint, its initial deployment status is `not_deployed`.
 
 ## How Deployment Works
 
-Deploying an entrypoint is a control-plane operation. When you select **Deploy**, the Platform service validates the configuration, generates the runtime YAML, and sends a deployment request to the Entrypoint Executor over the broker. It starts the entrypoint instance and reports the outcome back to the Platform service, which updates the UI.
+Deploying an entrypoint is a control-plane operation. When you select **Deploy**, the Platform service validates the configuration, generates the runtime YAML, and sends a deployment request to the Entrypoint Executor over the event broker. The Entrypoint Executor starts the entrypoint instance and reports the outcome back to the Platform service, which updates the UI.
 
 ```mermaid
 sequenceDiagram
     participant UI as Entrypoints Page UI
     participant Platform as Platform service
-    participant Broker as Broker
+    participant Broker as Event Broker
     participant EntrypointRuntime as Entrypoint Executor
 
     UI->>Platform: Deploy entrypoint request
@@ -66,7 +69,7 @@ The deploy request runs synchronously. When the Entrypoint Executor is unreachab
 :::warning
 **Entrypoint Executor Connectivity**
 
-Deployment requires a healthy broker connection to a running Entrypoint Executor. Deploy, update, and undeploy operations all fail when the Entrypoint Executor is offline.
+Deployment requires a healthy event broker connection to a running Entrypoint Executor. Deploy, update, and undeploy operations all fail when the Entrypoint Executor is offline.
 :::
 
 ## Entrypoint Status Fields
@@ -86,6 +89,7 @@ An entrypoint carries two independent status fields.
 | Runtime status | Meaning |
 |---|---|
 | `running` | An Entrypoint Executor instance is serving this entrypoint |
+| `degraded` | An Entrypoint Executor instance is serving this entrypoint, but it is reporting an active problem |
 | `starting` | The entrypoint was deployed within the past 30-second grace window and has not yet reported in |
 | `disconnected` | The entrypoint was deployed more than 30 seconds ago but no Entrypoint Executor instance is reporting in |
 | `stopped` | No Entrypoint Executor instance is serving the entrypoint |
@@ -100,11 +104,11 @@ When an entrypoint deploys, the Platform service stores a SHA-256 hash of its na
 
 ### Connection Status Monitoring
 
-Each deployed entrypoint publishes a discovery card to the broker every 60 seconds. During the first 3 minutes after startup, the publish interval drops to 10 seconds to surface new entrypoints sooner. The Platform service tracks these cards and sets the runtime status to `running` while at least one instance is reporting in.
+Each deployed entrypoint publishes a discovery card to the event broker every 60 seconds. During the first 3 minutes after startup, the publish interval drops to 10 seconds so new entrypoints appear in the UI sooner. The Platform service tracks these cards and sets the runtime status to `running` (or `degraded` if that instance is reporting an active problem) while at least one instance is reporting in.
 
 ### Credential Handling
 
-Entrypoint configurations include secrets such as broker passwords and Slack tokens. API responses redact these values, displaying `<REDACTED>` in place of the stored value. If a client sends `<REDACTED>` back on a `PUT` or `PATCH`, the Platform service preserves the existing stored value rather than overwriting it.
+Entrypoint configurations include secrets such as event broker passwords and Slack tokens. API responses redact these values, displaying `<REDACTED>` in place of the stored value. If a client sends `<REDACTED>` back on a `PUT` or `PATCH`, the Platform service preserves the existing stored value rather than overwriting it.
 
 Downloaded YAML files replace secrets with environment-variable placeholders, so the file is safe to commit to source control. The secret values are injected at deployment time from the environment.
 
@@ -114,7 +118,7 @@ Every entrypoint detail panel has a **Download** action that exports the entrypo
 
 ## Routing Traffic to an Agent
 
-An entrypoint routes inbound traffic to the agent named in its **Default Agent** field. The Event Mesh entrypoint is the one exception: it routes per rule, and each rule names a `Target Agent` or `Target Workflow`. Every other entrypoint type carries a single agent reference in its own configuration.
+An entrypoint routes inbound traffic to the agent named in its **Default Agent** field. Two types name their target differently. The Event Mesh entrypoint routes per rule, and each rule names a **Target agent** or **Target workflow**. The Webhook entrypoint names a single **Target agent** or **Target workflow** for the whole route, and callers cannot override it. Every other entrypoint type carries a single agent reference in its own configuration.
 
 Every agent that receives traffic from an entrypoint acts under the entrypoint's credentials and inherits the same access permissions in the external system. You cannot grant one agent read-only access and another agent write access on the same entrypoint. Security boundaries live in the external system, not in Agent Mesh. To give different agents different levels of access to the same system, create a second entrypoint with separate credentials and route each agent to the entrypoint that matches its required scope.
 
@@ -126,9 +130,9 @@ Edit an entrypoint at any time from the **Entrypoints** page. Every field except
 
 The Type field is immutable after creation. To switch an entrypoint to a different type, delete it and create a new one.
 
-Delete an entrypoint from its detail panel. When the entrypoint is currently deployed, the Platform service undeploys it through the Entrypoint Executor before removing the database record. The delete fails if the undeploy step fails, so durable broker queues are never orphaned. Retry the delete after you resolve the underlying Entrypoint Executor problem.
+Delete an entrypoint from its detail panel. When the entrypoint is currently deployed, the Platform service undeploys it through the Entrypoint Executor before removing the database record. The delete fails if the undeploy step fails, so Agent Mesh never orphans durable event broker queues. Retry the delete after you resolve the underlying Entrypoint Executor problem.
 
-Deletion removes the entrypoint from Agent Mesh. The external system is untouched. Slack tokens, Azure Bot registrations, and Solace broker configurations remain in place and require separate cleanup.
+Deletion removes the entrypoint from Agent Mesh. The external system is untouched. Slack tokens, Azure Bot registrations, Meta app webhook subscriptions, and Solace event broker configurations remain in place and require separate cleanup.
 
 ## Access Control
 
@@ -141,12 +145,13 @@ Entrypoint operations require specific role-based access control (RBAC) capabili
 | `entrypoint:*:update` | Modify entrypoints and their credentials |
 | `entrypoint:*:delete` | Delete entrypoints |
 | `entrypoint:*:deploy` | Deploy, update, and undeploy entrypoints |
+| `deployment:_:read` | View entrypoint deployment history |
 
 For instructions on assigning capabilities to users, see [RBAC Reference](../../reference/rbac-reference.md).
 
 ## Define Entrypoints as Code Instead
 
-The Agent Mesh UI is one way to configure entrypoints; the `sam` CLI is the other. With declarative config, you describe entrypoints as YAML and reconcile them into Agent Mesh with `sam config apply`, the version-controllable path that suits GitOps and automation. Each per-type page has a companion CLI page. For the Slack CLI walkthrough, see [Slack Entrypoints with the CLI](./slack/cli.md).
+The Agent Mesh UI is one way to configure entrypoints; the `sam` CLI is the other. With declarative config, you describe entrypoints as YAML and reconcile them into Agent Mesh with `sam config apply`, the version-controllable path that suits GitOps and automation. Each per-type page has a companion CLI page. For example, see [Slack Entrypoints with the CLI](./slack/cli.md) or [Webhook Entrypoints with the CLI](./webhook/cli.md).
 
 ## Next Steps
 
@@ -156,3 +161,5 @@ You have reviewed how entrypoints work. Most readers next want to configure a sp
 - [Microsoft Teams Entrypoints](./teams/index.md)
 - [MCP Entrypoints](./mcp/index.md)
 - [Event Mesh Entrypoints](./event-mesh/index.md)
+- [Webhook Entrypoints](./webhook/index.md)
+- [WhatsApp Entrypoints (Early Access)](./whatsapp/index.md)

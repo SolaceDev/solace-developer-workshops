@@ -3,8 +3,8 @@
 Manifest path: `resources.agents`
 
 An agent is a long-lived LLM-driven entity bound to a model, a set of
-toolsets, optional skills, and a system prompt. The `type`
-field is immutable after creation — recreate the agent to change it.
+toolsets, optional skills, and a system prompt. `type` accepts only
+`standard`, so there is no agent type to choose or change.
 
 All authoring fields below live under a top-level `spec:` block (only
 `kind:`, `name:`, and `description:` sit at the document root) — see the
@@ -12,17 +12,16 @@ All authoring fields below live under a top-level `spec:` block (only
 form (agent fields beside `kind:`) is silently accepted at plan time but
 drops the fields at apply time, surfacing as a misleading 422.
 
-> **`systemPrompt` is required for standard agents.** Although the schema
-> table marks it with constraints rather than a hard `required`, the platform
+> **`systemPrompt` is required for standard agents.** The platform
 > rejects any create/update of a `standard` agent (the only supported type)
 > that omits it with HTTP 422 `system prompt is required for standard
-> agents`. Always set `spec.systemPrompt` to at least 100 characters.
+> agents`. Always set `spec.systemPrompt`; its length is bounded by the platform's `agent_instruction_min_chars` and `agent_instruction_max_chars` (1 and 32000 by default).
 
 ## `additionalConfigurations` — catch-all (and its forbidden keys)
 
 `additionalConfigurations` is a free-form object for agent config keys the
-structured fields above don't model yet (e.g. `supports_streaming`,
-`agent_card_publishing`). It is **not** where tools go.
+structured fields above don't model yet (e.g. `supportsStreaming`,
+`agentCardPublishing.intervalSeconds`). Keys are camelCase. It is **not** where tools go.
 
 - **`tools` is forbidden here** — the platform computes the deployed
   `tools:` block from `spec.toolsets` and rejects any
@@ -52,9 +51,8 @@ The agent has two distinct skill surfaces — they are *not* aliases:
 
 ## `skills[]` — AgentCard skill entry
 
-Each `skills[]` element is a `SkillRequest` describing one capability
-the agent advertises. Mirrors the A2A `AgentSkill` wire format
-(`internal/a2a/protocol.go`).
+Each `skills[]` element describes one capability
+the agent advertises. Mirrors the A2A `AgentSkill` wire format.
 
 | Field | Type | Description |
 |---|---|---|
@@ -65,8 +63,8 @@ the agent advertises. Mirrors the A2A `AgentSkill` wire format
 | `examples` | `list<string>` | Short user prompts that exercise the skill. Surfaced as suggestions in some clients. |
 | `inputModes` | `list<string>` | MIME types the skill accepts (e.g. `text`, `application/json`). Defaults to the agent-level `inputModes` when omitted. |
 | `outputModes` | `list<string>` | MIME types the skill produces. Defaults to the agent-level `outputModes` when omitted. |
-| `required` | `list<string>` | SAM-specific (not part of the A2A spec). Stored on the platform but not round-tripped through runtime YAML. Retained for backwards compatibility — new authoring should leave it empty. |
-| `optional` | `list<string>` | SAM-specific (not part of the A2A spec). Same caveats as `required`. |
+| `required` | `list<string>` | Agent Mesh-specific (not part of the A2A spec). Stored on the platform but not round-tripped through runtime YAML. Retained for backwards compatibility — new authoring should leave it empty. |
+| `optional` | `list<string>` | Agent Mesh-specific (not part of the A2A spec). Same caveats as `required`. |
 
 Round-trip property: `sam config apply` followed by `sam config pull`
 preserves every A2A field above. `required` / `optional` are dropped
@@ -105,7 +103,7 @@ spec:
 Drives the welcome panel shown when a chat session first opens against
 this agent. Carried on the agent card as the
 `https://solace.com/a2a/extensions/sam/welcome` extension and rendered
-by the SAM chat UI.
+by the Agent Mesh chat UI.
 
 | Field | Type | Description |
 |---|---|---|
@@ -129,49 +127,6 @@ spec:
             prompt: Draft a polite reply to the most recent email.
 ```
 
-## Volume tools — workspace volumes (feature-gated)
-
-> **Availability:** the `builtin_volume_tools` toolset is gated by the
-> `volumes` feature flag (`SAM_FEATURE_VOLUMES`). It **may not be available**
-> in your deployment — if the feature is off, the toolset won't appear in the
-> builder catalog and an agent that references it won't get the tools. Confirm
-> with your operator before relying on it.
-
-Volume tools (`volume_read`, `volume_write`, `volume_list`, `volume_grep`, …)
-operate on a persistent, mounted **workspace volume** rather than artifacts.
-For the tools to work, the agent needs two things beyond enabling the toolset:
-
-1. A **volume slot** declared under `additionalConfigurations.volumes` — a named
-   filesystem allocation with a provision strategy (`auto_create` provisions one
-   per session and needs a `ttl`; `static` binds a pre-existing `volume_id`;
-   `prompt_user` asks the user to pick one). Keys *inside* each `volumes[]` slot
-   are **snake_case** (`volume_id`, `prompt_message`, `allow_exec`) — it's an
-   opaque pass-through the platform doesn't re-case, unlike the camelCase
-   `toolsetConfigs`/`volumeBindings` around it.
-2. A **binding** of the tools' `workspace` param to that slot, via a
-   `toolsetConfigs` entry's `volumeBindings`.
-
-```yaml
-kind: agent
-name: workspace-agent
-spec:
-  toolsets:
-    - builtin_volume_tools
-  toolsetConfigs:
-    - toolsetName: builtin_volume_tools
-      volumeBindings:
-        workspace: ws            # bind the tools' "workspace" param to the slot
-  additionalConfigurations:
-    volumes:
-      - name: ws                 # the slot the binding references
-        provision: auto_create
-        ttl: "24h"
-```
-
-Without both the slot and the binding the tools register but have nothing to
-mount, and calls fail at dispatch. (The builder UI for wiring this is a
-fast-follow; in declarative YAML, author the two blocks as shown.)
-
 
 ## Schema
 
@@ -181,7 +136,7 @@ Authoring fields for the "agent" resource.
 |---|---|---|---|---|
 | `name` | `string` | yes | len 3–255 | (no description) |
 | `description` | `string` | yes | len 10–1000 | (no description) |
-| `systemPrompt` | `string` | yes | len 100–10000 | SystemPrompt is the agent's base instructions. Required for standard agents (the only supported type today): a create or update that omits it is rejected with HTTP 422 "system prompt is required for standard agents". |
+| `systemPrompt` | `string` | yes |  | SystemPrompt is the agent's base instructions. Required for standard agents (the only supported type today): a create or update that omits it is rejected with HTTP 422 "system prompt is required for standard agents". Length is bounded by agent_instruction_min_chars and agent_instruction_max_chars in the platform config (1 and 32000 by default), counted in characters rather than bytes. |
 | `type` | `string` |  | one of: standard | (no description) |
 | `skills` | `list<object>` | yes | max 20 | (no description) |
 | `skillRefs` | `list<string>` | yes |  | (no description) |
@@ -194,7 +149,7 @@ Authoring fields for the "agent" resource.
 | `inputModes` | `list<string>` | yes |  | (no description) |
 | `outputModes` | `list<string>` | yes |  | (no description) |
 | `modelProvider` | `list<string>` |  |  | (no description) |
-| `additionalConfigurations` | `object` |  |  | AdditionalConfigurations is a JSON-object catch-all for agent config keys the structured DTO does not yet model (e.g. supports_streaming, agent_card_publishing.interval_seconds). Tier-1 structural validation (size, depth, top-level key collisions) runs at create/update time; deeper schema-driven validation is a follow-up. Authored values are deep-merged into the deploy-time YAML. Forbidden keys, rejected with HTTP 422: `tools` (computed by the platform from spec.toolsets at deploy time. Declare built-in toolset IDs under spec.toolsets instead), plus any key that duplicates a structured field above. The runtime `tools:` / `group_name` shape from the AWE agent YAML does NOT belong here. |
+| `additionalConfigurations` | `object` |  |  | AdditionalConfigurations is a JSON-object catch-all for agent config keys that have no dedicated field, written in camelCase (e.g. supportsStreaming, agentCardPublishing.intervalSeconds). Size, depth and key collisions are checked at create/update time, and known keys are type-checked. Authored values are deep-merged into the deploy-time YAML. Forbidden keys, rejected with HTTP 422: `tools` (computed by the platform from spec.toolsets at deploy time. Declare built-in toolset IDs under spec.toolsets instead), plus any key that duplicates a structured field above. The runtime `tools:` / `group_name` shape from the AWE agent YAML does NOT belong here. |
 | `deploy` | `boolean` | yes |  | (no description) |
 
 ## Example
@@ -217,6 +172,6 @@ spec:
   inputModes: []
   outputModes: []
   # optional: modelProvider: []
-  # optional: additionalConfigurations: null  # TODO: provide a value of type object
+  # optional: additionalConfigurations: null  # value of type object
   deploy: false
 ```

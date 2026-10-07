@@ -1,0 +1,8 @@
+{
+  "label": "WhatsApp Entrypoints (Early Access)",
+  "position": 60,
+  "link": {
+    "type": "doc",
+    "id": "documentation/building/entrypoints/whatsapp/index"
+  }
+}

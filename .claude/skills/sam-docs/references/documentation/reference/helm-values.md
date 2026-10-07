@@ -1,4 +1,5 @@
 ---
+published: true
 title: Helm Values Reference
 description: Complete reference for the Agent Mesh Helm chart values, covering global settings, core configuration, external datastores, networking, deployment, and bundled components.
 sidebar_position: 1070
@@ -152,7 +153,7 @@ External PostgreSQL database and object storage under the `dataStores` key. Used
 | `dataStores.database.applicationPassword` | string | `""` | Shared password for all Agent Mesh database users. Required for external persistence. |
 | `dataStores.database.supabaseTenantId` | string | `""` | Supabase project ID. Required with the Supabase connection pooler. |
 | `dataStores.objectStorage.type` | string | `"s3"` | Object storage type: `s3`, `azure`, or `gcs`. |
-| `dataStores.objectStorage.workloadIdentity.enabled` | bool | `false` | Use cloud-native authentication (AWS IRSA, Azure Workload Identity, GCP Workload Identity) instead of static keys. |
+| `dataStores.objectStorage.workloadIdentity.enabled` | bool | `false` | Use cloud provider workload identity instead of static keys. Supported mechanisms are AWS IAM Roles for Service Accounts (IRSA), Azure Workload Identity, and GCP Workload Identity. |
 | `dataStores.s3.endpointUrl` | string | `""` | S3 endpoint URL. Leave empty for AWS S3. Set it for MinIO or another S3-compatible store. |
 | `dataStores.s3.bucketName` | string | `""` | Bucket for artifact storage. |
 | `dataStores.s3.connectorSpecBucketName` | string | `""` | Bucket for connector specifications. Can be the same as `bucketName`. |
@@ -225,8 +226,8 @@ Deployment settings under the `samDeployment` key, including the Entrypoint Exec
 | `samDeployment.caInitImage` | object | `{}` | Image override for the `ca-merge` init container. Defaults to the consuming pod's image. Must be a Debian-based image. Used only when `customCA.enabled` is `true`. |
 | `samDeployment.customCA.enabled` | bool | `false` | Enable custom CA certificate injection through a ConfigMap. |
 | `samDeployment.customCA.configMapName` | string | `truststore` | Name of the ConfigMap that holds the custom CA certificates. The ConfigMap must exist at install time. |
-| `samDeployment.rollout.rollingUpdate` | object | `{}` | Rolling update parameters. |
-| `samDeployment.rollout.strategy` | string | `RollingUpdate` | Update strategy for the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime pods. Set to `Recreate` to stop the running pod before starting its replacement, which avoids two instances overlapping during an upgrade when your topology cannot tolerate a brief overlap. Each pod runs a single replica and the Entrypoint Executor hosts the in-process platform. |
+| `samDeployment.rollout.rollingUpdate` | object | `{maxSurge: 0, maxUnavailable: 1}` | Rolling update parameters. With `maxSurge: 0`, the pod is replaced in place, so `maxUnavailable` must be at least 1. |
+| `samDeployment.rollout.strategy` | string | `RollingUpdate` | Deployment update strategy for the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime pods. Only `RollingUpdate` is supported. |
 | `samDeployment.podSecurityContext.runAsUser` | int | `10001` | Pod security context user ID. |
 | `samDeployment.podSecurityContext.fsGroup` | int | `10002` | Pod security context filesystem group ID. |
 | `samDeployment.securityContext.allowPrivilegeEscalation` | bool | `false` | Allow privilege escalation. |

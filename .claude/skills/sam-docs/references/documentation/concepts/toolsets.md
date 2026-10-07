@@ -1,4 +1,5 @@
 ---
+published: true
 title: Toolsets
 description: "How toolsets separate custom tool code from agent configuration: the Platform resource, its lifecycle states, and how it relates to the Secure Tool Runtime, skills, and remote tools."
 sidebar_position: 10

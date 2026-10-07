@@ -1,9 +1,9 @@
 # CLI authentication reference
 
-`sam auth login` is the interactive way to authenticate the CLI to a SAM
+`sam auth login` is the interactive way to authenticate the CLI to an Agent Mesh
 platform. It performs an OAuth 2.0 Authorization Code flow with PKCE, using
 a kernel-assigned loopback redirect (RFC 8252), and caches the resulting
-SAM access token at `$XDG_CONFIG_HOME/sam/auth/<target>.json` (file mode `0600`,
+Agent Mesh access token at `$XDG_CONFIG_HOME/sam/auth/<target>.json` (file mode `0600`,
 parent dir `0700`). On Linux that resolves to `~/.config/sam/auth/`, on macOS
 to `~/Library/Application Support/sam/auth/`.
 
@@ -71,11 +71,11 @@ Not logged in to dev (https://platform.dev.example.com). Open browser to authent
 
 Answering `y` (or hitting Return) runs the same loopback PKCE flow that
 `sam auth login` does and continues with the apply. Answering `n` or
-declining returns the original `ErrNotLoggedIn` and exits non-zero.
+declining exits non-zero with a not-logged-in error.
 
-In non-TTY contexts (CI, piped invocations, redirected output) the prompt
-never fires — the CLI immediately prints `run sam auth login` and exits
-non-zero, exactly as it did before WI-26.
+When stdin or stderr is not a terminal, or `CI` is set to a truthy
+value, the prompt never fires — the CLI immediately prints
+`run sam auth login` and exits non-zero.
 
 Pass `--no-interactive` to apply/plan to force the non-TTY behaviour even
 when running in a terminal — useful for scripts that need apply/plan to
@@ -90,8 +90,8 @@ when the env var is set, neither the cache nor the prompt are consulted.
 |---|---|
 | `sam auth login [target-or-url]` | Run the loopback PKCE flow. Positional is a hostname, URL, or cache name. |
 | `sam auth login dev --url <url>` | First-time named login: cache key `dev`, platform URL from `--url`. |
-| `sam auth logout --target <name>` | Revoke server-side and delete the local cache. |
-| `sam auth status --target <name>` | Show whether the cache is present, the email claim, and the expiry. |
+| `sam auth logout --url <url> [--target <name>]` | Revoke server-side and delete the local cache. `--url` (or `--manifest <file>`) is required; `--target` overrides the cache key, which otherwise defaults to the URL host (or the manifest's `target.name`). |
+| `sam auth status --url <url> [--target <name>]` | Show whether the cache is present, the email claim, and the expiry. Takes the same `--url` / `--manifest` / `--target` flags as `logout`. |
 | `sam auth list` | List every cached target with platform URL + email + expiry. |
 | `sam auth login --timeout 90s` | Cap how long the loopback listener waits for the browser callback. |
 | `sam auth login --manifest <file>` | DEPRECATED: read URL/name from a manifest. Pass the hostname positionally instead. |
@@ -127,6 +127,10 @@ If the refresh is rejected (the IdP has revoked the refresh token), the
 cache file is deleted and the next CLI invocation prints
 `run sam auth login` so the user can re-authenticate.
 
+Only a cached login is refreshed. A token from `SAM_PLATFORM_TOKEN` or a
+`bearer_token` env var is sent as-is, and a `401` fails the command
+instead of retrying with the cache.
+
 ## Auth resolution order
 
 When `sam config apply` resolves a target's auth credential, it consults
@@ -134,7 +138,7 @@ the following sources in priority order:
 
 1. **`SAM_PLATFORM_TOKEN`** (env var) — highest priority. CI flows continue
    to work without manifest churn even when the manifest declares
-   `auth: { type: oauth }`. Set this to a SAM-minted service token to
+   `auth: { type: oauth }`. Set this to an Agent Mesh-minted service token to
    bypass the cache entirely.
 2. **`auth: { type: oauth }`** — read from `$XDG_CONFIG_HOME/sam/auth/<target>.json`,
    refreshing if needed. Errors with `run sam auth login` when the cache is
@@ -150,7 +154,7 @@ the following sources in priority order:
 | Symptom | Cause | Fix |
 |---|---|---|
 | `oauth login: timed out after 90s waiting for browser callback` | The browser never reached the loopback listener — usually a popup blocker or a corporate proxy stripping the redirect. | Re-run with `--timeout 5m` and check the browser tab; alternatively paste the printed URL into a browser by hand. |
-| `oauth login: state mismatch` | An old browser tab from a previous login attempt was reused. | Close all SAM login tabs and re-run. |
+| `oauth login: state mismatch` | An old browser tab from a previous login attempt was reused. | Close all Agent Mesh login tabs and re-run. |
 | `tokencache: no cached credentials (target "dev")` | The cache was never populated, or `sam auth logout` removed it. | `sam auth login dev` (or pass the full hostname). |
 | `auth requires HTTPS — provide an https:// URL` | Typed `http://...` (or `--url http://...`). | Use the `https://` form; bare hostnames auto-derive HTTPS. |
 | `oauth: refresh token denied` | The IdP rotated/revoked the refresh token. | The cache is auto-cleared; just re-run `sam auth login`. |
@@ -158,32 +162,37 @@ the following sources in priority order:
 
 ## Debugging: `sam api`
 
-`sam api` is a generic authenticated HTTP client for the SAM entrypoint REST API — think `gh api` for SAM. It reuses the same `$XDG_CONFIG_HOME/sam/auth/<target>.json` cache and refresh ladder described above, so a developer who has run `sam auth login` once can poke at the entrypoint from the shell without copying tokens around.
+`sam api` is a generic authenticated HTTP client for the Agent Mesh entrypoint REST API — think `gh api` for Agent Mesh. It reuses the same `$XDG_CONFIG_HOME/sam/auth/<target>.json` cache and refresh ladder described above, so a developer who has run `sam auth login` once can poke at the entrypoint from the shell without copying tokens around.
 
-Useful when authoring or debugging declarative-config repos: after a `sam config apply`, hit the entrypoint to confirm a resource looks the way the YAML said it should, dump the live shape of a DTO you're about to encode, or chase down a 4xx that the apply surfaced without telling you which field tripped it.
+Useful when authoring or debugging declarative-config repos: after a `sam config apply`, hit the entrypoint to confirm a resource looks the way the YAML said it should, dump the live shape of a resource you're about to write, or chase down a 4xx that the apply surfaced without telling you which field tripped it.
 
 ### Quick reference
 
 ```sh
 # GET, target resolved from the auth cache
-sam api --target dev /api/v1/agents
-sam api --target dev /api/v1/agents --jq '.data[].name'
+sam api --target dev /api/v1/platform/agents
+sam api --target dev /api/v1/platform/agents --jq '.data[].name'
 
 # Walk a paginated list (`PaginatedResponse` envelope; nextPage is the next page number)
 sam api --target dev /api/v1/sessions --paginate --jq '.data[].id'
 
 # POST / PATCH / PUT / DELETE — typed body fields
 sam api --target dev -X POST   /api/v1/projects --field name=demo --field 'description=ad-hoc'
-sam api --target dev -X PATCH  /api/v1/agents/$ID --field 'tags[]=oncall' --field 'tags[]=beta'
+sam api --target dev -X PATCH  /api/v1/sessions/$SID --field 'name=triage notes'
 sam api --target dev -X DELETE /api/v1/sessions/$SID -i
 
 # Full body from a file or stdin
-sam api --target dev -X PUT /api/v1/agents/$ID --input agent.json
-cat agent.json | sam api --target dev -X PUT /api/v1/agents/$ID --input -
+sam api --target dev -X PUT /api/v1/platform/agents/$ID --input agent.json
+cat agent.json | sam api --target dev -X PUT /api/v1/platform/agents/$ID --input -
 
 # Inspect status line + headers
 sam api --target dev /api/v1/user -i
-sam api --target dev /api/v1/agents --verbose   # method, URL, redacted headers, RTT on stderr
+sam api --target dev /api/v1/platform/agents --verbose   # method, URL, redacted headers, RTT on stderr
+
+# A local desktop or embedded run is served over plain http://. `sam api`
+# refuses to send a bearer token to an http:// URL unless you pass --insecure
+# (the same flag also skips TLS verification on https:// targets).
+sam api --target desktop --insecure /api/v1/platform/agents
 ```
 
 ### Body construction
@@ -193,7 +202,7 @@ sam api --target dev /api/v1/agents --verbose   # method, URL, redacted headers,
 - `--field 'key[]=v1' --field 'key[]=v2'` builds `{"key":["v1","v2"]}`.
 - `--field 'project.id=abc'` builds `{"project":{"id":"abc"}}`.
 - `--input <path | @file | -` is mutually exclusive with `--field`/`--raw-field` and reads a full pre-built JSON body. `-X GET` refuses any body.
-- Field names go through verbatim — SAM enforces **camelCase** request bodies (`agentId`, `pageNumber`); typing `agent_id` will get a 400 from the server, which is the right teaching signal.
+- Field names go through verbatim — Agent Mesh enforces **camelCase** request bodies (`agentId`, `pageNumber`); typing `agent_id` will get a 400 from the server, which is the right teaching signal.
 
 ### Target resolution
 
@@ -209,15 +218,4 @@ Precedence (highest first): `--url` › `--target <cached>` › `--manifest <fil
 ### When to reach for it vs. the dedicated subcommands
 
 - **Authoring config**: use `sam config plan/apply/pull/migrate` — `sam api` won't reconcile YAML for you.
-- **Inspecting what's deployed**: `sam api` is the path of least resistance — it gives you the raw `PaginatedResponse`/DTO shape that the FE consumes, which is also what the schema docs in this skill describe.
-- **Reproducing a FE bug**: the FE talks to the same endpoints `sam api` does, so a one-liner here often replaces "open devtools, copy curl".
-
-## Out of scope (today)
-
-- **Device-code flow** for headless CI. Today CI uses
-  `SAM_PLATFORM_TOKEN`; this flow may land in a follow-up.
-- **OS keychain integration**. The cache is a `0600` file on disk; we
-  may add Keychain / Secret Service backends in a later WI.
-- **Multi-account login per target**. One cached token per target name; to
-  switch users, log out and back in (or use distinct `target.name` values
-  in separate manifests).
+- **Inspecting what's deployed**: `sam api` is the path of least resistance — it gives you the raw response shape the Agent Mesh UI uses, which is also what the schema docs in this skill describe.

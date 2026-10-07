@@ -1,4 +1,5 @@
 ---
+published: true
 title: Managing Secrets
 description: Where Agent Mesh reads secrets from, the environment-variable substitution syntax that wires them into YAML, the canonical list of secret-bearing fields, and how to rotate each one without downtime.
 sidebar_position: 830
@@ -41,7 +42,7 @@ A variable that is set but empty satisfies `${VAR}` and `${VAR, default}` (both 
 
 Defaults and alts are themselves expanded, so a chained default works to a depth of one: `${A, ${B, fallback}}` resolves, but the innermost default in a triple nesting is not substituted.
 
-A typical broker block:
+A typical event broker block:
 
 ```yaml
 # agent runtime config
@@ -84,7 +85,7 @@ Each row below is one piece of secret material Agent Mesh consumes. The YAML rea
 
 | Surface | How it is supplied | YAML field | Consumed by |
 |---|---|---|---|
-| Broker password | `SOLACE_BROKER_PASSWORD` environment variable | `broker.broker_password` | Every component |
+| Event broker password | `SOLACE_BROKER_PASSWORD` environment variable | `broker.broker_password` | Every component |
 | LLM provider key | `<PROVIDER>_API_KEY` environment variable, for example `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY`, `GROQ_API_KEY` | `model.api_key` or `model.api_key_file` | Every agent that calls an LLM |
 | Vertex AI service account | mounted file | `model.auth_credentials_file` | Vertex agents |
 | Bedrock credentials | inline values, or an IAM role | `model.access_key` / `model.secret_key` | Bedrock agents |
@@ -98,7 +99,7 @@ Each row below is one piece of secret material Agent Mesh consumes. The YAML rea
 | Slack tokens | referenced as `${SLACK_BOT_TOKEN}` / `${SLACK_APP_TOKEN}` | `slack_bot_token` / `slack_app_token` | Slack entrypoint |
 | Email IMAP password | referenced as `${VAR}` | `imap_password` | Email entrypoint |
 
-The surfaces wire in two ways. Some are read directly by Agent Mesh as an environment fallback when the YAML value is absent: the broker password, the per-provider LLM key, the S3, GCS, and Azure storage credentials, the database URL, and the session key. The rest are substitution-only: the YAML field references a variable through `${VAR}` and the loader expands it before parsing, so the environment-variable name is yours to choose. The names in the table are the ones the shipped configurations reference.
+The surfaces wire in two ways. Some are read directly by Agent Mesh as an environment fallback when the YAML value is absent: the event broker password, the per-provider LLM key, the S3, GCS, and Azure storage credentials, the database URL, and the session key. The rest are substitution-only: the YAML field references a variable through `${VAR}` and the loader expands it before parsing, so the environment-variable name is yours to choose. The names in the table are the ones the shipped configurations reference.
 
 The Slack and email tokens live in the `values:` map of the Slack and email entrypoint definitions, not in a separate block. The email entrypoint is gated behind the `SAM_FEATURE_EMAIL_GATEWAY` feature flag, and `imap_password` is its basic-authentication mode (an OAuth2 alternative exists).
 
@@ -145,7 +146,7 @@ For file-mounted secrets the kubelet propagates new contents to the volume witho
 
 ### Per-Surface Notes
 
-- **Broker password** — Rotate at the broker, then restart the components or let them reconnect. New connections authenticate with the new credential.
+- **Event broker password** — Rotate at the event broker, then restart the components or let them reconnect. New connections authenticate with the new credential.
 - **LLM provider key** — Issue a new key, deploy it, then revoke the old one at the provider. Most providers keep both keys live during an overlap window.
 - **Object-storage credentials** — Prefer IAM roles through the cloud provider's default credential chain (`AWS_ROLE_ARN`, GCP workload identity, Azure managed identity). Those rotate transparently and need no application-side change.
 - **Database password** — A rolling restart of the entrypoint and the agents that hold persistent sessions is enough; the new connection pool uses the new credential.

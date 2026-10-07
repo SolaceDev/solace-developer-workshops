@@ -1,21 +1,22 @@
 ---
+published: true
 title: CLI Reference
-description: Every sam command and flag, covering authentication, declarative configuration, tasks, evaluations, tools and skills, and local run orchestration.
+description: Every sam command and flag, covering authentication, declarative configuration, tasks, evaluations, tools and skills, and AI-assistant guidance.
 sidebar_position: 1010
 ---
 
 # CLI Reference
 
-The Solace Agent Mesh CLI (`sam`) is the single binary you use to manage an Agent Mesh deployment: authenticate to the platform service, apply declarative configuration, send tasks to running agents, run evaluations, scaffold and package tools and skills, inspect running components, and check your setup before you start.
+The Solace Agent Mesh CLI (`sam`) is the single binary you use to manage an Agent Mesh deployment: authenticate to the platform service, apply declarative configuration, send tasks to running agents, run evaluations, scaffold tools and skills, package them for upload, inspect running components, and check your setup before you start.
 
-Run `sam --help` for the current top-level command list, or `sam <command> --help` for a subcommand's flags. This page enumerates every command and its flags as a complete reference; the CLI's own help output is the source of truth for the version you run.
+Run `sam --help` for the current top-level command list, or `sam <command> --help` for a subcommand's flags. To get every command and flag as JSON for scripts and AI coding assistants, run [`sam commands`](#sam-commands). This page enumerates every command and its flags as a complete reference; the CLI's own help output is the source of truth for the version you run.
 
 ## Conventions
 
 - Angle brackets (`<NAME>`) denote a required positional argument; square brackets (`[FLAGS]`) denote optional arguments.
 - Where a flag has both a short and a long form (`-a` / `--agent`), the table lists them together.
 - The default column shows the literal default. Where a default reads from an environment variable, the variable name is shown.
-- "Target" throughout means a `sam auth login` cache entry for a platform service URL. Resolution order is documented under [`sam api`](#sam-api).
+- "Target" throughout means a `sam auth login` cache entry for a platform service URL, with one reserved exception: the name `desktop` requires no login and always resolves to whatever address the running desktop app actually published (not necessarily its default port). Resolution order is documented under [`sam api`](#sam-api).
 
 ## Global Flags
 
@@ -41,7 +42,7 @@ sam task send <MESSAGE> [FLAGS]
 | Flag | Short | Default | Description |
 | --- | --- | --- | --- |
 | `--url <URL>` | `-u` | — | Base URL of the entrypoint. Highest priority in target resolution. |
-| `--target <NAME>` | — | — | Use this `sam auth login` cache entry. |
+| `--target <NAME>` | — | — | Use this `sam auth login` cache entry, or the reserved name `desktop` to reach a running desktop app with no login. |
 | `--manifest <FILE>` | `-m` | — | Read the target URL from this manifest. |
 | `--insecure` | — | `false` | Skip TLS verification; also required to send a bearer token over plain `http://`. |
 | `--agent <NAME>` | `-a` | `orchestrator` | Target agent name. |
@@ -50,7 +51,7 @@ sam task send <MESSAGE> [FLAGS]
 | `--timeout <DURATION>` | — | `2m` | Timeout for the streaming connection (for example, `2m`, `90s`). |
 | `--output-dir <PATH>` | `-o` | — | Write returned artifacts and logs to this directory. |
 | `--quiet` | `-q` | `false` | Print only the final response, with no streaming chunks. |
-| `--no-stim` | — | `false` | Do not fetch the STIM (status, info, and metric) event log on completion. |
+| `--no-stim` | — | `false` | Do not fetch the STIM (status, information, and metric) event log on completion. |
 | `--debug` | — | `false` | Enable verbose debug output. |
 | `--data <STRING>` | `-d` | — | Send a JSON DataPart payload alongside the message. Inline JSON, or `@path/to/file.json` to load from disk. |
 | `--si-input-schema <PATH>` | — | — | Structured-input schema (JSON Schema) for input validation. |
@@ -96,10 +97,10 @@ sam api [METHOD] <PATH> [FLAGS]
 | `--raw` | — | `false` | Skip JSON parsing; write the response body to stdout verbatim. |
 | `--include` | `-i` | `false` | Print the response status line and headers before the body. |
 | `--paginate` | — | `false` | Follow `meta.pagination.nextPage` until exhausted, merging the `data` arrays. |
-| `--target <NAME>` | — | — | Use this `sam auth login` cache entry. |
+| `--target <NAME>` | — | — | Use this `sam auth login` cache entry, or the reserved name `desktop` to reach a running desktop app with no login (pair with `--insecure`; the desktop app's admin API is plain `http://`). |
 | `--url <URL>` | — | — | Platform URL (or bare hostname). Overrides `--target` / `--manifest`. |
 | `--manifest <FILE>` | `-m` | — | Read the target URL from this manifest. |
-| `--insecure` | — | `false` | Skip TLS verification; also required to send a bearer token over plain `http://`. |
+| `--insecure` | — | `false` | Skip TLS verification. Also required to send a bearer token over plain `http://`, or to reach any plain-`http://` URL at all; `sam api` refuses one otherwise. |
 | `--verbose` | `-v` | `false` | Print the method, resolved URL, redacted headers, and timings to stderr. |
 
 **Target resolution (highest to lowest):** `--url` (or a bare hostname) → `--target` → `--manifest` → `SAM_WEBUI_URL` → the single cached login. Unlike `sam task send`, `sam api` has no `localhost:8800` fallback; an unresolved target is an error. Token precedence matches `sam task send`.
@@ -107,12 +108,12 @@ sam api [METHOD] <PATH> [FLAGS]
 **Examples:**
 
 ```bash
-sam api /api/v1/agents
-sam api /api/v1/agents --jq '.data[].name'
-sam api /api/v1/agents --paginate --jq '.data[].id'
+sam api /api/v1/platform/agents
+sam api /api/v1/platform/agents --jq '.data[].name'
+sam api /api/v1/platform/agents --paginate --jq '.data[].id'
 sam api -X POST /api/v1/projects --field name=demo --field description="ad-hoc test"
-sam api -X PATCH /api/v1/agents/$ID --field 'tags[]=oncall' --field 'tags[]=beta'
-sam api /api/v1/agents/$ID --input agent.json -X PUT
+sam api -X POST /api/v1/platform/agents --field name=demo --field description="A demo weather agent" --field systemPrompt="You are a demo weather agent. Answer basic questions about current conditions and forecasts for a given city or region." --field 'toolsets[]=web_tools' --field 'toolsets[]=builtin_artifact_tools'
+sam api /api/v1/platform/agents/$ID --input agent.json -X PUT
 sam api --target dev /api/v1/user
 ```
 
@@ -162,11 +163,11 @@ sam config <subcommand> [FLAGS]
 | `sam config refresh` | Force a fresh download of remote sources by wiping the local source cache. |
 | `sam config cache` | Inspect and prune the local toolset build cache. |
 
-All `sam config` commands auto-load a `.env` file from the nearest ancestor directory before resolving `${VAR}` references. Two global options apply to every subcommand: `--env-file <FILE>` (load an additional env file, repeatable; loaded after the auto-detected `.env` so its values override) and `--no-dotenv` (skip auto-loading the nearest `.env`).
+All `sam config` commands auto-load a `.env` file from the nearest ancestor directory before resolving `${VAR}` references. A variable already set in the environment keeps its value. Two global options apply to every subcommand: `--env-file <FILE>` (load an additional env file, repeatable; its values override both the environment and the auto-detected `.env`) and `--no-dotenv` (skip auto-loading the nearest `.env`).
 
 ### `sam config apply`
 
-Apply a manifest's resources to a running platform service. It computes the same diff `sam config plan` produces, then executes the creates, updates, and (with `--prune`) deletes through the platform service's REST API. A failed operation does not abort the rest of the apply; the command exits non-zero if any operation failed.
+Apply a manifest's resources to a running platform service. It computes the same diff `sam config plan` produces, then executes the creates, updates, and (with `--prune`) deletes through the platform service's REST API. A failed operation does not abort the rest of the apply; the command exits `1` if any operation failed. With `--dry-run`, it exits the way `sam config plan` does.
 
 ```text
 sam config apply [FLAGS]
@@ -176,22 +177,24 @@ sam config apply [FLAGS]
 | --- | --- | --- | --- |
 | `--manifest <FILE>` | `-m` | `./manifest.yaml` | Path to the manifest YAML to apply. |
 | `--url <URL>` | — | — | Platform URL to apply to; overrides the manifest's `target.url`. |
-| `--target <NAME>` | — | — | Named `sam auth login` target whose URL to apply to (alternative to `--url`). |
+| `--target <NAME>` | — | — | Named `sam auth login` target whose URL to apply to (alternative to `--url`), or the reserved name `desktop` to apply to a running desktop app with no login. |
 | `--prune` | — | `false` | Delete resources that exist on the platform service but aren't in the manifest. |
 | `--dry-run` | — | `false` | Compute the plan but do not mutate the platform service (equivalent to `sam config plan`). |
 | `--no-deploy` | — | `false` | Run configuration sync but skip the deployment phase, reconciling configuration without redeploying running services. |
 | `--force` | — | `false` | Skip the `--prune` confirmation prompt; required when `--prune` runs non-interactively (for example, in CI). |
 | `--no-build` | — | `false` | Skip toolset build steps. Cache misses are a hard error on `apply`; pair with `plan` first to populate the cache. |
 | `--no-cache` | — | `false` | Bypass the source cache; force a fresh clone for every git source. |
-| `--no-interactive` | — | `false` | Do not prompt for OAuth login when the token cache is empty (useful in CI). |
+| `--no-interactive` | — | `false` | Never prompt: fail instead of offering OAuth login, and require `--force` for `--prune` unless `--dry-run` is set. This flag is implied when `CI` is set to a value other than `0` or `false`, or when standard input or standard error is not a terminal. |
 | `--allow-floating-refs` | — | `false` | Permit manifest sources without a pinned ref (branch, short SHA, or HEAD). Resolution becomes non-reproducible; a warning prints per floating ref. |
 | `--skip-version-check` | — | `false` | Skip the CLI-to-platform version compatibility preflight (also settable with `SAM_SKIP_VERSION_CHECK=1`). |
-| `--no-color` | — | `false` | Disable ANSI color in plan output. |
+| `--detailed-exit-code` | — | `false` | Exit `0` when nothing is pending, `1` on error, and `2` when the plan succeeds with changes pending. On `apply`, valid only with `--dry-run`. |
+| `--no-color` | — | `false` | Disable ANSI color in plan output. Setting the `NO_COLOR` environment variable has the same effect. |
+| `--format <FORMAT>` | — | `text` | Output format: `text` or `json`. |
 | `--verbose` | `-v` | `false` | Show per-field diffs for updated resources. Auth secrets render as `(changed)`. |
 
 ### `sam config plan`
 
-Preview the changes a manifest would apply, without mutating state. It loads the manifest, resolves declared resources, fetches the platform service's current state, and prints a per-resource diff plus summary counts. It accepts the same flags as `sam config apply` except the apply-only options (`--prune`, `--dry-run`, `--no-deploy`, and `--force`).
+Preview the changes a manifest would apply, without mutating state. It loads the manifest, resolves declared resources, fetches the platform service's current state, and prints a per-resource diff plus summary counts. It accepts the same flags as `sam config apply` except the apply-only options (`--dry-run`, `--no-deploy`, and `--force`). With `--prune`, it computes the plan that `apply --prune` would run: deletes count as pending changes, but the command deletes nothing. It exits `0` on success and `1` on error. With `--detailed-exit-code`, it exits `2` when the plan succeeds with changes pending. For the JSON output and what counts as pending, see [Exit Codes and JSON Output](../building/declarative-config/planning-and-applying.md#exit-codes-and-json-output).
 
 ### `sam config pull`
 
@@ -205,8 +208,8 @@ sam config pull -o <DIR> [FLAGS]
 | --- | --- | --- | --- |
 | `--output <DIR>` | `-o` | (required) | Directory to write the pulled YAML repository into. |
 | `--url <URL>` | — | — | Platform URL to pull from. |
-| `--target <NAME>` | — | — | Named `sam auth login` target to pull from (alternative to `--url`). |
-| `--only <KIND>` | — | — | Restrict the pull to one kind: `model`, `connector`, `toolset`, `skill`, `agent`, `entrypoint`, `workflow`, `dataset`, `evaluator`, `experiment`, `rbacRole`, or `rbacClaimMapping`. |
+| `--target <NAME>` | — | — | Named `sam auth login` target to pull from (alternative to `--url`), or the reserved name `desktop` to pull from a running desktop app with no login. |
+| `--only <KIND>` | — | — | Restrict the pull to one kind: `model`, `connector`, `toolset`, `skill`, `agent`, `entrypoint`, `workflow`, `dataset`, `evaluator`, `experiment`, `rbacRole`, `rbacGrant`, `rbacClaimMapping`, or `systemUser`. |
 | `--name <NAME>` | — | — | Restrict the pull to a single resource by name. |
 | `--force` | — | `false` | Wipe the contents of `--output` before writing. |
 | `--merge` | — | `false` | Keep files for resources not on the platform service; rewrite only files for pulled resources. |
@@ -311,6 +314,67 @@ Trigger one or more platform-managed experiments and poll to completion. `sam ev
 | `--insecure` | — | `false` | Skip TLS verification; also required to send a bearer token over plain `http://`. |
 | `--format <FORMAT>` | — | `text` | Output format: `text` or `json`. |
 
+## `sam analytics`
+
+:::warning
+This feature is in the Experimental stage and under active development. Configuration schemas and behavior are subject to change. We recommend that you do not use this feature in production environments.
+:::
+
+Manage whether this installation shares anonymous product analytics. On a build that has product analytics compiled in, Agent Mesh collects product analytics unless you turn collection off. The decision applies to the whole installation rather than to an individual user, and turning collection off discards the anonymous identifier, so nothing shared after you turn collection back on can be linked to anything shared before you turned it off.
+
+Collection depends on the build as well as the decision. The build you run must have the `product_analytics` feature flag enabled, and collection must not be turned off.
+
+The value of that flag is fixed when Agent Mesh is built, and your configuration cannot change it. A build that includes the collection code enables the flag by default, and you can disable it by setting `SAM_FEATURE_PRODUCT_ANALYTICS=false`. A build without that code has the flag permanently disabled, and `SAM_FEATURE_PRODUCT_ANALYTICS` has no effect on it. For more information about feature flags, see [Environment Variables](./env-vars.md).
+
+You can record your decision in both cases, so running `sam analytics enable` on a build with the flag disabled stores your decision and collects nothing. Each command reports both conditions, so you can see whether your decision results in any collection on the build you run. The Agent Mesh UI exposes the same decision under **Privacy** in the **Settings** dialog, but that section appears only when the flag is enabled, so these commands are the only way to record a decision on a build that has the flag disabled.
+
+On a build with the flag enabled and no decision stored, the first `sam` command you run prints a one-time notice on stderr stating that collection is on and explaining how to turn it off. It prints the notice as the command exits, once per installation, and never blocks the command.
+
+Set `DO_NOT_TRACK` to any value other than `0` or `false` to stop a `sam` command from sharing or recording product analytics and from printing the notice. Setting `DO_NOT_TRACK` does not change the recorded decision.
+
+```text
+sam analytics <subcommand> [FLAGS]
+```
+
+| Subcommand | Description |
+| --- | --- |
+| `sam analytics status` | Show the recorded decision without changing it. |
+| `sam analytics enable` | Turn collection on. Agent Mesh issues an anonymous identifier if this installation does not already have one, and sends no account, name, or address. |
+| `sam analytics disable` | Turn collection off and discard the anonymous identifier. |
+
+Every subcommand prints the decision and whether anything is shared. When you name a store with `--database-url` or `SAM_ANALYTICS_DATABASE_URL`, each subcommand also prints the store it read or wrote. The text output otherwise omits it, because a local installation resolves to a single database.
+
+Use `sam analytics status` to read the decision. It records nothing and does not change the anonymous identifier. If no decision has been recorded yet, it reports `Not recorded`. On a build with the flag enabled, the **Privacy** section of the **Settings** dialog shows the same decision in the Agent Mesh UI.
+
+Both `enable` and `disable` are safe to rerun. Running `sam analytics enable` on an installation where collection is already on keeps the existing identifier, so a repeated command does not split one installation's history. Turning collection off and then on again issues a new identifier, so nothing you share after you turn it back on can be linked to what you shared before you turned it off.
+
+**Flags (all subcommands):**
+
+| Flag | Short | Default | Description |
+| --- | --- | --- | --- |
+| `--format <FORMAT>` | — | `text` | Output format: `text` or `json`. |
+| `--database-url <URL>` | — | this installation's database | Set the consent store the command reads the decision from or records it in, matching the `session_service.database_url` of your Entrypoint. |
+
+In JSON output, `consent` is the decision (`granted`, `denied`, or `unset`), and `store` is the database the command used, with any password masked. Unlike the text output, JSON always includes `store`, whether or not you named one. `featureEnabled` reports the feature flag, and `collecting` is `true` when the flag is on and collection is not turned off. If the command cannot reach the store, it fails instead of printing a decision, so any decision it does print is the one the store holds.
+
+Every subcommand creates the tables it needs if those tables are absent, so the account behind the store needs permission to create tables the first time a subcommand runs against that database.
+
+Because a data source name (DSN) can carry a password, set `SAM_ANALYTICS_DATABASE_URL` instead of passing `--database-url` when the URL includes one. The flag wins when both are set. With neither, the store is this installation's database: a `.sam/settings.yaml` in the working directory or the Agent Mesh home directory determines which installation that is, and `SAM_DATA_DIR` applies only when no settings file is found. This resolution order mirrors how a running deployment resolves the same path.
+
+:::warning
+Agent Mesh stores the decision in the installation's database, which for a local installation is the same database the Agent Mesh UI writes to. An Entrypoint configured with its own `session_service.database_url` keeps its decision in that database instead, so point `--database-url` at it to manage the decision that Entrypoint reads. Otherwise you record a decision the running deployment never reads. A command you point at a specific database names it in the output, so you can confirm the decision landed where you intended.
+:::
+
+**Examples:**
+
+```bash
+sam analytics status
+sam analytics enable
+sam analytics disable
+sam analytics status --format json
+sam analytics status --database-url postgres://sam@db.example.com:5432/sam
+```
+
 ## `sam toolset`
 
 Scaffold and maintain toolset directories in a declarative-config repo. The tool SDK is embedded in the CLI binary, so `init` and `sync` need no network access; `package` and `build-target` consult the platform service only when you pass `--url` (or `--target`).
@@ -331,7 +395,7 @@ sam toolset <subcommand> [FLAGS]
 
 ## `sam skill`
 
-Scaffold and package deployable skill bundles (a `SKILL.md` plus optional `references/` and bundled `tools/`). These mirror `sam toolset`, so a skill author never needs the toolset commands. To install or check the CLI's generated AI-assistant guidance instead, see [`sam ai-assistance`](#sam-ai-assistance).
+Scaffold and package deployable skill bundles (a `SKILL.md` plus optional `references/` and bundled `tools/`). These mirror `sam toolset`, so a skill author never needs the toolset commands. To install or check the authoring skills that the CLI generates for AI coding assistants instead, see [`sam ai-assistance`](#sam-ai-assistance).
 
 ```text
 sam skill <subcommand> [FLAGS]
@@ -341,7 +405,7 @@ sam skill <subcommand> [FLAGS]
 | --- | --- |
 | `sam skill init <NAME> [PATH]` | Scaffold a new `skills/<name>/` bundle (a `SKILL.md` and `references/`). `--with-tool` adds a sample bundled tool under `tools/<name>/`; `--lang` (`go` default, or `python`) selects its language and implies `--with-tool`. `--force` overwrites an existing directory. |
 | `sam skill validate <NAME> [PATH]` | Parse `SKILL.md`, build any bundled tools for your host, and run the Secure Tool Runtime's `--schema` discovery, reporting the agent-facing `<skill>__<tool>` name each yields—before you package. |
-| `sam skill package <NAME> [PATH]` | Build a skill bundle (compiling bundled Go tools, building native wheels for bundled Python tools) and zip it for upload through the Agent Mesh UI. |
+| `sam skill package <NAME> [PATH]` | Build a skill bundle (compiling bundled Go tools, building platform-specific wheels for bundled Python tools) and zip it for upload through the Agent Mesh UI. |
 | `sam skill sync [PATH]` | Re-vendor the embedded Go SDK into a skill's bundled Go tools after a CLI upgrade. `--name` limits it to one skill. |
 | `sam skill build-target` | Print the OS and CPU architecture the deployed Secure Tool Runtime expects bundled skill-tool binaries to use. Identical to `sam toolset build-target`. |
 
@@ -349,7 +413,11 @@ sam skill <subcommand> [FLAGS]
 
 ## `sam ai-assistance`
 
-Manage the AI-coding-assistant guidance the CLI generates for itself—the developer-assistant skill suite (concierge skills, `sam-docs`, and the `sam-declarative-config` authoring skill) generated from the CLI's own configuration schemas. This is distinct from `sam skill`, which packages deployable skill bundles.
+:::warning
+This command group is in the Early Access stage and under active development. Its commands, flags, and output are subject to change.
+:::
+
+Manage the authoring skills that the CLI generates for AI coding assistants, including `sam-docs`, which carries the product documentation, and `sam-declarative-config`, which the CLI generates from its own configuration schemas. The `sam ai-assistance` command is distinct from `sam skill`, which packages skills for deployment to the platform. To install and use the authoring skills, see [Building with an AI Coding Assistant (Early Access)](../building/ai-coding-assistant.md).
 
 ```text
 sam ai-assistance skill <subcommand> [FLAGS]
@@ -357,8 +425,10 @@ sam ai-assistance skill <subcommand> [FLAGS]
 
 | Subcommand | Flags | Description |
 | --- | --- | --- |
-| `sam ai-assistance skill install` | `--to <DIR>` (default `.claude/skills/`), `--force` | Write the developer-assistant skill suite to disk. Refuses to overwrite existing skills unless `--force` is set. |
-| `sam ai-assistance skill check` | `--path <DIR>` (default `.claude/skills/`) | Verify the installed suite matches this CLI version. Exits `0` on a clean match, non-zero otherwise. |
+| `sam ai-assistance skill install` | `--target <TARGET>` (default `agents`), `--scope <SCOPE>` (default `project`), `--to <DIR>`, `--force` | Write the authoring skills. `--target agents` writes to `.agents/skills/` and `--target claude` to `.claude/skills/`. `--scope project` writes under the current directory and `--scope user` under your home directory. `--to` writes to an explicit directory. The command does not overwrite existing skills unless you pass `--force`. |
+| `sam ai-assistance skill check` | `--path <DIR>` | Verify that each installed copy of the authoring skills is complete and matches this CLI version. Without `--path`, the command checks `.agents/skills/` and `.claude/skills/` under the current directory and under your home directory. Exits `0` on a clean match, non-zero otherwise. |
+
+You cannot combine `--to` with `--target` or `--scope`.
 
 ## `sam doctor`
 
@@ -372,6 +442,18 @@ sam doctor [FLAGS]
 | --- | --- | --- | --- |
 | `--verbose` | `-v` | `false` | Enable debug logging. |
 | `--no-fail-on-error` | — | `false` | Always exit `0`, even when checks fail. |
+
+## `sam commands`
+
+Print every command and flag of the installed `sam` binary, including flag types and defaults, as one JSON document. The output lists the same commands and flags as `--help`, so scripts and AI coding assistants can read it instead of parsing help text. For the fields that each declarative-config kind accepts, use [`sam config schema`](#sam-config-schema) instead.
+
+```text
+sam commands [FLAGS]
+```
+
+| Flag | Short | Default | Description |
+| --- | --- | --- | --- |
+| `--output <FILE>` | — | stdout | File to write the JSON document to. A value of `-` also writes to stdout. |
 
 ## `sam docs`
 

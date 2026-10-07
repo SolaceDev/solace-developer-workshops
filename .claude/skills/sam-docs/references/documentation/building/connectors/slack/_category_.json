@@ -1,0 +1,8 @@
+{
+  "label": "Slack Connectors",
+  "position": 30,
+  "link": {
+    "type": "doc",
+    "id": "documentation/building/connectors/slack/index"
+  }
+}

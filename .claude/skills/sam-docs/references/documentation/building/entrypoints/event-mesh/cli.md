@@ -1,4 +1,5 @@
 ---
+published: true
 title: Event Mesh Entrypoints with the CLI
 description: Define an Event Mesh entrypoint as declarative-config YAML and apply it into Agent Mesh with sam config.
 sidebar_position: 2
@@ -14,9 +15,9 @@ The example on this page is the same `Order Processing Entrypoint` that the Agen
 
 You need a running Agent Mesh instance to apply config to. For how to install or deploy one, see [Install and Deploy](../../../installing/index.md).
 
-You also need broker access: a reachable Solace broker, ACL permissions to subscribe to every topic listed in your rules, and network connectivity from Agent Mesh to the broker if you use a broker other than the system broker. For details, see the [Prerequisites](./index.md#prerequisites) section of the Agent Mesh UI page.
+You also need event broker access: a reachable Solace event broker, ACL permissions to subscribe to every topic listed in your rules, and network connectivity from Agent Mesh to the event broker if you use an event broker other than the system event broker. For details, see the [Prerequisites](./index.md#prerequisites) section of the Agent Mesh UI page.
 
-The entrypoint references an agent or a workflow by name. The following example routes to an `order-processor` agent; substitute the name of an agent or workflow already deployed in your mesh.
+The entrypoint references an agent or a workflow by name. The following example routes to an `order-processor` agent; substitute the name of an agent already deployed in your mesh. To route to a workflow instead, replace `targetAgent` and `promptTemplate` with `targetWorkflowName` and `inputExpression`.
 
 ## Write the Entrypoint
 
@@ -75,10 +76,10 @@ The top-level `name` and `description` identify the entrypoint; `description` is
 
 | Field | Description |
 |---|---|
-| `broker_url` | Broker URI with scheme and port, for example `tcps://broker.example.com:55443`. Leave empty in desktop mode to fall back to the local development broker (development and trial use only). |
+| `broker_url` | Event broker URI with scheme and port, for example `tcps://broker.example.com:55443`. Leave empty in desktop mode to fall back to the local development event broker (development and trial use only). |
 | `broker_vpn`, `broker_username` | Message VPN and client username. |
-| `broker_password` | Broker client password. Reference through the environment; leave the placeholder to keep the existing value on apply. |
-| `tls_skip_verify` | `"false"` (the default) validates the broker's TLS certificate. `"true"` disables validation and suits development only. |
+| `broker_password` | Event broker client password. Reference through the environment; leave the placeholder to keep the existing value on apply. |
+| `tls_skip_verify` | `"false"` (the default) validates the event broker's TLS certificate. `"true"` disables validation and suits development only. |
 | `event_rules` | The list of rules. At least one rule is required. |
 
 Each entry under `event_rules` has the following shape:
@@ -89,13 +90,14 @@ Each entry under `event_rules` has the following shape:
 | `subscriptions` | List of topic objects (`- topic: "commerce/orders/>"`). `*` matches one level; `>` matches one or more levels. At least one is required. |
 | `messageFormat` | Inbound payload encoding. One of `json`, `text`, `xml`, `raw_bytes`, `protobuf`, or `structured`. Defaults to `json`. |
 | `targetAgent` or `targetWorkflowName` | Set exactly one. Names the agent or workflow that handles matching messages. |
-| `promptTemplate` | Template rendered against the inbound message. Required when a target is set, unless the target is a workflow that uses `inputExpression`. `{payload}` expands to the full payload, `{topic}` expands to the inbound topic, and `{payload.path.to.field}` extracts a field from a JSON payload. Same syntax as the Agent Mesh UI form. |
+| `promptTemplate` | Template rendered against the inbound message. Required for agent targets. Not used by workflow targets, which take `inputExpression` instead. `{payload}` expands to the full payload, `{topic}` expands to the inbound topic, and `{payload.path.to.field}` extracts a field from a JSON payload. Same syntax as the Agent Mesh UI form. |
+| `inputExpression` | Workflow targets only. An expression that builds the workflow input. `"input.payload:"` delivers the whole payload as the workflow's text input (`workflow.input.text`), serializing a JSON payload as JSON text. Set it on every workflow target. Without it, the workflow receives empty input. |
 | `defaultUserIdentity`, `userIdentityExpression` | Attribute the dispatched task to a static identity or an expression that resolves to one per message. |
 | `acknowledgmentPolicy` | Object with `mode` (`on_receive` or `on_completion`), `timeoutSeconds` (defaults to 300), and `onFailure` (Action, Nack outcome). |
-| `successOutput`, `errorOutput` | Object with `enabled`, `topic`, `topicType` (`static` or `dynamic`), `responseType` (`text`, `full`, `structured`, `error`, or `custom`), and `customExpression` when `responseType` is `custom`. |
+| `successOutput`, `errorOutput` | Object with `enabled`, `topic`, `topicType` (`static` or `dynamic`), `responseType` (`text`, `full`, `structured`, `error`, or `custom`), and `customExpression` when `responseType` is `custom`. The entrypoint does not populate structured output, so `structured` publishes `null`. To publish a workflow result, set `responseType: custom` and `customExpression: "input.payload:data[0]"`. For how a failed workflow run appears on `successOutput` when `errorOutput` is disabled, see [Outputs](./index.md#outputs). |
 | `forwardContext`, `structuredInvocation`, `artifactProcessing` | Advanced shape extensions; see [Optional Shape Extensions](./index.md#optional-shape-extensions) for the behavior. |
 
-Reference the broker password through the environment so the YAML is safe to commit. Provide the real value when you run `sam config apply`.
+Reference the event broker password through the environment so the YAML is safe to commit. Provide the real value when you run `sam config apply`.
 
 To discover every field the `event_mesh` entrypoint type accepts, run `sam config schema show entrypoint --type event_mesh`. To print a templated starting file, run `sam config schema example entrypoint --type event_mesh`.
 

@@ -1,4 +1,5 @@
 ---
+published: true
 title: Choosing Your Installation Path
 description: Match what you want to do to the right installation path and entry point in the documentation.
 sidebar_position: 120

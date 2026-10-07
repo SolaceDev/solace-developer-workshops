@@ -1,4 +1,5 @@
 ---
+published: true
 title: SQL Connectors via the CLI
 description: Configure a SQL connector as declarative YAML and apply it with the Agent Mesh CLI, so agents can query PostgreSQL, MySQL, MariaDB, Microsoft SQL Server, or Oracle through natural language.
 sidebar_position: 2
@@ -6,7 +7,7 @@ sidebar_position: 2
 
 # SQL Connectors via the CLI
 
-A SQL connector lets agents query a database through natural language: the connector converts a user's question into SQL, runs it, and returns the result in conversational form. You define the connector as a declarative config resource and apply it with the Agent Mesh CLI, instead of using the Agent Mesh UI. To configure the same connector in the UI, and to read about the supported database types and the database-permission grants you should configure first, see [SQL Connectors](./index.md).
+A SQL connector lets agents query a database through natural language: the connector converts a user's question into SQL, runs it, and returns the result in conversational form. You define the connector as a declarative config resource and apply it with the Agent Mesh CLI, instead of using the Agent Mesh UI. To configure the same connector in the UI, and to read about the supported database types and the database-permission grants to configure first, see [SQL Connectors](./index.md).
 
 The following sections describe the YAML shape and the `sam config` command workflow.
 

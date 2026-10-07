@@ -1,4 +1,5 @@
 ---
+published: true
 title: Secure User-Delegated Tool Access
 description: Let each user act on remote systems through their own OAuth credentials — enabling per-user OAuth for remote MCP tools, the Trust Manager, and per-user credential storage.
 sidebar_position: 825
@@ -103,7 +104,8 @@ The `auth` block accepts these keys:
 | `scheme.refresh_url` | No | Refresh endpoint. Defaults to `token_url`. |
 | `scheme.scopes` | No | Scopes to request. |
 | `scheme.token_endpoint_auth_method` | No | `client_secret_post`, `client_secret_basic`, or `none`. |
-| `scheme.audience` | No | Resource indicator (RFC 8707). |
+| `scheme.audience` | No | Non-standard audience parameter that some identity providers (for example, Auth0 or Okta) require to issue a token the resource server accepts. |
+| `scheme.resource` | No | RFC 8707 resource indicator, sent on the authorization, token, and refresh requests so the identity provider binds a matching `aud` claim. The runtime discovers this value from the MCP server's RFC 9728 protected-resource metadata; set it only to override the discovered value. |
 | `scheme.disable_pkce` | No | Defaults to `false`. Leave Proof Key for Code Exchange (PKCE) on for MCP servers. |
 | `credential.client_id` | Explicit mode | OAuth client ID. |
 | `credential.client_secret` | No | OAuth client secret. |
@@ -130,7 +132,7 @@ trust_manager:
 
 Set the `TRUST_MANAGER_ENABLED` environment variable to `true` so the interpolated `enabled` value resolves on every component — the Entrypoint and every agent. With the Trust Manager enabled, agents reject any task whose signature does not verify against a known trust card.
 
-Trust cards are exchanged over a dedicated broker topic, and the broker's access control lists (ACLs) are load-bearing: a component's identity on the trust topic must match its broker client username, which is what stops a compromised peer from publishing a forged card. Provision those ACLs when you deploy — see [JWT Signing and Trust](../concepts/a2a-protocol.md#jwt-signing-and-trust) for the trust chain and topic conventions. This page does not restate them.
+Trust cards are exchanged over a dedicated event broker topic, and the event broker's access control lists (ACLs) are load-bearing: a component's identity on the trust topic must match its event broker client username, which is what stops a compromised peer from publishing a forged card. Provision those ACLs when you deploy — see [JWT Signing and Trust](../concepts/a2a-protocol.md#jwt-signing-and-trust) for the trust chain and topic conventions. This page does not restate them.
 
 ## Per-User Credential Storage and Time-to-Live
 
@@ -149,6 +151,8 @@ With `type: memory`, credentials live only in the process and are lost on restar
 
 Each stored credential carries a time-to-live (TTL) of **30 days**, after which the agent treats it as absent and prompts the user to authorize again. The lifetime is fixed by the runtime and is not configured through an environment variable. When a user's access is revoked or a re-authorization replaces an existing credential, the old value is marked expired and no longer used.
 
+A credential is refreshed when it is next used, not on a background schedule. A credential that Agent Mesh holds can therefore still fail on first use, because the remote system rejects it before anything has cause to renew it. Plan for that on unattended work in particular: a stored credential being present is not the same as the remote system still honoring it.
+
 ## The OAuth Callback and Redirect
 
 The remote system returns the user to a fixed path on the Entrypoint: `/api/v1/auth/tool/callback`. This endpoint is intentionally unauthenticated — the browser arrives carrying only the authorization code and an opaque state value. The Entrypoint consumes the matching pending state and relays the code to the owning agent, which verifies the state before exchanging the code. Because the callback resolves its pending state against the shared gateway store, a login started against one Entrypoint replica can complete on another.
@@ -157,9 +161,13 @@ The full redirect URL is resolved in this order:
 
 1. `OAUTH_TOOL_REDIRECT_URI`, if set — used verbatim.
 2. Otherwise `FRONTEND_REDIRECT_URI` with `/api/v1/auth/tool/callback` appended.
-3. Otherwise a development default of `http://localhost:8800/api/v1/auth/tool/callback`.
+3. Otherwise a development default of `http://127.0.0.1:8800/api/v1/auth/tool/callback`.
 
-In production, set one of the first two to your externally reachable HTTPS host. Real identity providers reject the localhost default. Whatever value resolves must exactly match a redirect URI registered on the OAuth client.
+The development default uses the loopback IP `127.0.0.1` rather than `localhost` intentionally. Browsers can silently upgrade `http://localhost` to `https://` through HTTP Strict Transport Security (HSTS) or an HTTPS-only mode, which breaks the plain-HTTP callback. A loopback IP is never upgraded.
+
+In production, set one of the first two to your externally reachable HTTPS host. Real identity providers reject the loopback default. Whatever value resolves must exactly match a redirect URI registered on the OAuth client.
+
+If you previously registered `http://localhost:8800/api/v1/auth/tool/callback` on a manually configured OAuth client, re-register it as `http://127.0.0.1:8800/api/v1/auth/tool/callback` to match the new default, or set `OAUTH_TOOL_REDIRECT_URI` to the value you registered. Clients created through Dynamic Client Registration re-register automatically and need no change.
 
 ## Environment Variable Reference
 

@@ -1,4 +1,5 @@
 ---
+published: true
 title: Administering Agent Mesh
 description: Day-two operations for a running Agent Mesh — the production-readiness gate, security and access, observability, backups, upgrades, and scenario-based troubleshooting.
 sidebar_position: 0
@@ -31,9 +32,9 @@ Before you move your Solace Agent Mesh into production, we recommend that you re
 
 - [Managing Backups and Data Retention](./backups-and-data-retention.md)—What to back up, how log rotation and the data-retention sweep work, and what is delegated to the underlying storage.
 
-## The Broker Layer
+## The Event Broker Layer
 
-- [The Event Mesh Communication Layer](./event-driven-mesh.md)—The broker layer Agent Mesh runs on: the runtime connection block, the namespace tenant fence, and the durable queues that appear on the broker.
+- [The Event Mesh Communication Layer](./event-driven-mesh.md)—The event broker layer Agent Mesh runs on: the runtime connection block, the namespace tenant fence, and the durable queues that appear on the event broker.
 
 ## Runbooks and Troubleshooting
 

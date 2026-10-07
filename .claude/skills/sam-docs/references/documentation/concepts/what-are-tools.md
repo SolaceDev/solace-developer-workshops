@@ -1,4 +1,5 @@
 ---
+published: true
 title: What Are Tools?
 description: "An introduction to tools in Agent Mesh: what they are, the types available, and how agents use them to interact with external systems."
 sidebar_position: 550

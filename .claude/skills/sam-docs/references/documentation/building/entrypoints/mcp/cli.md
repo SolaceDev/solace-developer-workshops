@@ -1,4 +1,5 @@
 ---
+published: true
 title: MCP Entrypoints with the CLI
 description: Define an MCP entrypoint as declarative-config YAML and apply it into Agent Mesh with sam config.
 sidebar_position: 2
@@ -61,17 +62,22 @@ The top-level `name` and `description` identify the entrypoint; `description` is
 |---|---|
 | `type` | The entrypoint type. Set to `mcp` for an MCP entrypoint. Immutable after creation. |
 | `spec.slug` | The URL-stable path segment used in the deployed MCP URL. When set, the entrypoint mounts at `/gw/<slug>/`. When omitted, the entrypoint mounts at `/gw/<uuid>/`. Set it here for name-based URLs; the Agent Mesh UI does not expose this field. |
-| `values.enableAuth` | When omitted, the entrypoint inherits the cluster's authorization posture: it requires a bearer token and joins the cluster's OAuth flow when the cluster runs RBAC (an OIDC issuer is configured), and allows unauthenticated access otherwise. Set `"true"` to require authentication explicitly, or `"false"` to opt this entrypoint out (every call is attributed to `defaultUserIdentity`). Use `"false"` for local development only. |
-| `values.defaultUserIdentity` | Required when `enableAuth` is `"false"`. Every unauthenticated call is attributed to this identity. Rejected at startup when `enableAuth` is `"true"`. |
+| `values.enableAuth` | Controls whether the entrypoint requires authentication. When omitted, the entrypoint inherits the cluster's authentication setting: it requires a bearer token and joins the cluster's OAuth flow when the cluster requires authentication (`frontend_use_authorization: true`), and allows unauthenticated access otherwise. Set `"true"` to require a bearer token, or `"false"` to accept calls without one. Every unauthenticated call runs as `values.defaultUserIdentity`, or as the entrypoint's system user when that field is empty. Use `"false"` for local development only. |
+| `values.defaultUserIdentity` | Optional. Every unauthenticated call runs as this identity instead of as the entrypoint's system user. Under enforced role-based access control (RBAC) the identity holds only the scopes granted to it, which are normally none, so leave it empty to keep the invoke scopes the system user carries. The value must not begin with `system:`. To name a system user, set `values.runAs` instead. `sam config plan` and `sam config apply` reject the entrypoint when `enableAuth` is `"true"`. |
+| `values.runAs` | Optional. The system user that unauthenticated calls run as when `values.defaultUserIdentity` is empty. Leave it empty for the built-in default system user, which can invoke any agent or workflow that does not declare `required_scopes`; name a custom system user to narrow what the entrypoint reaches. This field applies to unauthenticated calls only: when `enableAuth` is `"false"`, or when `enableAuth` is omitted and the cluster allows unauthenticated access. The Agent Mesh UI does not expose this field. |
 | `values.serverName` | The display name reported to MCP clients in server metadata. Defaults to `SAM MCP Entrypoint`. |
 | `values.serverDescription` | The free-text description reported to MCP clients. |
 | `values.allowedRedirectUris` | Allowlist of OAuth redirect URIs. Loopback hosts match any port per RFC 8252; every other value must match exactly. Empty with `enableAuth: "true"` triggers a startup warning. |
-| `values.includeTools` | Allowlist of tool-name patterns to expose. Empty exposes every discovered tool. Patterns match against agent name, skill name, and final tool name. |
-| `values.excludeTools` | Denylist of tool-name patterns. Takes precedence over `includeTools` when both match. |
+| `values.includeTools` | Allowlist of tool-name patterns to expose. Empty exposes every discovered tool. Each pattern is tested against the name on the agent's card, the skill name, and the tool name; Agent Mesh composes the tool name and generates the card name for a component created in Agent Mesh. A non-empty list exposes only the tools its patterns match. When no pattern matches, Agent Mesh exposes no tools and reports no error. For more information, see the [Filtering Which Agents Are Exposed](./index.md#filtering-which-agents-are-exposed) section of the Agent Mesh UI page. |
+| `values.excludeTools` | Denylist of tool-name patterns. A pattern that matches nothing has no effect, and Agent Mesh reports no error. This list takes precedence over `includeTools`, with one exception. Agent Mesh applies exact patterns before regular expressions, so an exact `includeTools` pattern exposes a tool that an `excludeTools` regular expression also matches. For more information about how the two lists interact, see the [Filtering Which Agents Are Exposed](./index.md#filtering-which-agents-are-exposed) section of the Agent Mesh UI page. |
 | `values.corsAllowedOrigins` | Allowlist of browser `Origin` values for browser-based MCP clients. Empty allows any origin. |
 | `deploy` | When `true`, apply creates the entrypoint and brings its endpoint online. Set it to `false` to save the entrypoint without exposing the endpoint. |
 
-For an unauthenticated development entrypoint, set `enableAuth: "false"` and add a `defaultUserIdentity`:
+:::warning
+The `values.enableAuth` field controls authentication only. Setting it to `"false"` does not opt the entrypoint out of RBAC. On a deployment that enforces RBAC, Agent Mesh still authorizes every call against the scopes held by the system user or default user identity that the call runs as, and narrows the entrypoint's `tools/list` response to match. Setting `values.defaultUserIdentity` there normally leaves the entrypoint with no scopes, and therefore no reachable agents.
+:::
+
+The following example configures an unauthenticated development entrypoint, where unauthenticated calls run as the entrypoint's system user:
 
 ```yaml
 spec:
@@ -79,10 +85,11 @@ spec:
   deploy: true
   values:
     enableAuth: "false"
-    defaultUserIdentity: local-dev-user
 ```
 
-To discover every field the `mcp` entrypoint type accepts, run `sam config schema show entrypoint --type mcp`. To print a templated starting file, run `sam config schema example entrypoint --type mcp`.
+To attribute those calls to a named user instead, add a `defaultUserIdentity`. To narrow what the entrypoint can reach, set `runAs` to a custom system user.
+
+To list the fields the `mcp` entrypoint type exposes, run `sam config schema show entrypoint --type mcp`. To print a templated starting file, run `sam config schema example entrypoint --type mcp`.
 
 ## Apply and Verify
 

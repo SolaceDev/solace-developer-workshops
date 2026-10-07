@@ -1,6 +1,7 @@
 ---
+published: true
 title: Understanding Agent Mesh
-description: "The architecture narrative: the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime split, the event-driven broker mesh, the A2A protocol, request lifecycle, the configuration-or-code choice for tools, runtime services, and the Platform service."
+description: "The architecture narrative: the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime split, the event broker mesh, the A2A protocol, request lifecycle, the configuration-or-code choice for tools, runtime services, and the Platform service."
 sidebar_position: 0
 ---
 
@@ -22,10 +23,10 @@ If you are new to Agent Mesh, the following descriptions provide you working ter
 
 After you build an understanding of building blocks for Agent Mesh, you can see the following information for understanding the processes that run, what they own, and how they interact with each other:
 
-- [Architecture Overview](./architecture.md) — The high-level tour. Names the three workload classes, shows the broker between them, and points at the deep-dive pages for each.
+- [Architecture Overview](./architecture.md) — The high-level tour. Names the three workload classes, shows the event broker between them, and points at the deep-dive pages for each.
 - [How Agent Mesh Manages Workloads](./managing-workloads.md) — The Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime. What each owns and the trust boundaries between them.
-- [The Event-Driven Mesh](./event-driven-mesh.md) — The broker fabric, the topic tree, queues versus direct subscriptions, and the three interchangeable broker backends.
-- [Agent-to-Agent Protocol](./a2a-protocol.md) — The JSON-RPC wire format agents use across the broker. Envelope, topic conventions, signals, and the JSON Web Token (JWT) trust chain.
+- [The Event-Driven Mesh](./event-driven-mesh.md) — The event broker fabric, the topic tree, queues versus direct subscriptions, and the three interchangeable event broker backends.
+- [Agent-to-Agent Protocol](./a2a-protocol.md) — The JSON-RPC wire format agents use across the event broker. Envelope, topic conventions, signals, and the JSON Web Token (JWT) trust chain.
 
 ## State, Configuration, and the Control Plane
 

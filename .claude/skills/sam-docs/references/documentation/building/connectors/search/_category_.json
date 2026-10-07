@@ -1,0 +1,8 @@
+{
+  "label": "Search Connectors",
+  "position": 80,
+  "link": {
+    "type": "doc",
+    "id": "documentation/building/connectors/search/index"
+  }
+}

@@ -1,4 +1,5 @@
 ---
+published: true
 title: Before You Begin
 description: Procure an event broker, choose an LLM provider, and confirm network reachability before installing Agent Mesh. These steps are the universal prerequisites for every install path.
 sidebar_position: 310
@@ -22,7 +23,7 @@ An event broker carries every agent-to-agent and agent-to-entrypoint message in 
 The in-memory option has no procurement step. If it fits your case, skip ahead to [LLM Provider](#llm-provider).
 
 :::note
-A Kubernetes Quick Start or evaluation install deploys an embedded event broker for you, so you do not procure one to evaluate. A production deployment disables the embedded event broker and requires an external Solace event broker. For the external-broker procedure, see [Installing Kubernetes for Production](./kubernetes/production.md).
+A Kubernetes Quick Start or evaluation install deploys an embedded event broker for you, so you do not procure one to evaluate. A production deployment disables the embedded event broker and requires an external Solace event broker. For the external event broker procedure, see [Installing Kubernetes for Production](./kubernetes/production.md).
 :::
 
 ### What You Need From a Solace Event Broker
@@ -52,7 +53,7 @@ A successful connection proves the network path. The `sam doctor` command later 
 
 Every agent that talks to a model declares a `<provider>/<model-name>` string, so you need credentials for at least one LLM provider before you install—this applies to every installation option, including the desktop bundle.
 
-Agent Mesh supports Anthropic, OpenAI, Azure OpenAI, AWS Bedrock, Google Vertex AI, Google Gemini, Ollama, and any OpenAI-compatible endpoint, among others. Most providers require only an API key; a few require more (AWS Bedrock requires an IAM principal with `bedrock:InvokeModel`; Google Vertex AI requires a service account with the `aiplatform.user` role). For the full list and the exact fields each provider accepts, see [LLM Provider](./configure.md#llm-provider) in Configuring Agent Mesh.
+Agent Mesh supports Anthropic, OpenAI, Azure OpenAI, AWS Bedrock, Google Vertex AI, Google Gemini, Ollama, and any OpenAI-compatible endpoint, among others. Most providers require only an API key; a few require more (AWS Bedrock requires an IAM principal with `bedrock:InvokeModel`; Google Vertex AI requires a service account with the `aiplatform.user` role). For the full list of supported providers, the exact fields each one requires, and which providers require an endpoint URL, see the [LLM Provider](./configure.md#llm-provider) table in Configuring Agent Mesh.
 
 Before you install, whichever provider you choose:
 
@@ -60,6 +61,7 @@ Before you install, whichever provider you choose:
 - Confirm the model you plan to use is available in the region your key can access.
 - Confirm a rate-limit budget that suits your workload—tool-using agents make several model round-trips per user turn, so a free tier is fine for evaluation but sustained use requires a paid tier.
 - Have the provider-specific environment variable ready (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, and so on); Agent Mesh reads it automatically, so you do not have to put the key in YAML.
+- Have the endpoint URL (the API base URL) ready if you plan to use an OpenAI-compatible endpoint (the Custom provider), Azure OpenAI, or Ollama.
 
 Verify the key is live before installing. The exact request varies by provider; Anthropic, for example, accepts a list-models call:
 
@@ -74,14 +76,12 @@ A `200` response with a `data` array means the key is valid; a `401` means you n
 
 ## System Requirements
 
-Agent Mesh ships as native, statically linked binaries, so there is no language runtime to install on the host. Support depends on your operating system and CPU architecture:
+Agent Mesh ships as compiled binaries, so there is no language runtime to install on the host. Support depends on your operating system and CPU architecture:
 
 | Installation path | macOS | Linux | Windows |
 |---|---|---|---|
-| Desktop bundle | Apple Silicon (`arm64`), Intel (`amd64`) | Not yet supported | x86_64 (`amd64`) |
+| Desktop bundle | Apple Silicon (`arm64`), Intel (`amd64`) | x86_64 (`amd64`), ARM (`arm64`) | x86_64 (`amd64`) |
 | CLI binary | Apple Silicon (`arm64`), Intel (`amd64`) | x86_64 (`amd64`), ARM (`arm64`) | x86_64 (`amd64`) |
-
-Linux support for the desktop bundle is planned for a future release. For Kubernetes, container images are published for `amd64` and `arm64` nodes.
 
 The commands in these docs assume bash or zsh. On Windows, run them under Windows Subsystem for Linux (WSL) for a one-to-one match, or translate the shell syntax—most often `${VAR}` becomes `$env:VAR`.
 
@@ -101,8 +101,8 @@ The release contains the following:
 |---|---|
 | `Charts/` | The Agent Mesh Helm chart archive (`solace-agent-mesh-<version>.tar.gz`), used for Kubernetes installs. |
 | `Images/` | Container image archives, in `amd64/` and `arm64/` subfolders. Needed only for an air-gapped Kubernetes install. |
-| `CLI/` | The `sam` command line interface archives (`solace-agent-mesh-<version>-cli-<os>-<arch>.tar.gz`, `.zip` on Windows) for each operating system and architecture. |
-| `Desktop/` | The desktop application installers: `solace-agent-mesh-<version>-desktop-darwin-<arch>.dmg` for macOS and `solace-agent-mesh-<version>-desktop-windows-amd64.exe` for Windows. |
+| `CLI/` | The `sam` command line interface: the `solace-agent-mesh-<version>-cli-macos-universal.pkg` installer for macOS, and archives for Linux (`solace-agent-mesh-<version>-cli-linux-<arch>.tar.gz`) and Windows (`solace-agent-mesh-<version>-cli-windows-x64.zip`). |
+| `Desktop/` | The desktop application installers, in `macOS/`, `Windows/`, and `Linux (Experimental)/` subfolders. Linux desktop support is Experimental. For the filenames and how to choose the right Linux package, see [Installing the Desktop Bundle](./desktop.md). |
 | `solace-agent-mesh-<version>-bom.yaml` | The bill of materials. It lists every file with a `file_checksum` for verifying downloads and an `image_id` for verifying loaded container images. |
 | `solace-agent-mesh-<version>-release-notes.html` | The release notes for this version. |
 
@@ -116,19 +116,37 @@ The output matches the `file_checksum` value for that file, without the `sha256:
 
 ### Command Line Interface
 
-Download the `sam` CLI archive for your operating system and architecture from `CLI/` (for example, `solace-agent-mesh-<version>-cli-darwin-arm64.tar.gz`), then extract the `sam` binary and add it to your `PATH`. The `sam` CLI is a command-line tool for configuring and managing a running Agent Mesh deployment—for example, validating connectivity and configuration with `sam doctor` and managing resources as code with `sam config`. For the full command set, see [CLI Reference](../reference/cli.md).
+On macOS, download the `sam` CLI installer from `CLI/` (`solace-agent-mesh-<version>-cli-macos-universal.pkg`) and double-click it to install. The installer places `sam` in `~/.local/bin` for the current user.
+
+On Linux and Windows, download the `sam` CLI archive for your operating system and architecture from `CLI/`, then extract the `sam` binary and add it to your `PATH`.
+
+The `sam` CLI is a command-line tool for configuring and managing a running Agent Mesh deployment—for example, validating connectivity and configuration with `sam doctor` and managing resources as code with `sam config`. For the full command set, see [CLI Reference](../reference/cli.md).
 
 ### Desktop Bundle
 
-Download the installer for your platform from `Desktop/`: on macOS, `solace-agent-mesh-<version>-desktop-darwin-arm64.dmg` for Apple Silicon or `solace-agent-mesh-<version>-desktop-darwin-amd64.dmg` for Intel; on Windows, `solace-agent-mesh-<version>-desktop-windows-amd64.exe`. The desktop bundle embeds everything it needs—an in-memory event broker and the Agent Mesh UI—so it requires no other artifacts. For the install steps, see [Installing the Desktop Bundle](./desktop.md).
+Download the installer for your platform from `Desktop/`:
+
+- macOS, from `macOS/`: `solace-agent-mesh-<version>-desktop-macos-apple-silicon.dmg` for Apple Silicon, or `solace-agent-mesh-<version>-desktop-macos-intel.dmg` for Intel
+- Windows, from `Windows/`: `solace-agent-mesh-<version>-desktop-windows-x64.exe`
+- Linux (Experimental), from `Linux (Experimental)/`: the `.deb`, `.rpm`, or portable `.tar.gz` that matches your distribution and CPU architecture
+
+The desktop bundle embeds everything it requires. It contains an in-memory event broker and the Agent Mesh UI, so you do not need any other artifacts. For the install steps, including a table that maps each Linux distribution to the file to download, see [Installing the Desktop Bundle](./desktop.md).
 
 ### Kubernetes
 
 Download the Helm chart archive (`solace-agent-mesh-<version>.tar.gz`) from `Charts/`. What else you need depends on the deployment type.
 
+#### Image Pull Credentials
+
+A connected Quick Start or production install pulls the container images from the Solace registry at install time, so it needs the image pull credentials file (`sam-pull-credentials.json`) in addition to the chart. This file authenticates your cluster to that registry.
+
+Solace issues the credentials file once per organization as part of onboarding to Agent Mesh, so whoever set up your organization's account already has it. You do not download it yourself from the `Charts/` folder. The person deploying Agent Mesh is not always that person, because the file is often handed off to an infrastructure or Kubernetes team. Check with them before assuming your organization does not have one; if your organization cannot locate it, see [Get Support](https://docs.solace.com/get-support.htm).
+
+An air-gapped install authenticates against your own private registry instead, so it does not need this file. For air-gapped installs, see [Installing in an Air-Gapped Environment](./kubernetes/airgap.md).
+
 #### Quick Start and Production
 
-A connected Quick Start or production install pulls the container images from the Solace registry at install time, so you download only the chart. You also need the image pull credentials file, which Solace provides separately. For the install steps, see [Kubernetes Quick Start](./kubernetes/quickstart.md) or [Installing Kubernetes for Production](./kubernetes/production.md).
+A connected Quick Start or production install needs only the chart and the preceding image pull credentials file, no other artifacts. For the install steps, see [Kubernetes Quick Start](./kubernetes/quickstart.md) or [Installing Kubernetes for Production](./kubernetes/production.md).
 
 #### Air-Gapped
 
@@ -163,7 +181,7 @@ In addition to the endpoints above, a Kubernetes deployment requires outbound ac
 
 | Destination | Purpose | Notes |
 |---|---|---|
-| `gcr.io/gcp-maas-prod` | Pull the Agent Mesh container images | Requires the image pull credentials that Solace provides. Not needed if you mirror the images to a private registry. |
+| `gcr.io/gcp-maas-prod` | Pull the Agent Mesh container images | Requires [Image Pull Credentials](#image-pull-credentials). Not needed if you mirror the images to a private registry. |
 | `*.messaging.solace.cloud` | Connect to a Solace Cloud event broker | Not needed with a self-managed event broker. Reach that event broker at its secured SMF port instead. |
 | LLM provider endpoints | Model inference, for example `api.openai.com` | Required for every installation. Point at your provider or an internal LLM proxy. |
 | Identity provider endpoints | Authentication and authorization through OIDC | Required only when you enable authentication. |

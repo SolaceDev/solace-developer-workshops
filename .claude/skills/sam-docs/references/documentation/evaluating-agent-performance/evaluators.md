@@ -1,4 +1,5 @@
 ---
+published: true
 title: Evaluators
 description: Define and configure the evaluators that score agent outputs.
 sidebar_position: 1
@@ -63,3 +64,5 @@ Beyond the `{{ ... }}` template variables, every LLM-as-a-Judge call is automati
 - Produced artifacts. Text artifacts (Markdown, JSON, CSV, source code) are inlined. Binary artifacts (images, PDFs, Office documents) appear as filename-only references.
 
 This lets a `promptTemplate` criterion verify behavior from the trace rather than infer it from the wording of the final answer. Criteria like "the agent must call `date_math` rather than compute the date internally" or "the agent must route to the `documents` skill" become directly checkable. This resolves the long-standing ambiguity where an agent that called the right tool and then explained its result looked identical to one that hand-computed the answer. The same trace is available out-of-band via the `taskEvents` endpoint when you want to inspect it yourself.
+
+An example's expected file is a grading reference stored with the example; the Platform service never delivers it to the agent under evaluation, so it cannot appear in the transcript or among the produced artifacts. For more information about attaching files to examples, see [Datasets](./datasets.md).

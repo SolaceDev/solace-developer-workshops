@@ -1,4 +1,5 @@
 ---
+published: true
 title: What Can You Build?
 description: Concrete use cases for Agent Mesh, with pointers into the building documentation.
 sidebar_position: 130
@@ -10,7 +11,7 @@ Agent Mesh is a general-purpose platform, but a few patterns come up repeatedly.
 
 ## A Knowledge Assistant Connected to Your Own Data
 
-You can deploy an agent that answers questions by searching your internal documentation, a SQL database, or a knowledge base—rather than relying on what the model already knows. The agent calls a tool to retrieve relevant content, uses it to ground its response, and streams the result back to the user. Teams use this pattern for internal support bots, compliance Q&A tools, and engineering knowledge bases.
+You can deploy an agent that answers questions by searching your internal documentation, a SQL database, or a knowledge base—rather than relying on what the model already knows. The agent calls a tool to retrieve relevant content, uses it to ground its response, and streams the result back to the user. Teams use this pattern for internal support bots, compliance question-and-answer tools, and engineering knowledge bases.
 
 ## A Conversational Agent Accessible Across Multiple Channels
 

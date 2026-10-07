@@ -1,4 +1,5 @@
 ---
+published: true
 title: Getting Started with Agent Mesh
 description: What Agent Mesh is, how to choose your path, what you can build, and two on-ramps to get running quickly.
 sidebar_position: 0

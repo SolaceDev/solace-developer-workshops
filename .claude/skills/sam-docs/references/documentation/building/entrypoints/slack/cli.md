@@ -1,4 +1,5 @@
 ---
+published: true
 title: Slack Entrypoints with the CLI
 description: Define a Slack entrypoint as declarative-config YAML and apply it into Agent Mesh with sam config.
 sidebar_position: 2

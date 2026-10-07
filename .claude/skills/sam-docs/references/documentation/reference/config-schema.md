@@ -1,4 +1,5 @@
 ---
+published: true
 title: Configuration Schema
 description: This page describes the startup YAML configuration that the Entrypoint Executor, Platform service, and Secure Tool Runtime read at boot, including the loading pipeline, shared blocks, and per-process field tables.
 sidebar_position: 1020
@@ -129,7 +130,7 @@ The `!include path/to/other.yaml` directive inlines another file at the position
 
 ## The `broker` Block
 
-The `broker` block inside each `apps` entry configures the event broker connection. When the block is absent, or `dev_mode` is true, the process connects to a local development broker instead of a Solace event broker. The block can instead sit at the top level of the file; a process reads the top-level block only when no `apps` entry declares its own, and the loader never merges the two.
+The `broker` block inside each `apps` entry configures the event broker connection. When the block is absent, or `dev_mode` is true, the process connects to a local development event broker instead of a Solace event broker. The block can instead sit at the top level of the file; a process reads the top-level block only when no `apps` entry declares its own, and the loader never merges the two.
 
 | Key | Type | Default | Description |
 |---|---|---|---|
@@ -137,7 +138,7 @@ The `broker` block inside each `apps` entry configures the event broker connecti
 | `broker_vpn` | string | `default` | Message VPN name. |
 | `broker_username` | string | `default` | Client username. |
 | `broker_password` | string | none | Client password. |
-| `dev_mode` | bool | `false` when `broker_url` is set | Use a local development broker instead of a Solace event broker. |
+| `dev_mode` | bool | `false` when `broker_url` is set | Use a local development event broker instead of a Solace event broker. |
 | `temporary_queue` | bool | `true` in the shipped files | Present for compatibility with existing configuration files. The runtime provisions its reply queues automatically. |
 | `reconnection_strategy` | string | `forever_retry` | Either `forever_retry` (keep retrying until the process stops) or `parametrized_retry` (give up after `retry_count` attempts). Keep the default unless you want an unreachable event broker to eventually fail the process. An unrecognized value falls back to `forever_retry` with a warning. |
 | `retry_count` | int | `60` | Reconnection attempts under `parametrized_retry`. Ignored, with a warning, under `forever_retry`. |
@@ -155,8 +156,9 @@ The Entrypoint Executor, the Platform service, and the Secure Tool Runtime each 
 | `api_base` | string | none | Provider endpoint URL. |
 | `api_key` | string | none | Provider API key. |
 | `api_key_file` | string | none | File path to read the API key from, in place of `api_key`. |
-| `request_timeout_seconds` | int | provider default | Per-request timeout. |
-| `num_retries` | int | provider default | Transient-error retries. An explicit `0` disables retries. |
+| `request_timeout_seconds` | int | `600` | Timeout for a single attempt. |
+| `num_retries` | int | `2` | Transient-error retries, such as a rate limit or a provider 5xx. An explicit `0` disables retries. A single failure that takes longer than `llm_retry_budget_seconds` to arrive results in no retries, regardless of this setting. |
+| `llm_retry_budget_seconds` | int | `120` | How long a request can continue failing before Agent Mesh stops retrying it. Agent Mesh checks this budget before starting another attempt, so it never interrupts a response the provider is still generating. A call can therefore run for up to this value plus `request_timeout_seconds` in total (720 seconds with the default values). An explicit `0` disables retries. |
 | `extra_headers` | map | none | Additional HTTP headers sent on every request. |
 | `api_ca_cert` | string | none | CA bundle path for a private-CA provider endpoint. |
 | `api_skip_tls_verify` | bool | `false` | Disable TLS validation to the provider endpoint. For testing only. |
@@ -196,7 +198,7 @@ app_config:
       slack_app_token: ${SLACK_APP_TOKEN}
 ```
 
-The registered types are `httpsse` (the Web UI entrypoint, the default), `slack`, `teams`, `email`, `mcp`, and `eventmesh`. Most deployments manage the other entrypoint types through the Platform service rather than the startup file. For the per-transport fields, see [Configuring Entrypoints](../building/entrypoints/index.md).
+The registered types are `httpsse` (the Web UI entrypoint, the default), `slack`, `teams`, `email`, `mcp`, `eventmesh`, `webhook`, and `whatsapp`. Most deployments manage the other entrypoint types through the Platform service rather than the startup file. For the per-transport fields, see [Configuring Entrypoints](../building/entrypoints/index.md).
 
 The HTTP listener binds to `fastapi_host` and `fastapi_port` from the first `apps` entry that sets a `fastapi_port`; the `--listen` flag overrides both, and `:8080` applies when no entry sets a port. TLS comes from the `ssl_certfile`, `ssl_keyfile`, `ssl_keyfile_password`, and `fastapi_https_port` fields, falling back to the `SSL_CERTFILE`, `SSL_KEYFILE`, `SSL_KEYFILE_PASSWORD`, and `FASTAPI_HTTPS_PORT` environment variables. For certificate provisioning, see [Configuring TLS](../administering/tls.md).
 
@@ -218,7 +220,7 @@ The HTTP listener binds to `fastapi_host` and `fastapi_port` from the first `app
 | `force_user_identity` | string | none | Overrides every user identity. Development only. |
 
 :::warning
-Set `session_secret_key` to a strong, stable secret in production. The shipped file falls back to a placeholder value, and a restart with a changed or absent secret invalidates existing sessions and rotates the trust signing key.
+Set `session_secret_key` to a strong, stable secret in production. The shipped file falls back to a placeholder value, and a restart with a changed secret invalidates existing sessions. The trust signing key stays stable across restarts either way — see [Trust and Identity Blocks](#trust-and-identity-blocks).
 :::
 
 ### Authentication Fields
@@ -229,6 +231,7 @@ Set `session_secret_key` to a strong, stable secret in production. The shipped f
 | `external_auth_provider` | string | `generic` | Name of the provider entry in the `providers` catalog to authenticate with. |
 | `external_auth_service_url` | string | none | Base URL of the authentication service, normally this entrypoint's own public URL. |
 | `external_auth_callback_uri` | string | none | The OIDC callback URI registered with the identity provider, ending in `/api/v1/auth/callback`. |
+| `external_auth_claim_key` | string | none | Name of the OIDC claim that carries a user's group membership for role mapping. One claim key applies to the whole deployment. The Agent Mesh UI reads this key when you create or edit a claim mapping, and warns you when no key is configured. See [IdP Claim Mapping](./rbac-reference.md#idp-claim-mapping). |
 | `frontend_auth_login_url` | string | none | Login page URL the Agent Mesh UI redirects unauthenticated users to. When authorization is enabled and this is unset, the built-in `/api/v1/auth/login` route applies. |
 | `frontend_redirect_url` | string | none | Post-login redirect URL. |
 | `authorization_service` | object | `type: none` | Authorization mode. See the following table. |
@@ -251,12 +254,16 @@ The `frontend_*` keys customize the Agent Mesh UI that the Web UI entrypoint ser
 |---|---|---|---|
 | `frontend_server_url` | string | none | The public URL of this entrypoint. It appears in emitted links and serves as the trust card address. |
 | `frontend_welcome_message` | string | none | Welcome message on the chat screen. |
-| `frontend_bot_name` | string | none | Display name of the assistant. |
+| `frontend_app_name` | string | the product name | Application name shown as the browser tab title. When you leave it unset, the title is the product name. |
 | `frontend_logo_url` | string | none | URL of a replacement logo image for the Agent Mesh UI. |
 | `frontend_small_logo_url` | string | none | URL of a compact logo variant for narrow layouts. |
 | `frontend_collect_feedback` | bool | `false` | Show response feedback controls. |
-| `frontend_disclaimer_text` | string | none | Disclaimer shown on the welcome screen. The entrypoint truncates values over 500 characters and logs a warning. |
+| `frontend_disclaimer_text` | string | none | Disclaimer shown on the welcome screen. The entrypoint truncates values over 800 characters and logs a warning. |
 | `platform_service.url` | string | none | Absolute URL of a separately hosted Platform service. Leave empty when the Platform service is mounted behind this entrypoint's listener; the Agent Mesh UI then uses same-origin requests. |
+
+:::note
+The `frontend_bot_name` key is a deprecated alias for `frontend_app_name`. The alias still works, and the runtime logs a deprecation warning. When you set both keys, `frontend_app_name` takes precedence.
+:::
 
 ### Task Handling Fields
 
@@ -273,6 +280,8 @@ The `frontend_*` keys customize the Agent Mesh UI that the Web UI entrypoint ser
 | `gateway_max_upload_size_bytes` | int | `50000000` | Maximum artifact upload size. |
 | `gateway_max_project_size_bytes` | int | `50000000` | Maximum project import size. |
 | `gateway_max_batch_upload_size_bytes` | int | `50000000` | Maximum batch upload size. |
+| `gateway_max_project_description_chars` | int | `1000` | Maximum number of characters in a project description. The entrypoint rejects a longer description with HTTP 400. It ignores a value it cannot read as a positive integer, logs a warning, and keeps the default. |
+| `gateway_max_project_instructions_chars` | int | `32000` | Maximum number of characters in a project's instructions. The entrypoint rejects longer instructions with HTTP 400. It ignores a value it cannot read as a positive integer, logs a warning, and keeps the default. |
 
 ### Advanced Fields
 
@@ -281,6 +290,7 @@ The `frontend_*` keys customize the Agent Mesh UI that the Web UI entrypoint ser
 | `card_publish_interval_seconds` | int | `60` | How often this entrypoint republishes its discovery card to the event broker. A value of `0` disables periodic publishing. The nested form `gateway_card_publishing.interval_seconds` is also accepted and takes precedence. |
 | `gateway_capabilities` | map | none | Boolean capability flags attached to outbound requests, overriding the values the transport advertises. |
 | `async_event_log` | bool | `true` | Persist task events in background batches instead of one database write per event. Only effective with a session database. |
+| `event_log_flush_interval_ms` | int | `50` | Maximum time, in milliseconds, that this entrypoint holds task events before it writes them to the session database. It writes sooner when 100 events are waiting across all tasks, and it writes each task's first event immediately. The interval doesn't delay live streaming to the Agent Mesh UI, but a client that reconnects to a different entrypoint replica may see events up to one interval plus about a second late. A longer interval means fewer database writes, but if the entrypoint stops unexpectedly, a reconnecting client can't replay the events the entrypoint hasn't written yet. A value of `0` or less keeps the default. Startup fails with a configuration error when the value is above `60000`, even when `async_event_log` is `false`. Only effective when `async_event_log` is `true`. The desktop app sets this field to `1000`, and so does `sam run` when it uses its built-in configuration. |
 | `event_workers` | int | `0` | Event dispatch worker count. A value of `0` derives the count from available CPUs, and `1` serializes all event processing. |
 | `task_logger_queue_size` | int | `600` | Buffered queue size for the task event logger. |
 
@@ -320,6 +330,7 @@ The `task_logging` block controls the per-task event log behind the task monitor
 | `log_file_parts` | bool | `true` | Include file-part payloads. |
 | `max_file_part_size_bytes` | int | `102400` | Cap on each recorded file part. |
 | `max_payload_text_bytes` | int | `16384` | Cap on each recorded text value. A value of `0` disables the cap. |
+| `config_dedup_backfill` | bool | `true` | Rewrite task events recorded by an earlier release so that each distinct system prompt and each distinct tool schema is stored once. New events are always recorded this way. Set it to `false` to skip the one-time rewrite on a large existing event log. |
 
 The `scheduler_service` block controls scheduled task execution. The service is enabled by default when a session database is configured:
 
@@ -351,17 +362,17 @@ The `data_retention` block controls automatic cleanup of old task, feedback, and
 | `enabled` | bool | `true` | Run the retention sweep. |
 | `task_retention_days` | int | `90` | Age at which task rows are deleted. |
 | `feedback_retention_days` | int | `90` | Age at which feedback rows are deleted. |
-| `sse_event_retention_days` | int | `30` | Age at which SSE event rows are deleted. |
+| `sse_event_retention_days` | int | `7` | Age at which SSE event rows are deleted. |
+| `task_event_delta_retention_days` | int | `7` | Age at which streaming text-delta event rows are deleted. Other event rows are deleted with their task. |
 | `cleanup_sse_events` | bool | `true` | Include SSE events in the sweep. |
 | `cleanup_interval_hours` | int | `24` | How often the sweep runs. |
 | `batch_size` | int | `1000` | Rows deleted per batch. |
 
-The `feedback_publishing` block enables publishing each feedback submission to the event broker for downstream consumers. For the feature, see [Collecting and Publishing User Feedback](../administering/user-feedback.md).
+The `feedback_publishing` block controls whether the entrypoint publishes each feedback submission to the event broker for downstream consumers. For the feature, see [Collecting and Publishing User Feedback](../administering/user-feedback.md).
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `enabled` | bool | `false` | Publish feedback events. |
-| `topic` | string | `sam/feedback/v1` | Topic the events publish to. |
+| `enabled` | bool | `false` | Publish feedback events to `{namespace}/sam/v1/feedback`. An administrator can override this per instance with `publishFeedback` in the platform Web UI settings. |
 
 The `observability_monitor` block is an opt-in monitor that reacts to task failures and negative feedback by submitting background investigation tasks to a designated observability agent:
 
@@ -421,11 +432,14 @@ The Platform service reads the first entry in its file's `apps` list. For more i
 | `frontend_use_authorization` | bool | `false` | Require authenticated JWTs on platform endpoints. Without it, requests run under a development identity. |
 | `external_auth_service_url` | string | none | Authentication service URL shared with the entrypoint. |
 | `external_auth_provider` | string | `generic` | Provider name shared with the entrypoint. |
+| `external_auth_claim_key` | string | none | Claim key shared with the entrypoint. The Platform service seeds `authorization_service.idp_claims_config.claim_key` with this value and applies that key to any claim mapping that does not specify one. See [IdP Claim Mapping](./rbac-reference.md#idp-claim-mapping). |
 | `authorization_service` | object | `type: deny_all` when absent | RBAC authority settings: `type` (shared with the entrypoint), `role_to_scope_definitions_path`, `user_to_role_assignments_path`, and `default_roles`. Unlike the entrypoint, the standalone Platform service denies every request when the block is absent. For role authoring, see [RBAC Reference](./rbac-reference.md). |
 | `seed_builtin_agents` | bool | `true` | Seed the built-in Orchestrator into an empty platform database on first run. Set it to `false` when you apply agents declaratively. |
 | `max_message_size_bytes` | int | `10000000` | Maximum event broker message size the Platform service publishes. |
 | `health_check_interval_seconds` | int | `30` | Discovery registry sweep interval. |
 | `health_check_ttl_seconds` | int | `90` | Time-to-live for agent and entrypoint registry entries. |
+| `agent_instruction_min_chars` | int | `1` | Minimum number of characters in an agent's instructions. The Platform service rejects shorter instructions with HTTP 422. It ignores a value it cannot read as a positive integer, logs a warning, and keeps the default. |
+| `agent_instruction_max_chars` | int | `32000` | Maximum number of characters in an agent's instructions. The Platform service rejects longer instructions with HTTP 422. It ignores a value it cannot read as a positive integer, logs a warning, and keeps the default. |
 | `resource_store` | object | none | Object store for connector specifications and skill files. Same keys and types as [The Artifact Service Block](#the-artifact-service-block). |
 | `str_store` | object | none | Object store for toolset packages that Secure Tool Runtime workers download. Same keys and types as [The Artifact Service Block](#the-artifact-service-block). |
 | `artifact_service` | object | none | The deployment's artifact store, shared so evaluation scoring can read agent-produced artifacts. |
@@ -503,6 +517,8 @@ Enable the trust manager on every process or on none. A process with trust disab
 | `key_rotation_interval_seconds` | int | `0` | Automatic signing-key rotation period. A value of `0` disables rotation. |
 | `key_overlap_retention_seconds` | int | JWT default TTL | How long a rotated-out key remains valid for verification. |
 
+Entrypoints get a restart-stable signing key with no extra configuration required: when `session_secret_key` is set, the key derives deterministically from it; otherwise the process self-persists a generated key to a file under `SAM_DATA_DIR/keys` (mode `0600`) and reuses it on later restarts. Non-entrypoint components (agents, the Secure Tool Runtime, workflow executors, the Platform service) still generate a fresh in-memory key every restart.
+
 The top-level `agent_identity` section configures the identity key used to encrypt stored credentials:
 
 | Key | Type | Default | Description |
@@ -518,9 +534,9 @@ The top-level `log` section configures process logging:
 | Key | Type | Default | Description |
 |---|---|---|---|
 | `format` | string | `json` | Either `json` or `text`. The `LOG_FORMAT` environment variable overrides the file. |
-| `stdout_log_level` | string | `INFO` | Console level: `DEBUG`, `INFO`, `WARN`, or `ERROR`. When a `log` section is present without this key, the console level is `DEBUG`. |
+| `stdout_log_level` | string | `INFO` | Console level: `DEBUG`, `INFO`, `WARNING`, `WARN`, `ERROR`, or `CRITICAL`. An omitted or unrecognized value resolves to `INFO`. |
 | `log_file` | string | none | Log file path. Empty disables file logging. |
-| `log_file_level` | string | `DEBUG` | File log level. |
+| `log_file_level` | string | `INFO` | File log level. An omitted or unrecognized value resolves to `INFO`. |
 | `max_size_mb` | int | `0` | Rotate the file at this size, in MiB. A value of `0` disables rotation, and the process warns at startup that the file grows unbounded. |
 | `max_backups` | int | `10` | Rotated files to keep. An explicit `0` keeps all backups. |
 | `max_age_days` | int | `0` | Maximum backup age. A value of `0` keeps backups indefinitely. |

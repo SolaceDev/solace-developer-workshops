@@ -1,14 +1,4 @@
----
-name: sam-agent-design
-description: Agent design guide — instruction writing, tool selection, structured output, HIL, peer delegation, session and artifact design, agent card writing.
-tags:
-  - builder
-  - design
-  - agent
-  - sam
----
-
-# SAM Agent Design Guide
+# Agent Mesh Agent Design Guide
 
 ## Instruction Writing
 
@@ -112,7 +102,7 @@ When you need reference material:
 
 ---
 
-Note: System fields (`namespace`, `model`, `display_name`, `session_service`, `artifact_service`, `agent_card_publishing`, `agent_discovery`) are injected by the platform at deployment time and must not be included in generated configs.
+The platform supplies the runtime fields `namespace`, `model`, `display_name`, `session_service`, `artifact_service`, `agent_card_publishing` and `agent_discovery` when it deploys the agent. Do not author them; *Model configuration* in the lookup table at the end of this guide says where the model comes from.
 
 ## Interactive vs Autonomous Agent Design
 
@@ -176,7 +166,7 @@ Use **tool groups** when the agent needs most tools in the group — artifact ma
 ### Tool Description Quality
 
 The LLM selects tools based on their names and descriptions. Invest in:
-- **Clear names**: `search_and_replace_in_artifact` is better than `modify_artifact`
+- **Clear names**: `artifact_search_and_replace_regex` is better than `modify_artifact`
 - **Specific parameter descriptions**: Not just the type, but what values are expected
 - **Usage guidance**: When to use this tool vs alternatives
 
@@ -249,14 +239,34 @@ let the prompt time out before the tool runs. Use it for:
 - **Sensitive operations** — accessing personal data, posting to chat,
   sending email, modifying production records.
 
-HIL is a per-tool feature and works on **every tool type** the agent can call
-— `builtin`, `sam_remote`, MCP tools, skill-bundled tools. The author surface
-varies by where the tool is declared.
+HIL is a per-tool feature. It reaches `builtin` and `builtin-group` entries,
+MCP connector tools, `openapi` tools, and tools from a `kind: toolset` package.
+The author surface varies by where the tool is declared.
 
-### Per-tool HIL (any single-tool entry)
+Three exclusions to know before you plan around it:
 
-For tool types where each YAML entry registers exactly one tool (`builtin`,
-`sam_remote`, etc.), put the `hil:` block directly on the entry:
+- **`tool_type: sam_remote` no longer exists** — it is rejected at startup with
+  a migration error, so there is no such entry to carry a `hil:` block.
+- **A `hil:` block on a skill-bundled tool entry is silently dropped.** Skill
+  tools are registered outside the boot path that installs HIL configs, so
+  nothing gates them and nothing warns. If a skill-bundled tool needs approval,
+  it has to move to a toolset or a builtin entry.
+- **On a `kind: connector` resource, `hil:` is honoured only for `type: mcp`.**
+  Every other connector type drops it while emitting the tool entry, with no
+  warning and no validation error. `type: api` is the one to watch: it emits an
+  `openapi` tool, so the block looks like it belongs. Author it on a
+  hand-written `tool_type: openapi` entry instead.
+
+### Entry-level HIL
+
+A `hil:` block on an entry applies to **every tool that entry registers**. For
+`builtin` that is one tool. For `openapi`, `builtin-group`, and `mcp` it is
+many — an `openapi` entry registers one tool per spec operation, and a
+`builtin-group` entry registers every member of the group (`artifact_management`
+is six). Gating a 40-operation OpenAPI entry at the entry level gates all forty,
+reads included; use the `tools:` sub-map below to gate individual tools.
+
+For a single-tool entry, put the block directly on the entry:
 
 ```yaml
 tools:
@@ -272,7 +282,7 @@ tools:
 When the tool comes from a `kind: toolset` package deployed through the
 platform (you don't hand-write the `tools:` entry), author the same block
 under the toolset's reserved `hil` config key (keyed by tool name) instead —
-see *Reserved key: `hil`* in `references/toolset.md`.
+see *Toolset schema, reserved `hil` key* in the lookup table at the end of this guide.
 
 Fields:
 
@@ -282,13 +292,26 @@ Fields:
 | `require_approval_when` | list of rules | empty | Per-arg conditional gating. See *Conditional gating* below. OR-ed with `require_approval`. |
 | `approval_message` | string (Go text/template) | empty | Prompt text shown to the user. See substitution below. |
 | `show_args` | bool | `true` | Whether the args panel is rendered. Set false for noisy or sensitive args. |
-| `timeout` | duration string (e.g. `"30m"`) | agent's `HILDefaultTimeout` (45m) | How long to wait before auto-denying. |
+| `timeout` | duration string (e.g. `"30m"`) | 45m, fixed | How long to wait before auto-denying. There is no config key that changes the default — set `timeout` on the entry. |
 
-### MCP-connector HIL (multi-tool entry)
+`approval_message`, `show_args`, and `timeout` do nothing on their own. Unless
+`require_approval` or `require_approval_when` also gates the call, the block is
+parsed, passes validation, and is then discarded — no gate, no warning.
 
-MCP connector entries expose many tools from one binding, so the shape adds a
-`tools:` sub-map keyed by the tool name the MCP server advertises. Top-level
-fields act as defaults; per-tool entries override them field by field:
+The gate applies to agent tool calls. The same `hil:` block on a workflow's
+`tools:` entry is parsed and validated but not enforced: a `type: tool` node
+dispatches the tool without asking, the workflow names the affected tools at
+startup and warns once per tool per run, and the audit log records each such
+dispatch with `approvalReason: enforcement_disabled`. Route a tool that needs
+approval through an agent node.
+
+### Per-tool HIL on a multi-tool entry
+
+Any entry that registers more than one tool takes a `tools:` sub-map keyed by
+the tool's **registered** name — not the raw name the source advertises; see
+*Which name to key on* below. Top-level fields act as defaults; per-tool entries
+override them field by field. MCP is the common case, so it is the example here,
+but the sub-map is read for every entry type:
 
 ```yaml
 # In a `kind: connector`, `type: mcp` resource:
@@ -307,10 +330,29 @@ spec:
           approval_message: "Transition {{.issueIdOrKey}}?"
 ```
 
-The keys must match the names the MCP server advertises in `tools/list` — not
-the prefixed names you'd see after `tool_name_prefix:`. For OAuth-gated MCP
-servers shipping a static `manifest:` (because `tools/list` can't run
-pre-auth), match the `name:` field on each manifest entry.
+#### Which name to key on
+
+The keys must match the tool's **registered** name — the name Agent Mesh ends up using,
+not the raw string the source advertises. Getting this wrong now **fails config
+load** on an entry that registered its full tool surface, naming the key and
+what the entry did register. It is tolerated only where the tool's absence is
+not the author's doing: an entry whose backend was unreachable at startup, or
+one that filtered the tool out with `allow_list`/`deny_list`.
+
+- **`openapi`** — the `operationId`, snake_cased and truncated to 60 characters.
+  `listUsers` becomes `list_users`. No prefix is applied.
+- **`builtin-group`** — the member's plain builtin name, e.g. `delete_artifact`.
+- **`mcp`** — the advertised name, with the two transformations below.
+
+For MCP specifically:
+
+- Any character outside `[A-Za-z0-9_]` in the advertised name becomes `_`.
+- When the entry sets `tool_name_prefix:`, the prefix is **included** in the key.
+
+So an advertised `rest-request` under `tool_name_prefix: atlassian` is keyed
+`atlassian_rest_request`. For OAuth-gated MCP servers shipping a static
+`manifest:` (because `tools/list` can't run pre-auth), start from the `name:`
+field on each manifest entry and apply the same two transformations.
 
 ### Conditional gating (`require_approval_when`)
 
@@ -336,8 +378,9 @@ all rules.
 
 Each rule carries:
 - `arg:` — the argument to read. Dotted paths walk nested maps
-  (e.g. `body.priority`). A non-map intermediate or missing key counts as
-  no-match (fail-open).
+  (e.g. `body.priority`). A non-map intermediate or missing key means the
+  argument is absent: the comparison operators treat that as no-match
+  (fail-open), but `exists`/`not_exists` are the exception — see below.
 - exactly one operator clause, from the table below.
 
 | Operator | Value shape | Meaning |
@@ -365,7 +408,10 @@ require_approval_when:
 
 Semantics worth flagging:
 
-- **Missing args fail open** — a rule that names an absent arg never matches.
+- **Missing args fail open for the comparison operators** — `eq`, `in`, `gt` and
+  the rest never match an absent arg. The existence operators are the exception
+  and the reason they exist: `not_exists` matches *because* the arg is missing,
+  so use it to gate on an omitted confirmation token.
   This keeps a too-broad rule from accidentally gating *every* call.
 - **Type mismatches fail open** — `gt: 100` against `amount: "lots"` is a
   no-match, not an error.
@@ -406,9 +452,11 @@ Semantics:
 
 ### How the approval card renders
 
-- The agent identifies itself by its **display name** (set
-  `displayName:` on the agent — falls back to the slug `name` otherwise, which
-  is the broker-safe UUID-derived identifier and reads poorly).
+- The agent identifies itself by its **display name**, not the broker-safe
+  identifier it is addressed by. A platform-deployed agent's display name is
+  the name you gave it, so choose one that reads well to the approver; in
+  hand-written runtime YAML set `display_name`, which otherwise falls back to
+  `agent_name`.
 - When `show_args: true`, each LLM-supplied arg renders as a label + value
   pair. The JSON-Schema description for each arg (from the tool's parameter
   schema) appears as a **hover tooltip** on the label, not inline — keeps the
@@ -477,7 +525,7 @@ inter_agent_communication:
 
 ### Configuration
 
-Session service is configured automatically by the platform. Interactive agents get persistent SQL sessions; workflow nodes and autonomous agents get ephemeral memory sessions.
+Session service is configured automatically by the platform, and every agent gets the same persistent session store; there is no per-agent session setting to choose. "Ephemeral" above is a design stance, not a configuration: an autonomous or workflow agent should not depend on earlier turns, because each event or invocation normally arrives in a fresh session.
 
 ### Context Accumulation
 
@@ -506,19 +554,19 @@ Use descriptive, extension-appropriate filenames:
 
 ### Tool Output Thresholds
 
-Configure `tool_output_save_threshold_bytes` to automatically save large tool outputs as artifacts:
+Large tool outputs are saved as artifacts automatically. Two settings control where the line falls; the defaults suit most agents:
 ```yaml
-tool_output_save_threshold_bytes: 2048
-tool_output_llm_return_max_bytes: 4096
+tool_result_auto_artifact_threshold_bytes: 8192    # default
+tool_result_inline_truncation_bytes: 102400         # default
 ```
 
-Tool outputs larger than 2KB are saved as artifacts; the LLM sees a truncated preview up to 4KB plus a reference to the full artifact.
+A text result at or below 8 KB is shown to the LLM inline (and also saved); above it, the result is saved as an artifact and the LLM gets a reference instead of the content. 100 KB is the absolute ceiling on anything returned inline. Lower the first value for an agent whose tools return bulky text it rarely needs to read in full.
 
 ---
 
 ## Agent Card Design
 
-The agent card is how other agents and entrypoints discover this agent. The capability descriptions (the `skills` field in YAML) are the most important part.
+The agent card is how other agents and entrypoints discover this agent. The capability descriptions (the `skills` list inside `agent_card` in YAML; knowledge skills attach separately, as the skill-design guide shows) are the most important part.
 
 ### Writing Good Capability Descriptions
 
@@ -529,26 +577,28 @@ Each capability should:
 
 Good:
 ```yaml
-skills:
-  - id: code-review
-    name: Code Review
-    description: >-
-      Review Python code for security vulnerabilities, performance issues,
-      and coding standard violations. Produces detailed findings with
-      file paths, line numbers, and remediation suggestions.
-  - id: compliance-report
-    name: Compliance Reporting
-    description: >-
-      Generate SOC2, PCI-DSS, and HIPAA compliance reports based on
-      code repository analysis and infrastructure configuration review.
+agent_card:
+  skills:
+    - id: code-review
+      name: Code Review
+      description: >-
+        Review Python code for security vulnerabilities, performance issues,
+        and coding standard violations. Produces detailed findings with
+        file paths, line numbers, and remediation suggestions.
+    - id: compliance-report
+      name: Compliance Reporting
+      description: >-
+        Generate SOC2, PCI-DSS, and HIPAA compliance reports based on
+        code repository analysis and infrastructure configuration review.
 ```
 
 Bad:
 ```yaml
-skills:
-  - id: general
-    name: General
-    description: "Does stuff with code."
+agent_card:
+  skills:
+    - id: general
+      name: General
+      description: "Does stuff with code."
 ```
 
 ### Input/Output Modes
@@ -571,6 +621,31 @@ Different agents can use different models. Consider:
 - **Capable models** for complex reasoning, code analysis, or creative tasks
 - **Same model** for agents that delegate to each other (reduces prompt format differences)
 
-Model selection is configured per-agent by the platform at deployment time.
+Model selection is configured per agent; *Model configuration* in the lookup table at the end of this guide says where.
 
 The model choice affects cost, latency, and quality. Start with a capable model and only switch to a cheaper one when you've verified the agent works well and the cheaper model maintains quality for the specific task.
+
+## Working with declarative config
+
+Where this guide says to look something up, read one of these files. Paths are relative to the `sam-declarative-config` skill root.
+
+| Topic | Where |
+|---|---|
+| Agent schema | `references/agent.md` |
+| Toolset schema, reserved `hil` key | `references/toolset.md`, section *Reserved key: `hil`* |
+| Model configuration | a `kind: model` resource, see `references/model.md`. The agent spec carries no model field; the platform binds the model by alias when the agent is deployed |
+
+### Translating the YAML in this guide
+
+The YAML snippets above show the agent's runtime configuration. In a declarative-config agent file the same settings live elsewhere, and copying a snippet verbatim is a mistake: the platform rejects a `tools:` block under `additionalConfigurations` with HTTP 422 when `sam config apply` writes the agent (`sam config plan` does not catch it), and snake_case keys are deep-merged verbatim with only an unknown-key warning, so they take effect untyped.
+
+| Runtime YAML in this guide | Declarative config |
+|---|---|
+| `tools:` with `tool_type: builtin-group` / `group_name: …` | `spec.toolsets:` with the built-in toolset ID (for example `builtin_artifact_tools`, or `hil_tools` for `ask_user_question`); see `references/toolset.md` |
+| `tools:` with `tool_type: builtin` and a `hil:` block | the toolset's reserved `hil` key, as in the lookup table above |
+| `agent_card.defaultInputModes` / `defaultOutputModes` | `spec.inputModes` / `spec.outputModes` |
+| `skills` under `agent_card` (capabilities) | `spec.skills`; knowledge skills go in `spec.skillRefs` instead |
+| `output_schema`, `input_schema`, `validation_max_retries` | `spec.additionalConfigurations.outputSchema`, `inputSchema`, `validationMaxRetries` |
+| `inter_agent_communication.allow_list` / `request_timeout_seconds` | `spec.additionalConfigurations.interAgentCommunication.allowList` / `requestTimeoutSeconds` |
+| `max_call_depth`, `supports_streaming` | `spec.additionalConfigurations.maxCallDepth`, `supportsStreaming` |
+| `tool_result_auto_artifact_threshold_bytes` / `tool_result_inline_truncation_bytes` | `spec.additionalConfigurations.toolResultAutoArtifactThresholdBytes` / `toolResultInlineTruncationBytes` |

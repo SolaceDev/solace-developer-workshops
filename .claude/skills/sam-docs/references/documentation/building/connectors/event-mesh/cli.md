@@ -1,4 +1,5 @@
 ---
+published: true
 title: Event Mesh Connectors via the CLI
 description: Define an Event Mesh connector as declarative-config YAML and apply it into Agent Mesh with sam config.
 sidebar_position: 2
@@ -68,7 +69,7 @@ spec:
             - carrier
 ```
 
-## Broker Connection Values
+## Event Broker Connection Values
 
 | Field | Required | Default | Description |
 |---|---|---|---|

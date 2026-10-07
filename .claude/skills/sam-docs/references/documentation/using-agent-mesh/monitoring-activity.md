@@ -1,4 +1,5 @@
 ---
+published: true
 title: Monitoring Activity
 description: Watch live task execution, browse the step-by-step linear view, Gantt timeline, and raw event stream on the Activities page. Review and download versioned artifacts.
 sidebar_position: 655

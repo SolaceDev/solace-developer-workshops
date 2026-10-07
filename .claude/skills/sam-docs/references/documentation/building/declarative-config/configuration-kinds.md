@@ -1,4 +1,5 @@
 ---
+published: true
 title: Configuration Kinds
 description: The catalog of every resource kind you can manage as declarative config, its directory and diff key, and a link to each kind's authoring page.
 sidebar_position: 7
@@ -56,14 +57,24 @@ Apply an experiment declaratively, then trigger it with `sam eval run <experimen
 
 ## Access-Control Kinds
 
-These describe role-based access control. For the model, the scope reference, and how to diagnose a denial, see [RBAC Reference](../../reference/rbac-reference.md).
+These describe role-based access control. For authoring them, see [Managing Users and Roles with the CLI](../user-management/cli.md). For the model, the scope reference, and how to diagnose a denial, see [RBAC Reference](../../reference/rbac-reference.md).
 
 | Kind | Directory | Diff key | Authoring |
 |---|---|---|---|
 | `rbacRole` | `rbac/roles/` | `name` | `sam config schema show rbacRole`. A named set of permission scopes, with inheritance. Grant the role to identities inline with `spec.users`. |
-| `rbacClaimMapping` | `rbac/claim-mappings/` | provider, claim, value, and role together | `sam config schema show rbacClaimMapping`. Maps a sign-in claim value to a role. |
+| `rbacGrant` | `rbac/grants/` | the subject and the role together | `sam config schema show rbacGrant`. Grants the role named in `spec.roleName` to the identities in `spec.users`. Use it when the role has no configuration file of its own to carry `spec.users`: a role Agent Mesh ships, or one created outside the declarative-config repo. |
+| `rbacClaimMapping` | `rbac/claim-mappings/` | `oidcProvider` and `claimValue` together | `sam config schema show rbacClaimMapping`. Grants the roles in `spec.roleNames` to every identity whose sign-in claim carries a matching value. The claim key itself is a deployment-wide setting, not part of the mapping. See [IdP Claim Mapping](../../reference/rbac-reference.md#idp-claim-mapping). |
+| `systemUser` | `rbac/system-users/` | `name` | `sam config schema show systemUser`. A principal owned by Agent Mesh that a machine entrypoint runs as through `run_as` (`spec.roleNames` sets its scopes). See [Machine Entrypoints and System Users](../../administering/enabling-rbac.md#machine-entrypoints-and-system-users). |
 
-Grants are declared on the role itself through `spec.users` — a list of identities. There is no separate assignment kind. Each entry becomes one platform grant at apply time. Claim mappings reconcile by create and delete rather than update, because their identity is the whole tuple. Roles that an operator loads from files at platform startup are managed outside declarative config and are not diffed here.
+Grants are declared on the role itself through `spec.users`, a list of identities. Each entry becomes one platform grant at apply time; use `rbacGrant` only when the role has no configuration file of its own. A claim mapping is identified by its provider and claim value, not by its name, so editing `spec.roleNames` updates the mapping in place rather than replacing it. Roles that an operator loads from files at platform startup are managed outside declarative config and are not diffed here.
+
+For a system user, the configuration file holds the whole role set rather than an addition to it:
+
+- Adding a role to `spec.roleNames` grants it, and removing one revokes it. Both take effect on an ordinary apply. A role granted outside declarative config is revoked on the next apply, because the file replaces the role set instead of adding to it. `sam config plan` names the roles an apply revokes.
+- Removing the resource deletes the system user. That deletion is gated behind `--prune`, like every other kind. Keep the `systemUsers` key in the manifest even when the list is empty, because a kind you do not list is never diffed.
+- You cannot rename a system user in place. The subject `system:<name>` is the principal's identity, so a new name is a new principal: the plan shows a create for the new one and a `--prune`-gated delete for the old.
+
+`sam config pull` exports system users, so an existing deployment round-trips into a configuration repository.
 
 ## Manifest-Level Settings
 
@@ -72,6 +83,8 @@ Some platform settings are not a standalone resource and live in the manifest in
 | Setting | Where | Authoring |
 |---|---|---|
 | `profileProvider` | the manifest's `platform` block | [The Manifest](./the-manifest.md). Wires a toolset into the post-sign-in user-enrichment step. |
+| `defaultRoles` | the manifest's `platform` block | [The Manifest](./the-manifest.md). Names the roles that apply when no grant or claim mapping matches the user. Omitting the block leaves the current default roles unmanaged; setting `roles` to an empty list clears the override. |
+| `webuiSettings` | the manifest's `platform` block | [The Manifest](./the-manifest.md). Layers instance-wide Agent Mesh UI branding, assistant defaults, and feedback handling over the Helm or environment-variable values. Setting a field applies the value; setting it to `null` clears the override; omitting a field, or removing the block, changes nothing until you run `apply --prune`. |
 
 Run `sam config schema manifest` for the full manifest reference, including every `platform` setting the running version supports.
 

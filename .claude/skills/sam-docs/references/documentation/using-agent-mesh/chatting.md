@@ -1,4 +1,5 @@
 ---
+published: true
 title: Chatting with Agents
 description: Use the chat interface to send messages to deployed agents, manage sessions, branch conversations, attach files, and download artifacts.
 sidebar_position: 651
@@ -10,7 +11,11 @@ The chat interface is where you talk to the agents in your deployment. You send 
 
 ## Selecting an Agent
 
-The agent selector is the **Agent** drop-down list in the toolbar below the message box. Open it and select the agent you want to talk to. The list shows the display name of each agent in the deployment, so you can browse the available agents and pick the one whose skills match your task.
+The agent selector is the **Agent** drop-down list in the toolbar below the message box. Open it and select the agent you want to talk to. The list shows the display name of each agent in the deployment, so you can browse the available agents and select the one whose skills match your task.
+
+A new chat starts with the agent you selected most recently, so you do not have to set it again each time. The Agent Mesh UI remembers this selection for your user account, but only in the browser you are working in. This selection does not carry over to a different browser or computer. Until you select an agent for the first time, the Agent Mesh UI selects one for you.
+
+When you chat inside a project, the project's default agent takes precedence over the agent you selected most recently. For more information about project default agents, see [Managing Projects](./managing-projects.md).
 
 :::note
 Switching agents starts a new chat. If the current chat already has messages, the Agent Mesh UI prompts you to confirm with the **Switch Agent** dialog before clearing the message history and any attached files.
@@ -72,7 +77,7 @@ People who view a shared session can save their own copy to continue the convers
 
 ## Giving Feedback
 
-When feedback collection is enabled for your deployment, each agent response has a **Like** and a **Dislike** button. Select one to rate the response. The Agent Mesh UI then asks what you liked or disliked, and you choose whether to let administrators view the conversation content along with your feedback.
+When feedback collection is enabled for your deployment, each agent response has a **Like** and a **Dislike** button. Select one to rate the response. The Agent Mesh UI then asks what you liked or disliked, and you choose whether to let administrators view the conversation content along with your feedback. You can rate each response once. After you submit your feedback, you cannot change the rating, the comment, or your sharing choice.
 
 You can also click the **Copy to clipboard** button on any message to copy its text.
 

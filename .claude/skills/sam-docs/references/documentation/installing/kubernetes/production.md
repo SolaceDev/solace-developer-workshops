@@ -1,4 +1,5 @@
 ---
+published: true
 title: Installing Kubernetes for Production
 description: Full production Kubernetes deployment with external event broker, managed databases, object storage, OIDC authentication, TLS, and RBAC.
 sidebar_position: 352
@@ -16,7 +17,8 @@ Before you begin, make sure you have the following:
 - Cluster nodes that provide at least 4 vCPU and 16 GiB of allocatable memory for the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime workloads. The external layout in this guide removes the embedded event broker and datastores, so the cluster carries only the Agent Mesh workloads. For full sizing guidance and per-agent capacity planning, see [Compute Resources](./compute-resources.md).
 - `kubectl` installed and configured to talk to your cluster.
 - The Helm command-line interface (CLI) version 3.0 or later.
-- The Agent Mesh Helm chart archive (`solace-agent-mesh-<version>.tar.gz`) and the image pull credentials file (`sam-pull-credentials.json`). Solace provides both. For how to download the chart, see [Obtain the Delivery Package](../before-you-begin.md#obtain-the-delivery-package). The credentials file is provided separately.
+- The Agent Mesh Helm chart archive (`solace-agent-mesh-<version>.tar.gz`). For how to download it, see [Obtain the Delivery Package](../before-you-begin.md#obtain-the-delivery-package).
+- The image pull credentials file (`sam-pull-credentials.json`), required for a connected install. Solace issues this to your organization as part of onboarding to Agent Mesh; if you do not have it, see [Image Pull Credentials](../before-you-begin.md#image-pull-credentials). For an air-gapped install, see [Installing in an Air-Gapped Environment](./airgap.md).
 - An external Solace event broker (Solace Cloud or self-managed). You need the secured Solace Message Format (SMF) connection URL, the Message VPN name, a client username, and a password.
 - A managed PostgreSQL database for session storage, with admin credentials that can create databases and users.
 - An S3-compatible object store for artifact storage. AWS S3, Azure Blob Storage, and Google Cloud Storage are supported.

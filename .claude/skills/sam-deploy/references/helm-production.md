@@ -1,6 +1,6 @@
 # Helm Production Deployment
 
-Deploy SAM on a real shared cluster (EKS/GKE/AKS or any shared instance) with an external broker, external PostgreSQL, external object storage, and OIDC/TLS/RBAC.
+Deploy Agent Mesh on a real shared cluster (EKS/GKE/AKS or any shared instance) with an external broker, external PostgreSQL, external object storage, and OIDC/TLS/RBAC.
 
 This is the **same chart** as the quickstart — promotion is a values change, not a re-architecture. There are no cloud-specific chart variants. You build a `production-values.yaml` that disables the bundled components and points at real services. Applies to the go-only 2.x chart line (take the exact chart version from the `Charts/` filename in your download). The parent skill covers artifact sourcing and the install command shape; this file is the production-values walkthrough plus deploy/verify.
 
@@ -32,7 +32,7 @@ global:
     namespaceId: "your-deployment-id"
 ```
 
-> **On a shared broker, set `global.persistence.namespaceId` to a value unique among everyone sharing that broker — lowercase letters, digits, dots, and hyphens only (no underscores).** This key is triple-duty: it scopes the database/users, it is the broker **topic prefix** (the chart sets the `NAMESPACE` env var from it), **and it is the object-storage (S3) bucket name**. The default `solace-agent-mesh` collides on topics with any other default install — a real concern on Solace Cloud, where the broker is shared by default. An underscore makes a valid DB name and topic but an illegal S3 bucket name: bundled-storage bucket creation fails silently (the `s3-init` container reports success), `sam-doctor` passes, and it surfaces only as a GWE startup-probe failure. Changing `namespaceId` later both re-prefixes broker topics **and** points SAM at fresh, empty databases, so choose it deliberately before the instance holds data you care about.
+> **On a shared broker, set `global.persistence.namespaceId` to a value no one else on that broker uses.** It prefixes Agent Mesh's broker topics and scopes its database (and, with bundled persistence, names its storage bucket), so the default `solace-agent-mesh` collides with any other default install — likely on Solace Cloud, where brokers are shared. Use lowercase letters, digits and hyphens (format rules: [helm-values.md](helm-values.md)), and pick it before the instance holds data: changing it later points Agent Mesh at fresh, empty databases.
 
 ### External broker
 
@@ -70,7 +70,7 @@ dataStores:
     applicationPassword: "your-application-password"
 ```
 
-- `port` defaults to `5432`. `adminUsername` / `adminPassword` are used by a DB-init container to create the application users and databases. `applicationPassword` is the shared password for all SAM database users (web UI, orchestrator, platform, agents) — required for external persistence.
+- `port` defaults to `5432`. `adminUsername` / `adminPassword` are used by a DB-init container to create the application users and databases. `applicationPassword` is the shared password for all Agent Mesh database users (web UI, orchestrator, platform, agents) — required for external persistence.
 - **Rotation warning:** the init container creates users only if they don't already exist; it does NOT change an existing user's password. To rotate, set a new `global.persistence.namespaceId` (creates fresh users and databases) or change the password directly in the database.
 - Supabase pooler users: also set `dataStores.database.supabaseTenantId` to the project ID.
 

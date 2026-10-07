@@ -1,4 +1,5 @@
 ---
+published: true
 title: What Are Skills?
 description: "An introduction to skills in Agent Mesh: what they are, how they package reusable capabilities, and how agents use them."
 sidebar_position: 560

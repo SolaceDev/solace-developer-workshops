@@ -1,4 +1,5 @@
 ---
+published: true
 title: Monitoring Your Deployment
 description: Confirm a running Agent Mesh deployment is healthy and logging cleanly, using its health and readiness endpoints and its structured logs.
 sidebar_position: 370
@@ -29,6 +30,16 @@ The dedicated workload health server is the one your probes and checks target. E
 
 The `/ready` response includes a `checks` object that reports the readiness inputs: `phase` (the runtime lifecycle phase) and `broker` (the event broker connection state, one of `connected`, `down`, or `absent`). A workload is ready when its phase is `running` and the event broker connection is not down. There is no `/livez` route. The `/health` route covers the liveness check and `/ready` covers readiness.
 
+The `/health` route has only those two responses, but the Agent-Workflow Executor classifies its agents and workflows into three outcomes before it answers. It answers `200 OK` with `{"status":"healthy"}` when every instance is serving, or when no instance is configured. It answers `503 Service Unavailable` when no configured instance is serving at all. Between those two, when some instances stopped serving and at least one still serves, it answers `200 OK` with `{"status":"healthy"}` again, and the body names nothing. That third outcome is deliberate: a single failed agent must not fail the liveness probe and restart a pod that is still serving its other agents.
+
+:::warning
+A liveness probe on `/health` cannot detect a single agent that stopped serving. The Agent-Workflow Executor answers `200 OK` with `{"status":"healthy"}` whenever at least one of its agents or workflows still serves, so a pod that lost one agent looks the same as a pod that lost none. Detect that case in the Agent-Workflow Executor log, not from the probe.
+:::
+
+Two log records carry the signal the probe cannot. Each instance that fails to come up writes an `ERROR` record with the message `instance failed to initialize; it will not serve` or `instance failed to start; it will not serve`, along with a `name` field naming the agent or workflow and a `kind` field naming which of the two it is. The `instances started` record written at the end of startup carries `started`, `attempted`, and `configured` counts. A `started` count lower than `configured` means the workload is serving fewer instances than you deployed, either because one failed or because you disabled it deliberately; a `started` count lower than `attempted` is always a failure.
+
+The agent list is the second check. Every agent that starts publishes an agent card, and `GET /api/v1/agentCards` on the entrypoint returns the agents the mesh can see. An agent that is in your configuration but missing from that list, while the Agent-Workflow Executor answers `200 OK`, is an instance that never came up.
+
 Each workload binds a default health port:
 
 | Workload | Default Health Port |
@@ -51,9 +62,10 @@ Each container writes logs to stdout. Configure your log collector (such as Flue
 Walk this list after the deployment starts serving real traffic:
 
 1. Confirm the probes respond. Run `curl -fsS http://<pod>:<healthPort>/health` and the same against `/ready` for every workload (the Entrypoint Executor on 9090, the Agent-Workflow Executor on 8090, the Platform service on 9091, and the Secure Tool Runtime on 8090). On Kubernetes, confirm that `kubectl describe pod` shows the liveness and readiness probes succeeding.
-2. Confirm the entrypoint proxy is reachable from the load balancer. Run `curl -fsS http://<lb>/health`; it returns `200 OK` with a JSON body (`{"status":"A2A Web UI Backend is running"}`). The external load balancer targets this path, which is distinct from the JSON health server.
-3. Confirm the aggregator parses JSON. Submit a test task, capture its `traceID` from the entrypoint response, and confirm that one search in your aggregator returns records from the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime. JSON is the default; if you overrode it, set `LOG_FORMAT=json` on every component.
-4. Confirm your metrics collection is working before you rely on it. Enabling and scraping metrics is a day-two task; for how to set it up and verify it, see [Monitoring Your Agent Mesh](../administering/observability.md).
+2. Confirm every agent is serving. A `200 OK` from the Agent-Workflow Executor does not prove that, so check the `instances started` record in its log and confirm that `started` equals `configured`, then confirm that every agent you deployed appears in `GET /api/v1/agentCards`. Set an alert on the `instance failed to initialize; it will not serve` and `instance failed to start; it will not serve` messages.
+3. Confirm the entrypoint proxy is reachable from the load balancer. Run `curl -fsS http://<lb>/health`; it returns `200 OK` with a plain-text `ok` body. The external load balancer targets this path, which is distinct from the JSON health server.
+4. Confirm the aggregator parses JSON. Submit a test task, capture its `traceID` from the entrypoint response, and confirm that one search in your aggregator returns records from the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime. JSON is the default; if you overrode it, set `LOG_FORMAT=json` on every component.
+5. Confirm your metrics collection is working before you rely on it. Enabling and scraping metrics is a day-two task; for how to set it up and verify it, see [Monitoring Your Agent Mesh](../administering/observability.md).
 
 ## Next Steps
 

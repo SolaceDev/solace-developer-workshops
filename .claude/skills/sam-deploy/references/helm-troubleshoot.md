@@ -81,9 +81,11 @@ The buckets were never created. Check the `s3-init` init container on the GWE po
 kubectl logs -n <sam-namespace> <gwe-pod> -c s3-init
 ```
 
-If it logs `error: bucket name can only contain lower case characters, numbers, dots, and hyphens` (while still printing "completed successfully" and exiting 0), the `global.persistence.namespaceId` contains a character that is invalid in an S3 bucket name — most commonly an **underscore**. `namespaceId` is the bucket name as well as the DB scope and broker topic prefix, and `sam-doctor` does not validate its charset.
+The init container's log names the storage error — typically bucket creation or credentials against the configured object store.
 
-Fix: set `namespaceId` to lowercase letters, digits, dots, and hyphens only (mirror the default `solace-agent-mesh`). On a fresh install, correct the value and reinstall, dropping the bundled PVCs so storage is recreated cleanly:
+An invalid `global.persistence.namespaceId` (it is the DB scope and broker topic prefix, and with bundled persistence also the bucket name) no longer gets this far: the chart schema requires `^[a-z]([a-z0-9-]*[a-z0-9])?$`, 3–40 characters, so a value with an underscore, a dot, or uppercase fails `helm install` / `helm upgrade` up front with `values don't meet the specifications of the schema(s)` naming `namespaceId`. Fix the value (mirror the default `solace-agent-mesh`) and re-run the install.
+
+If an earlier install left half-created bundled storage behind, reinstall cleanly, dropping the bundled PVCs:
 
 ```bash
 helm uninstall <release> -n <sam-namespace>

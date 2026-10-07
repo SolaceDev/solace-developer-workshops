@@ -1,18 +1,8 @@
----
-name: sam-best-practices
-description: Design guidance for Solace Agent Mesh — decision frameworks for component selection, LLM context management, instruction writing, tool selection, and common pitfalls.
-tags:
-  - builder
-  - design
-  - best-practices
-  - sam
----
-
-# SAM Best Practices
+# Agent Mesh Best Practices
 
 ## The Core Principle
 
-**LLM context is the scarcest resource.** Every design decision in SAM flows from managing it well. An LLM produces its best work when its context is focused, relevant, and appropriately sized for the task at hand. Overloading an agent with unrelated knowledge, too many tools, or an unfocused instruction degrades reasoning quality — the LLM becomes vague instead of precise, makes poor tool choices, and loses track of what it's supposed to be doing.
+**LLM context is the scarcest resource.** Every design decision in Agent Mesh flows from managing it well. An LLM produces its best work when its context is focused, relevant, and appropriately sized for the task at hand. Overloading an agent with unrelated knowledge, too many tools, or an unfocused instruction degrades reasoning quality — the LLM becomes vague instead of precise, makes poor tool choices, and loses track of what it's supposed to be doing.
 
 This principle drives everything: how you decompose requirements into components, how you structure agents, how you decide between agents and workflows, and how you organize skills and tools.
 
@@ -20,7 +10,7 @@ This principle drives everything: how you decompose requirements into components
 
 ## Decision Framework for Component Selection
 
-When mapping requirements to SAM components, evaluate these considerations. They are not sequential steps — a workflow may be the right choice from the start if the process is clearly structured, even before you consider whether a single agent could handle it.
+When mapping requirements to Agent Mesh components, evaluate these considerations. They are not sequential steps — a workflow may be the right choice from the start if the process is clearly structured, even before you consider whether a single agent could handle it.
 
 ### Start simple, add complexity with reason
 
@@ -160,7 +150,7 @@ A poorly described tool gets misused, called with wrong parameters, or ignored e
 
 When an agent must produce precise, machine-parseable data — configuration files, structured reports, API payloads — provide the schema or a template. LLMs produce more accurate structured output when they have a reference to conform to than when generating free-form.
 
-In SAM, this means:
+In Agent Mesh, this means:
 - Use structured invocation mode when the output must conform to a specific schema
 - Provide schema skills so agents can reference exact field definitions
 - When building configs, the agent should load the relevant schema skill and follow it
@@ -231,7 +221,7 @@ What the agent should NOT do:
 
 ### 5. Skill References
 List available skills and when to use each one:
-- "Load the `sam-agent-schema` skill when you need to produce or validate agent configuration"
+- "Load the `api-reference` skill when you need endpoint details or data formats"
 - "Use the `data-analysis` skill when the user provides data files for analysis"
 
 This tells the agent that it has on-demand knowledge available and prevents it from guessing when it should be looking things up.
@@ -258,7 +248,7 @@ The SKILL.md file tells the agent what the skill contains and how to use it effi
 
 ### Size Appropriately
 
-A skill that's too large (hundreds of reference files) is slow to search and the results may be noisy. A skill that's too small (a single paragraph) isn't worth the overhead of loading. Aim for skills that contain 1-20 reference files covering a coherent topic in sufficient depth.
+A skill that's too large (hundreds of reference files) is slow to search and the results may be noisy. A skill that's too small (a single paragraph) isn't worth the overhead of loading. Aim for skills that contain 1-10 reference files covering a coherent topic in sufficient depth.
 
 ---
 
@@ -266,7 +256,7 @@ A skill that's too large (hundreds of reference files) is slow to search and the
 
 ### Prefer Built-in Tools
 
-Built-in tools run in-process, are fast, and have no external dependencies. Use them when available:
+Built-in tools ship with Agent Mesh and need no packaging; most run in-process and are fast. Use them when available:
 - Artifact management tools for file/data handling
 - Web request tools for external API calls
 - Image processing tools for visual content
@@ -322,7 +312,7 @@ Building an agent that asks for user input, then deploying it behind an event me
 
 Building an agent with `ask_user_question` and interactive tools, then wiring it to an event mesh entrypoint. The agent blocks indefinitely because there is no user to respond. This is the event-mesh-specific version of "Autonomous Agent with Interactive Assumptions."
 
-**Fix**: When building an event mesh entrypoint, always design the target agent for autonomous operation. Set `supports_streaming: false`, exclude `general_agent_tools` (which includes `ask_user_question`), and include explicit autonomous operation guidance in the instruction. See `sam-event-mesh-design` for the recommended agent instruction pattern.
+**Fix**: When building an event mesh entrypoint, always design the target agent for autonomous operation. Set `supports_streaming: false`, exclude `general_agent_tools` (which includes `ask_user_question`), and include explicit autonomous operation guidance in the instruction. For the recommended agent instruction pattern, see *Event mesh agent instruction pattern* in the lookup table at the end of this guide.
 
 ### Premature Multi-Agent Split
 
@@ -347,3 +337,12 @@ Every token in the context window costs money and time. The largest contributors
 2. **Conversation history**: Grows with every turn. Use artifacts for data persistence instead of relying on history.
 3. **Tool definitions**: Every tool adds to the context. Use skill-associated tools to reduce the default set.
 4. **Loaded skill content**: Skill references added to context when loaded. Search efficiently rather than loading everything.
+
+
+## Working with declarative config
+
+Where this guide says to look something up:
+
+| Topic | Where |
+|---|---|
+| Event mesh agent instruction pattern | the fix above is the whole pattern. In an agent file that is `spec.additionalConfigurations.supportsStreaming: false`, no `hil_tools` (or legacy `general_agent_tools`) in `spec.toolsets`, and explicit autonomous guidance in the instruction. Entrypoint configuration is `references/entrypoint.md`, relative to the `sam-declarative-config` skill root |

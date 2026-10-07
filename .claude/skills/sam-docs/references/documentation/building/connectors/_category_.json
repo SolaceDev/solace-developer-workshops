@@ -1,0 +1,8 @@
+{
+  "label": "Configuring Connectors",
+  "position": 4,
+  "link": {
+    "type": "doc",
+    "id": "documentation/building/connectors/index"
+  }
+}

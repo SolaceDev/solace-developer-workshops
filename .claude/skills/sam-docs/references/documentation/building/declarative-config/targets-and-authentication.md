@@ -1,4 +1,5 @@
 ---
+published: true
 title: Targets and Authentication
 description: Point sam config at a Platform service and sign in, from a local unauthenticated instance to an OIDC deployment or a CI pipeline.
 sidebar_position: 3
@@ -17,8 +18,8 @@ Every `plan`, `apply`, and `pull` runs against a *target*: the Platform service 
 You can set the target three ways, in order of precedence:
 
 1. `--url` on the command line, the explicit platform URL.
-2. `--target`, a named entry you signed in to with `sam auth login`.
-3. The manifest's `target.url`.
+2. `--target`, a named entry you signed in to with `sam auth login`, or the reserved name `desktop` (covered below).
+3. The manifest's `target.url`, or `target.name: desktop`.
 
 Both `--url` and `--target` override the manifest's `target.url`, so one manifest can reconcile a local instance during development and a cluster in CI without editing the file:
 
@@ -30,13 +31,30 @@ sam config apply -m manifest.yaml --target prod                # uses the cached
 
 ## A Local Instance Needs No Login
 
-A local desktop instance is unauthenticated. Point the manifest at it and apply with no sign-in step:
+A local desktop instance is unauthenticated, so `plan`, `apply`, and `pull` require no sign-in step to reach it. Point at it with the reserved target name `desktop`, either in the manifest or on the command line:
 
 ```yaml
 # manifest.yaml
 target:
-  url: http://127.0.0.1:8800
+  name: desktop
 ```
+
+```bash
+sam config apply --target desktop
+```
+
+The name `desktop` isn't a URL you have to look up: it resolves to whichever address the running desktop app actually published.
+
+### Promoting From the Desktop App to a Deployment
+
+Configuration built and tested against the desktop app carries forward as-is: `pull` it out of the desktop instance, then `apply` the same files to a real deployment.
+
+```bash
+sam config pull -o ./pulled --target desktop --manifest-name manifest.yaml
+sam config apply -m ./pulled/manifests/manifest.yaml --target prod
+```
+
+The only thing that changes between the two commands is the target. Swap `desktop` for a deployment's `target.name` (or `--url` / `--target`) and the same agents, models, and entrypoints reconcile against it.
 
 ## Signing in to a Deployment
 
@@ -94,7 +112,9 @@ The `SAM_PLATFORM_TOKEN` environment variable is the highest-priority credential
 3. The bearer-token variable named by the target's `auth.envVar`.
 4. Anonymous, for an unauthenticated local instance.
 
-For a non-interactive run, pass `--no-interactive` so the command fails fast instead of trying to open a browser when no token is available:
+`sam config` refreshes only a cached OAuth login. It sends `SAM_PLATFORM_TOKEN` or a bearer-token variable unchanged, and if the Platform service rejects it with `401 Unauthorized`, the command fails rather than falling back to a cached login.
+
+`sam config plan` and `sam config apply` run non-interactively when you pass `--no-interactive`, when the `CI` environment variable is set to any value other than `0` or `false`, or when standard input or standard error is not a terminal. A non-interactive run fails immediately when no token is available, instead of opening a browser:
 
 ```bash
 SAM_PLATFORM_TOKEN="${SAM_PLATFORM_TOKEN}" \
@@ -103,16 +123,17 @@ SAM_PLATFORM_TOKEN="${SAM_PLATFORM_TOKEN}" \
 
 ## Version and Schema Guardrails
 
-Before it changes anything, `sam config` checks that the CLI and the Platform service are compatible. If the CLI is a full major version behind the platform, the command stops; a smaller lag prints a warning and continues. It also warns once if the platform returns fields the CLI does not recognize, the signal that the CLI is older than the platform and should be upgraded.
+Before it changes anything, `sam config` checks that the CLI and the Platform service are compatible. If the CLI is a full major version behind the platform, the command stops; a smaller lag prints a warning and continues. It also warns once if the platform returns fields the CLI does not recognize, the signal that the CLI is older than the platform. Upgrade the CLI when you see this warning.
 
 To skip the version check, pass `--skip-version-check` or set `SAM_SKIP_VERSION_CHECK=1`. Skip it only when you understand the mismatch, because a CLI that is too old can misread the platform's responses.
 
 ## Loading Environment Variables
 
-`sam config` auto-loads a `.env` file from the nearest ancestor directory before it resolves `${VAR}` references, so local development picks up credentials without exporting them by hand. Add more files with `--env-file` (repeatable), or opt out of the automatic `.env` load with `--no-dotenv`. For how those variables feed substitution, see [Secrets and Variables](./secrets-and-variables.md).
+`sam config` auto-loads a `.env` file from the nearest ancestor directory before it resolves `${VAR}` references, so local development picks up credentials without exporting them by hand. A variable already set in the environment keeps its value, so a `.env` file never replaces credentials that a pipeline already set. Add more files with `--env-file` (repeatable), whose values override both the environment and the `.env` file, or opt out of the automatic `.env` load with `--no-dotenv`. For how those variables feed substitution, see [Secrets and Variables](./secrets-and-variables.md).
 
 ## Related Topics
 
 - [The Manifest](./the-manifest.md) covers the `target` block in the manifest.
 - [Planning and Applying Changes](./planning-and-applying.md) covers running `plan` and `apply` once a target is set.
 - [Secrets and Variables](./secrets-and-variables.md) covers `${VAR}` substitution and Vault references.
+- [Installing the Desktop Bundle](../../installing/desktop.md) covers installing and running the desktop app itself.

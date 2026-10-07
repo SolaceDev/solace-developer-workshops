@@ -1,16 +1,17 @@
 ---
-title: Glossary
-description: Domain terms used throughout Agent Mesh — the canonical terminology dictionary.
+published: true
+title: Agent Mesh Terminology
+description: Terms specific to Solace Agent Mesh instructions and documentation.
 sidebar_position: 1040
 ---
 
-# Glossary
+# Agent Mesh Terminology
 
-This page is the canonical place to look up a term that appears throughout the Agent Mesh documentation. Terms are listed alphabetically.
+The following terms are specific to instructions and documentation for Agent Mesh. For more information about Solace-specific terms, see [Glossary](https://docs.solace.com/Get-Started/glossary.htm).
 
 | Term | Definition |
 |---|---|
-| **A2A** | Agent-to-Agent protocol. The JSON-RPC 2.0 wire format agents use to exchange messages over the event broker. Wire-compatible with the Python implementation. See [Agent-to-Agent Protocol](../concepts/a2a-protocol.md). |
+| **A2A** | Agent-to-Agent protocol. The JSON-RPC 2.0 wire format agents use to exchange messages over the event broker. See [Agent-to-Agent Protocol](../concepts/a2a-protocol.md). |
 | **Agent** | An LLM-driven worker, declared in YAML, that processes messages by calling tools and, optionally, delegating to other agents. At the Agent-Workflow Executor and YAML layer, `agent_type` is `standard` (an LLM loop plus tool calls) or `workflow`, a directed acyclic graph (DAG) executed without tool calling. See [Extending Agent Mesh: Configuration or Code](../concepts/configured-vs-built.md). |
 | **Agent card** | The self-describing record an agent publishes on the discovery topic at startup, and republishes when its capability set changes. Carries the agent's name, description, model, skills, and protocol features. Entrypoints publish an analogous entrypoint card on the same discovery topic family. |
 | **Agent-Workflow Executor** | The process that loads agent configurations, runs the LLM loop, and dispatches tool calls. In infrastructure identifiers (Helm keys, pod names, and log fields) it uses the `awe` spelling. See [How Agent Mesh Manages Workloads](../concepts/managing-workloads.md). |
@@ -18,7 +19,6 @@ This page is the canonical place to look up a term that appears throughout the A
 | **Artifact handling mode** | The per-agent setting (`artifact_handling_mode`) that governs how tool-produced artifacts surface in the conversation history. Values: `ignore` (default—no inline summary), `embed` (artifact content embedded inline), and `reference` (URI reference only). |
 | **Artifact scope** | The per-component setting (`artifact_scope`) that determines whether artifacts are partitioned by namespace or by component. `namespace` (default) places artifacts under the app's namespace, letting agents in the same namespace share them. Distinct from the in-filename user-scope opt-in (the `user:` filename prefix), which is an addressability concern. |
 | **Built tool** | A tool implemented as a standalone binary that the Secure Tool Runtime spawns—Go using `pkg/samtoolsdk`, or Python using `sam-tool-sdk`. The customer authoring path for behavior the YAML tool taxonomy can't express. See [Extending Agent Mesh: Configuration or Code](../concepts/configured-vs-built.md). |
-| **Community** | Agent Mesh no longer ships as separate Community and Enterprise products. It is a single product with one feature set—authentication, RBAC, the platform service, every connector, and every entrypoint are all included. |
 | **Compaction percentage** | The post-compaction history size as a fraction of the pre-compaction conversation. Set with the `auto_summarization.compaction_percentage` YAML key (default `0.25`—25% of the conversation is compacted into the summary). The manual-compaction endpoint exposes the same dial as `targetPercent`. |
 | **Configured agent** | An agent defined entirely in YAML, including its tool list and any embedded prompts. The only customer authoring path for agents in the Go implementation; emphasized when contrasting with a built tool that the agent calls. Synonymous in code with `agentType: standard` plus a YAML configuration file. See [Extending Agent Mesh: Configuration or Code](../concepts/configured-vs-built.md). |
 | **Correlation ID** | A per-hop UUID that matches an outstanding request to its response—distinct from a trace ID (one per user task, immutable) and a task ID (entrypoint-minted user task addressing). Appears in logs as `corrID` or `reqID`. |
@@ -28,7 +28,6 @@ This page is the canonical place to look up a term that appears throughout the A
 | **Desktop mode** | A standalone desktop application that runs the Agent-Workflow Executor, the Entrypoint Executor, the Secure Tool Runtime, and an in-memory event broker together in a single process, behind a graphical interface. Launched by running the desktop `sam` binary with no arguments (shipped as `sam-desktop`). There is no `--desktop` flag. |
 | **Distributed deployment** | A layout that runs the Agent-Workflow Executor, Entrypoint Executor, and Secure Tool Runtime as separate processes connected through an external Solace event broker. Used in production. |
 | **Embed** | A `«type:params»` token that the runtime substitutes with content drawn from elsewhere—most commonly an artifact reference (`«artifact_content:report.md»`), a status update, or a templated value. Operators tune the resolver with `enable_embed_resolution` and `gateway_artifact_content_limit_bytes`. |
-| **Enterprise** | Agent Mesh no longer ships as separate Community and Enterprise products; it is a single product with one feature set. Features are described directly, not gated by edition. |
 | **Entrypoint** | The HTTP-and-event-broker bridge that fronts the Agent-Workflow Executor—a role, not a process. Carries user-facing concerns: Server-Sent Events (SSE) streaming, sessions, auth, and serving the Agent Mesh UI. Wire-level `type` values: `httpsse`, `eventmesh`, `slack`, `email`, `mcp`, and `teams`. The long-running process that hosts one or more entrypoints is the Entrypoint Executor. |
 | **Entrypoint Executor** | The workload class—the long-running process you operate, scale, and probe—that hosts one or more entrypoints. The third member of the workload-class trio alongside the Agent-Workflow Executor and the Secure Tool Runtime. In infrastructure identifiers—Helm keys (`samDeployment.gwe.*`), deployment and pod names, and log fields—it keeps the legacy `gwe` spelling. See [How Agent Mesh Manages Workloads](../concepts/managing-workloads.md). |
 | **Event broker** | The transport that carries every agent-to-agent and entrypoint-agent message in Agent Mesh. Production deployments use a Solace event broker; the desktop bundle uses a built-in in-memory event broker. |
@@ -40,14 +39,13 @@ This page is the canonical place to look up a term that appears throughout the A
 | **Orchestrator agent** | A role, not a type. An agent that delegates to other agents over the A2A protocol rather than executing tools itself. Conventionally named `Orchestrator` in examples. |
 | **Peer agent** | An agent that another agent delegates to over the A2A protocol. The relationship is described from the perspective of the delegating agent. |
 | **Persistent** | One of the two values of `default_behavior` (wire spelling `PERSISTENT`). Persistent sessions outlive the task; the runtime loads their prior history on the next turn under the same session key. |
-| **Platform service** | The HTTP service that exposes agents, deployments, evaluations, toolsets and skills, model configuration, RBAC and identity, MCP integrations, audit logs, and the AI assistant. See [Platform Service](../concepts/platform-service.md). |
+| **Platform service** | The HTTP service that exposes agents, deployments, evaluations, toolsets, skills, model configuration, RBAC, identity, MCP integrations, audit logs, and the AI assistant. See [Platform Service](../concepts/platform-service.md). |
 | **Project** | A workspace in the Agent Mesh UI where a user grounds an agent in their own uploaded documents: a document set the agent searches, plus optional instructions and a default agent. Backed by a database and surfaced as the **Projects** area in the UI sidebar. It is not an on-disk configuration directory—for that, see runtime config or declarative config. |
 | **RBAC** | Role-Based Access Control. Maps authenticated users to roles and gates actions by role. See [RBAC Reference](./rbac-reference.md). |
 | **Role provider** | The component that maps a user (after authentication) to roles. The only implementation today is `idp_claims`, which maps IdP-issued OIDC claim values to roles. |
 | **Run-based** | One of the two values of `default_behavior`. Run-based sessions are bounded to one task and not reused afterward—the right choice for one-shot transformations. Wire spelling `RUN_BASED`. Subtask delegations propagate `sessionBehavior: RUN_BASED` so callees start with no prior history even when the caller is persistent. |
 | **Runtime config** | The YAML files passed to the Agent-Workflow Executor, the Entrypoint Executor, or the Secure Tool Runtime worker at startup. Declares the event broker, models, and the list of `apps` (one per component). Read directly by the binary—no platform service in the path; each component reads its own runtime config. Distinct from declarative config, which is reconciled through `sam config apply`. |
 | **sam CLI** | The command-line tool (the `sam` binary) for managing an Agent Mesh deployment: executing tasks (`sam task`), managing declarative config (`sam config`, `sam toolset`, `sam skill`), running evaluations (`sam eval`), and handling authentication (`sam auth`). See [CLI Reference](./cli.md). |
-| **sam-go** | The Go implementation of Agent Mesh, distinguished in prose from the Python implementation when the difference matters. |
 | **Secure Tool Runtime** | The sandboxed process that executes tools—both Python script tools and Go tool binaries. In infrastructure identifiers (Helm keys, pod names, and log fields) it uses the `str` spelling. See [How Agent Mesh Manages Workloads](../concepts/managing-workloads.md). |
 | **Session** | The persisted conversation between a user and an agent, including message history, task checkpoints, and metadata. Backed by SQLite, PostgreSQL, or in-memory storage. See [Sessions](../concepts/sessions.md). |
 | **Session key** | The identifier the entrypoint derives from its inbound transport to look up (or create) a session row. Each entrypoint type has its own derivation: the Web UI entrypoint uses an explicit `sessionID`; Slack uses `(channel, thread_ts)`; Email uses the `References` thread root; Teams uses `convID` plus tenant; MCP uses the OAuth identity; and Event Mesh derives the key from `input_expression` or user properties. |

@@ -1,4 +1,5 @@
 ---
+published: true
 title: Slack Connectors
 description: Configure the Slack connector so agents can send messages to Slack channels and update existing messages.
 sidebar_position: 1

@@ -1,4 +1,5 @@
 ---
+published: true
 title: Slack Entrypoints
 description: Connect Agent Mesh to a Slack workspace over Socket Mode so users can drive agents from channels, threads, and direct messages.
 sidebar_position: 1
@@ -116,6 +117,14 @@ sequenceDiagram
     Entrypoint->>Slack: Post and update reply
     Slack->>User: Display reply in thread
 ```
+
+## Identity in Channels
+
+In a **1:1 direct message**, a Slack request runs as the real user, and that user's own RBAC scopes apply. In a **shared channel** (a public or private channel, or a group message), it runs instead as the entrypoint's system user — a confused-deputy protection, so a task in a shared space cannot act with the asker's personal credentials or reach their private data.
+
+Set `run_as` to the system user that shared-channel messages run as — `default` for the built-in default, or a custom scoped one. With no `run_as` configured, shared-channel messages still run as the built-in default system user, which can invoke any agent or workflow that does not declare `required_scopes` — leaving `run_as` empty widens what a shared channel can reach rather than restricting it. Set `use_user_identity_in_channels: true` to opt out and run shared-channel messages as the real user as well.
+
+Addressing a specific agent by name (an `@mention` of a discovered agent) routes directly to that agent, bounded by the system user's scopes — so if you need to limit which agents a shared channel can reach, point `run_as` at a scoped custom system user rather than the permissive `default`. See [Machine Entrypoints and System Users](../../../administering/enabling-rbac.md#machine-entrypoints-and-system-users).
 
 ## Managing Slack Entrypoints
 

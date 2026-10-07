@@ -1,4 +1,5 @@
 ---
+published: true
 title: MCP Connectors via the CLI
 description: Configure an MCP connector as declarative YAML and apply it with the Agent Mesh CLI, so agents can invoke tools served by a remote Model Context Protocol server.
 sidebar_position: 2

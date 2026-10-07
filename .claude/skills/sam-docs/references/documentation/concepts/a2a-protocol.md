@@ -1,6 +1,7 @@
 ---
+published: true
 title: Agent-to-Agent Protocol
-description: "The Agent-to-Agent wire format Agent Mesh speaks across the broker: JSON-RPC 2.0 envelope, topic conventions, user-property headers, signal taxonomy, and the JWT trust chain."
+description: "The Agent-to-Agent wire format Agent Mesh speaks across the event broker: JSON-RPC 2.0 envelope, topic conventions, user-property headers, signal taxonomy, and the JWT trust chain."
 sidebar_position: 595
 ---
 
@@ -8,7 +9,7 @@ sidebar_position: 595
 
 [How Agent Mesh Manages Workloads](./managing-workloads.md) names the three workload classes. This page is the wire-format reference: the JSON-RPC envelope, the topic naming rules, the event broker header user properties, the signal taxonomy, and the JSON Web Token (JWT) trust chain that they use to talk to each other.
 
-A2A is a JSON-RPC 2.0 dialect carried over event broker topics. The shape is identical to Python Agent Mesh: both implementations accept each other's messages without translation. This is a hard constraint, not a goal. When the Go code disagrees with the Python wire, the Python wire wins and the Go code is the bug.
+A2A is a JSON-RPC 2.0 dialect carried over event broker topics, and a frozen wire contract: every component that implements the A2A v1 wire format accepts every other component's messages without translation.
 
 ## The Envelope
 
@@ -31,7 +32,7 @@ Every A2A payload is a JSON-RPC 2.0 message. Requests and responses both carry t
 }
 ```
 
-The success response is a JSON-RPC `result`; an error response is a JSON-RPC `error` with `{code, message, data?}`. The `result` payload is an A2A task, message, or status-update event (the polymorphism is method-dependent).
+The success response is a JSON-RPC `result`; an error response is a JSON-RPC `error` with `{code, message, data?}`. The `result` payload is an A2A task, message, or status-update event, depending on the method that was called.
 
 The JSON-RPC method names on the wire:
 
@@ -67,7 +68,7 @@ Every A2A topic follows the prefix `<namespace>/a2a/v1/<service>/...` where `<na
 | `<ns>/a2a/v1/discovery/gatewaycards` | Entrypoint Executor | clients |
 | `<ns>/a2a/v1/trust/<componentType>/<componentID>` | Every component | trust manager |
 
-The `<namespace>` segment is validated at config load. Broker wildcards (`*`, `>`), path-traversal segments (`..`), and leading slashes are rejected so a misconfigured namespace fails fast instead of producing topics that escape the intended prefix.
+The `<namespace>` segment is validated at config load. Event broker wildcards (`*`, `>`), path-traversal segments (`..`), and leading slashes are rejected so a misconfigured namespace fails fast instead of producing topics that escape the intended prefix.
 
 ## User Properties
 
@@ -86,9 +87,9 @@ The event broker carries a flat map of string key/value pairs alongside every pa
 | `gatewayCapabilities` | entrypoint | Capability flags peers forward unchanged. `interactive_plan_verification`: entrypoint can render the deep-research plan card. `interactive_user_input`: entrypoint can render a generic A2UI `user_input_request` surface (`ask_user_question`, tool approval, volume `prompt_user`) and round-trip a response. Web sets both; Slack/Teams set `interactive_user_input`; email sets it only when a magic-link form is configured; MCP/event-mesh leave it unset, so those prompts return a clean error (or, for tool approval, a fail-safe denial) instead of deadlocking. |
 | `callDepth` | delegating agent | Agent-to-agent recursion depth, gated by the per-agent peer-recursion limit |
 | `timestamp` | every publisher | Publication time in epoch milliseconds |
-| `delegating_agent_name` | delegating agent | Set on peer delegation; triggers verify-without-task-binding on the receiver |
+| `delegating_agent_name` | delegating agent | Set on peer delegation; the receiver verifies the sender without binding the check to a specific task |
 
-All keys are camelCase except `delegating_agent_name`, which stays snake_case for Python Agent Mesh wire parity. Reading the map with the wrong case is the most common A2A bug.
+All keys are camelCase except `delegating_agent_name`, which predates the camelCase convention; renaming it now would break any already-deployed component still reading the old key. Reading the map with the wrong case is the most common A2A bug.
 
 ## Signal Taxonomy
 
@@ -112,7 +113,7 @@ Signal-type values are snake_case lowercase on the wire: `llm_invocation`, not `
 
 ## Task State Vocabulary
 
-A2A defines a closed set of task states, carried in the `state` field of every status-update event and on the final task body.
+A2A defines a fixed set of task states, carried in the `state` field of every status-update event and on the final task body.
 
 | State | Meaning |
 |---|---|
@@ -130,9 +131,9 @@ The terminal status-update event for a task has `final: true`. After that, the a
 
 ## Snake_Case on the Wire vs CamelCase in HTTP
 
-The entrypoint's HTTP API uses camelCase (per the Solace REST API ADRs), but the A2A broker wire uses snake_case for inner blobs. The two conventions coexist at different layers: A2A wire parity with Python Agent Mesh is non-negotiable; REST ADR parity for the HTTP API is non-negotiable.
+The entrypoint's HTTP API uses camelCase (per the Solace REST API ADRs), but the A2A event broker wire uses snake_case for inner blobs. The two conventions coexist at different layers: A2A wire backward compatibility is non-negotiable — every already-deployed component must keep parsing new messages without a coordinated upgrade — and REST ADR compatibility for the HTTP API is separately non-negotiable.
 
-The canonical example is `task_metadata`: the same logical record flips case depending on whether it is travelling on the broker or in an HTTP data transfer object (DTO).
+The canonical example is `task_metadata`: the same logical record flips case depending on whether it is travelling on the event broker or in an HTTP data transfer object (DTO).
 
 On the A2A wire (inside `message.metadata` or the parameters of a tool invocation):
 
@@ -158,38 +159,34 @@ In an HTTP DTO returned by the entrypoint:
 }
 ```
 
-The rule is: if the bytes are going through the broker, snake_case; if they are going through HTTP, camelCase. Do not try to unify; the conversion happens at the entrypoint boundary.
+The rule is: if the bytes are going through the event broker, snake_case; if they are going through HTTP, camelCase. Do not try to unify; the conversion happens at the entrypoint boundary.
 
 ## JWT Signing and Trust
 
 A2A uses a single signed channel for both authentication and authorization:
 
-1. The entrypoint resolves the user's roles to scopes and signs a per-task JWT carrying both the user identity claims and the resolved `scopes` claim. The signed JWT is attached as `authToken` in the broker user properties.
+1. The entrypoint resolves the user's roles to scopes and signs a per-task JWT carrying both the user identity claims and the resolved `scopes` claim. The signed JWT is attached as `authToken` in the event broker user properties.
 2. The agent's trust manager verifies the JWT (proving the request came from a legitimate entrypoint) and reads the resolved scopes directly from the verified claims. The agent does not run its own role-based access control (RBAC) resolution.
 
-Each component holds a signing key for itself and verification keys for every other component, distributed via the trust-card topic. The signing key is bound to the broker client-username, and broker ACLs guarantee topic authenticity on the trust-card topic. That is what prevents a compromised peer from impersonating an entrypoint.
+Each component holds a signing key for itself and verification keys for every other component, distributed via the trust-card topic. The signing key is bound to the event broker client-username, and event broker ACLs guarantee topic authenticity on the trust-card topic. That is what prevents a compromised peer from impersonating an entrypoint.
+
+Entrypoints persist their signing key across restarts (derived from `session_secret_key` when set, otherwise self-persisted to a file on disk); other components generate a fresh key every restart. See [Trust and Identity Blocks](../reference/config-schema.md#trust-and-identity-blocks).
 
 :::warning
 The unsigned `a2aUserConfig._enterprise_capabilities` body field exists for historical reasons but must not be used to populate scopes. Trusting it would let a compromised peer agent re-publish a legitimately signed entrypoint JWT alongside an inflated `_enterprise_capabilities` body, and the receiving agent would honor the inflated scopes. Authorization decisions must derive from the cryptographically verified JWT claims only.
 :::
 
-In practice the receiving agent reconciles the unsigned body against the signed claims via a soft-subset assert: narrowing is allowed, widening is dropped with a structured warn. This is a deliberate migration accommodation, not a design feature; a future strict-mode configuration will reject mismatches outright.
+In practice the receiving agent reconciles the unsigned body against the signed claims using a soft-subset assert: narrowing the claims is allowed, but the agent drops and logs a warning for any widened claim. This behavior exists to support gradual migration, not as a permanent design choice; a future strict mode will reject mismatches outright.
 
 ## Three Patterns the Protocol Uses
 
 The protocol layers three independent patterns on top of the same envelope.
 
-Discovery. Every agent and entrypoint publishes its card (agent card or entrypoint card) on the discovery topics on startup, then republishes when its capability set changes. Subscribers (peer agents, the entrypoint agent-card endpoint) build a local view of who is on the mesh. A component that stops publishing is reaped from the local view by a TTL sweep. Trust cards on `<ns>/a2a/v1/trust/<componentType>/<componentID>` follow the same publish-on-startup pattern for signing keys.
+Discovery. Every agent and entrypoint publishes its card (agent card or entrypoint card) on the discovery topics on startup, then republishes when its capability set changes. Subscribers (peer agents, the entrypoint agent-card endpoint) build a local view of who is on the mesh. A time-to-live (TTL) sweep removes a component from the local view after it stops publishing, clearing out stale entries. Trust cards on `<ns>/a2a/v1/trust/<componentType>/<componentID>` follow the same publish-on-startup pattern for signing keys.
 
 Request-response. One request on the request topic, one terminal response on the reply topic. Used for `tasks/cancel`, `sam_remote_tool/invoke`, and the non-streaming `message/send`. The request carries `replyTo` in user properties; the responder publishes exactly once and then stops.
 
 Stream-status. Used for `message/stream`. The responder accepts the request, then emits a sequence of status-update events on the status topic until it finishes, at which point it emits one event with `final: true` and publishes a single response on the reply topic. Clients (the SSE event log, peer agents) follow the status stream live and use the terminal event to close their subscription.
-
-## Python Agent Mesh Parity
-
-The other implementation of A2A is the Python Agent Mesh runtime: same envelope, same topic conventions, same user-property semantics. A Go Agent-Workflow Executor can serve a Python entrypoint's request; a Python Agent-Workflow Executor can serve a Go entrypoint's request. Mixed deployments are explicitly supported.
-
-When the Go code and the Python code disagree on the wire, the Python repo is the cross-implementation contract. The fix is to change the Go code, not to invent a Go-specific message shape.
 
 ## Next Steps
 

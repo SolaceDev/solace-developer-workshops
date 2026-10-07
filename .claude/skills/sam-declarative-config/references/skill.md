@@ -18,13 +18,15 @@ skills/
   <name>/
     SKILL.md           required: YAML frontmatter holds name/description
     references/        optional: per-topic detail markdown
-    assets/            optional: prompt templates, images, helper scripts
+    assets/            optional: report templates, images, helper scripts
 ```
 
-Files under `assets/` can also be **templates**: an asset paired with a
-`<name>.template.yaml` sidecar ships a report/document template the agent fills
-and renders, with no generation code. See `skill-asset-templates.md` for the
-sidecar contract and a worked example.
+Files under `assets/` can also be **templates**: a single packaged `.samt`
+file ships a report/document template the agent fills and renders, with no
+generation code. The `.samt` is produced by the `package_template` tool and
+carries its contract internally; copy it into `assets/` as-is. See
+`skill-asset-templates.md` for the layout and where the contract is
+documented.
 
 The manifest entry under `resources.skills:` names the skill; the
 matching directory under `skills/<name>/` carries the body. The
@@ -65,19 +67,19 @@ will surface a plan-time dangling-reference error until updated.
    root, and its frontmatter `name` becomes the persisted skill name.
 
 Re-uploads are hash-diffed: the reconciler compares the local bundle's
-SHA-256 against the platform-stored `SkillDetailResponse.contentHash`
+SHA-256 against the platform's stored content hash (`contentHash`)
 and skips the upload when they match, so an unchanged skill plans as a
 no-op instead of bouncing through pending→ready and redeploying every
 bound agent. A description-only edit PATCHes metadata but skips the
 upload. A skill stuck in `discoveryStatus: failed` always re-uploads to
-retrigger the STR scan.
+retrigger the Secure Tool Runtime scan.
 
 ## Pull flow
 
 `sam config pull` downloads each skill's ZIP and unpacks it under
 `skills/<name>/`. The bundle's SKILL.md (with its frontmatter) is
 written verbatim. If the platform has no uploaded bundle yet
-(discovery_status == "created") or the unpack fails, pull writes a
+or the unpack fails, pull writes a
 synthesized SKILL.md from the platform's stored name/description so
 the user can re-author the bundle locally.
 
@@ -88,7 +90,7 @@ Each `<skill>/SKILL.md` begins with YAML frontmatter the platform reads:
 
 ```yaml
 ---
-name: my-skill            # required, kebab-case
+name: my-skill            # required; a letter, then letters, digits, - or _
 description: One-line summary used by the harness for skill discovery.
 # tags: [optional, list]   # optional; surfaced in skill listings
 ---

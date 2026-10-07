@@ -1,4 +1,5 @@
 ---
+published: true
 title: Sessions
 description: "How Agent Mesh persists conversations and manages the LLM context window: backends, session keying per entrypoint type, history compaction, and what stays in scope across turns."
 sidebar_position: 5100
@@ -38,8 +39,9 @@ A session ID is the primary key the session store indexes on. Each entrypoint ty
 | Slack | `(channel, thread_ts)` | Every thread is its own conversation. An `@`-mention in a channel root opens a new session; direct messages are sessioned per direct-message channel. |
 | Email | Email thread (`Thread-Index` and `In-Reply-To`, falling back to `Message-ID`) | Replies that thread together share a session; an unrelated email from the same sender opens a new one. Lowercase canonicalization runs on the user **identity**, not on the session key. |
 | MCP | OAuth identity claim (`user_id_claim`, default `email`) | Each authenticated Model Context Protocol (MCP) caller gets a session per agent it delegates to. Public unauthenticated mode collapses everyone to a single session, which is fine for local development only. |
-| Event mesh | Per-message ephemeral: each inbound broker message mints its own session, which does not carry over to the next message | Suits event-driven flows where each inbound message is treated as its own task. |
+| Event mesh | Per-message ephemeral: each inbound event broker message mints its own session, which does not carry over to the next message | Suits event-driven flows where each inbound message is treated as its own task. |
 | Teams | Teams-issued `convID` plus a day bucket (`personal:{convID}:{YYYYMMDD}` / `groupChat:{convID}:{YYYYMMDD}` / `channel:{convID}:{YYYYMMDD}`) | Deliberately **not** keyed on the resolved user identity. The email-to-aadObjectID lookup that resolves the user can transiently fail and would otherwise split one chat across multiple sessions; `convID` is immutable for the lifetime of the chat, so it stays consistent. The day bucket resets the session daily. |
+| WhatsApp | The sender's WhatsApp ID plus a per-sender session counter (`whatsapp:{wa_id}:{epoch}`) | One conversation per sender, because every WhatsApp chat is 1:1. The counter advances after 24 hours without a message from the sender, so the next message opens a new session. A change in the Agent Mesh user that the sender acts as also opens a new session. |
 
 The principle that makes these choices coherent: a session key must collapse the same conversational context onto the same row, and only that context. Slack threads are conversations, so `(channel, thread_ts)` is correct. Email replies thread by reference, so the thread root is correct; two unrelated emails from the same sender open two sessions. MCP clients are software, so an OAuth identity is correct. Event mesh messages are usually one-shot transformations, so the key derived from each inbound message stands alone.
 
@@ -107,7 +109,7 @@ A session's lifetime is bounded by the mode the task ran under and by what the o
 - **Update.** Every turn writes the row again, appending the new messages, bumping the optimistic-lock version, and refreshing `updatedAt`. The runtime uses the version to detect concurrent writers and retry on conflict.
 - **Compact.** Reactive or manual compaction rewrites the history field; the row's identity does not change.
 - **Discard (run-based tasks only).** A sub-task delegation, peer call, or workflow-node invocation writes its session row but the row is not re-used on a subsequent task. It stays in the database for audit but does not participate in any further conversation.
-- **Retain.** Agent Mesh does not ship a background retention sweep. SQLite and PostgreSQL databases grow until you trim them. Sessions follow the same lifetime model as [Artifacts](./artifacts.md): durable across the conversation's life, not auto-purged. Operational guidance for sizing, snapshots, and retention lives in [Managing Backups and Data Retention](../administering/backups-and-data-retention.md).
+- **Retain.** The entrypoint's data-retention sweep prunes task, feedback, and event rows past a configurable age. The sweep does not cover session rows, so SQLite and PostgreSQL databases grow until you trim them. Sessions follow the same lifetime model as [Artifacts](./artifacts.md): durable across the conversation's life, not auto-purged. Operational guidance for sizing, snapshots, and retention lives in [Managing Backups and Data Retention](../administering/backups-and-data-retention.md).
 
 ## What Next?
 

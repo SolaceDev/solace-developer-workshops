@@ -1,4 +1,5 @@
 ---
+published: true
 title: Graph Database Connectors (Experimental)
 description: Configure Graph Database connectors so agents can query Neo4j or Amazon Neptune graph databases using Cypher through natural language.
 sidebar_position: 1

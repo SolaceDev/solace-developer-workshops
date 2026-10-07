@@ -1,4 +1,5 @@
 ---
+published: true
 title: Event Mesh Connectors
 description: Configure Event Mesh connectors so agents can send messages to backend services over a Solace event broker using Request-Reply or Publish-Subscribe.
 sidebar_position: 1

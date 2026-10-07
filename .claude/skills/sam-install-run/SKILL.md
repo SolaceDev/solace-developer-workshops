@@ -1,25 +1,26 @@
 ---
 name: sam-install-run
 description: Use when someone wants to install or try Solace Agent Mesh on their own machine — downloading and launching the desktop app, first chat with the built-in agents, or pre-flight checks for a local trial. Not for shared/team deployments (sam-deploy), building agents beyond the first chat (sam-author-agent), or fixing a broken installation (sam-troubleshoot).
-version: main-v2.249.1-dirty
+metadata:
+  version: main-v2.381.3
 ---
 
 # sam-install-run
 
-This skill gets one person from zero to chatting with SAM on their own machine. Deciding question: *is anyone else depending on this instance?* Yes → `sam-deploy`. Once they're chatting and want to build something → `sam-author-agent`.
+This skill gets one person from zero to chatting with Agent Mesh on their own machine. Deciding question: *is anyone else depending on this instance?* Yes → `sam-deploy`. Once they're chatting and want to build something → `sam-author-agent`.
 
 **Tool preference overrides the audience axis.** If a solo user specifically wants **Helm / Kubernetes / a cluster** — even just to try it themselves — that is a legitimate local evaluation, not a team deployment: route them to `sam-deploy`'s Helm quickstart (local/connected eval) rather than steering them onto desktop. Don't reserve Helm for shared use.
 
 ## Where everything comes from
 
-**All artifacts — desktop installers, the `sam` CLI binary, Helm charts — come from the Solace product portal: https://products.solace.com/ (login required; navigate to `Agent_Mesh`).** No portal access → Solace account team or solace.com/support.
+**All artifacts — desktop installers, the `sam` CLI binary, Helm charts — come from the Solace product portal: https://products.solace.com/ (login required; navigate to `Agent_Mesh`).** No portal access → Solace account team or https://solace.com/support.
 
 - **Never** point users at GitHub (the product repos are not public).
 - **Never** suggest `pip install solace-agent-mesh` — that is the *Python* implementation, a different runtime. There is no pip route to this product.
 
 ## The one hard prerequisite
 
-**An LLM API key** (any OpenAI-compatible provider, or Anthropic). Everything else — broker, database, storage — is embedded/in-memory in the desktop trial. Don't *push* a user toward standing up brokers, Postgres, or Kubernetes for a solo trial — but if they specifically want Helm, the Helm quickstart bundles its own broker + persistence and is a valid solo eval (path 2).
+**An LLM API key** (any OpenAI-compatible provider, or Anthropic). Everything else — broker, database, storage — runs embedded and local in the desktop trial (in-process dev broker, on-disk SQLite, local filesystem storage under the data dir); nothing external to stand up. Don't *push* a user toward standing up brokers, Postgres, or Kubernetes for a solo trial — but if they specifically want Helm, the Helm quickstart bundles its own broker + persistence and is a valid solo eval (path 2).
 
 ## Paths, in order
 
@@ -28,17 +29,19 @@ This skill gets one person from zero to chatting with SAM on their own machine. 
 
 ## What first run actually looks like
 
-No example gallery (yet). The chat UI opens with two pre-seeded agents:
-- **Orchestrator** — the conversational entry point; chat with it immediately.
-- **Builder** — the AI-assisted creation path: describe an agent in plain language and it drafts one. This is the bridge to `sam-author-agent`.
+No example gallery (yet). The chat UI opens with two agents ready:
+- **Orchestrator** — the conversational entry point; chat with it immediately. (The only DB-seeded built-in agent.)
+- **Builder** (shown as *Solace Agent Mesh Builder*) — the AI-assisted creation path: describe an agent in plain language and it drafts one. Bundled with the desktop/embedded runtime, so it's always present. This is the bridge to `sam-author-agent`.
 
 ## Hard rules
 
-- **Go product only.** No `pip install`, no `sam init` (the Go CLI has no scaffold verb — the desktop app boots from bundled defaults), no `solace-ai-connector`, no Python SAM ports/paths.
-- **Binary naming is not a user choice.** The docs list base and `-enterprise` binary filenames; use whichever the portal artifact ships — never present "base vs enterprise" as an edition decision (it isn't one; SAM is one product).
-- **The WebUI/entrypoint lands on port 8800** (the desktop app opens it for you; the startup log prints the URL — tell users to trust that line over any remembered port).
-- **Pre-flight on a laptop**: `sam doctor` with `SAM_DOCTOR_CONTEXT=local` checks the LLM key, ports, and runtime before first start — cheaper than debugging a blank chat.
+- **Go product only.** No `pip install`, no `sam init` (the Go CLI has no scaffold verb — the desktop app boots from bundled defaults), no `solace-ai-connector`, no Python Agent Mesh ports/paths.
+- **One product, no feature tiers.** Agent Mesh has no community/enterprise feature split and no `-enterprise` binaries — every build carries the same features. The only build variation is product analytics (below): a `-desktop-free-` installer, when a release publishes one, is the same app with analytics compiled in. Never present a "base vs enterprise" feature choice (it isn't one).
+- **The desktop app has no fixed port** — it picks a free one at launch and opens the WebUI for you. Take the URL from the app or its startup log, never from memory; the CLI reaches it with `--target desktop`.
+- **Pre-flight on a laptop**: `sam doctor` runs a local pre-flight by default (the `local` context — `SAM_DOCTOR_CONTEXT` is optional now, needed only for `wheel`/`helm`), checking the LLM key, ports, and runtime before first start — cheaper than debugging a blank chat.
+- **The desktop instance is self-contained and local.** It does not share agents, models, or config with any hosted/web Agent Mesh the user has elsewhere (e.g. a company support assistant) — its agents live in its own on-disk SQLite. Don't assume something built in one instance appears in the other; to carry config across, use `sam config pull`/`apply` against the desktop origin (closing note below). There is no automatic sync.
 - A failing *trial* (won't start, blank UI, LLM errors) routes to `sam-troubleshoot` / `sam-operate` only after `sam doctor` has been run and read.
+- **Product analytics collects unless the installation turns it off.** An installation with no decision recorded is collecting, and only a stored refusal stops it; whether an installation carries the collection path at all is a build-time choice, not a runtime setting. Only the `-desktop-free-` artifacts compile it in (for example `solace-agent-mesh-<version>-desktop-free-macos-<arch>.dmg`), and there it ships on. The standard desktop installers and the `sam` CLI binary are the standard build, which compiles in no collection path at all, so no decision can turn anything on there — there is no env var or setting that adds it back. With the collection path present and no decision recorded, the installation is collecting. Manage the decision with `sam analytics status | enable | disable`, which each print the decision and whether anything is collected; `status` records nothing and leaves the anonymous identifier alone, reporting `Not recorded` when nobody has answered yet. The `analytics` command only exists on a build that compiles in the collection path — a standard build has no `sam analytics` at all, since there is nothing for it to manage. The web UI offers the same decision under **Privacy** in the **Settings** dialog on a build that includes product analytics (a `-desktop-free-` artifact); on the standard build — including the standard desktop installers — that section is hidden too, for the same reason. Both surfaces read the same per-installation record where they exist. Turning collection off discards the anonymous identifier and turning it back on mints a fresh one, so the two periods cannot be linked; re-running `enable` on an installation that is already collecting keeps the identifier it has. The decision lives in the installation's database, and a command given a store (`--database-url` or `SAM_ANALYTICS_DATABASE_URL`) names the one it used, while a local install prints no store because there is only one; a deployment with its own `session_service.database_url` needs `--database-url` to reach the record it actually reads. Say plainly that analytics is on unless turned off, and never suggest editing the record directly.
 
 ## References
 
@@ -48,4 +51,4 @@ No example gallery (yet). The chat UI opens with two pre-seeded agents:
 
 Graduation hand-offs: "now I want it to do X" → `sam-author-agent` (often just: talk to the Builder agent); "my team should use this" → `sam-deploy` (and `sam config pull` carries what they built — see `sam-declarative-config`).
 
-The desktop instance runs a full platform whose config API is fronted by the entrypoint proxy (`http://127.0.0.1:8800` by default), so `sam config apply --url <that origin>` (or `--target desktop`) targets it directly — you can iterate declarative config against the desktop instance, not just `pull` from it. See `sam-declarative-config`.
+The desktop instance runs a full platform whose config API is fronted by the entrypoint proxy on a port chosen at launch, so `sam config apply --target desktop` targets it directly (the CLI looks up the port the running app bound) — you can iterate declarative config against the desktop instance, not just `pull` from it. See `sam-declarative-config`.

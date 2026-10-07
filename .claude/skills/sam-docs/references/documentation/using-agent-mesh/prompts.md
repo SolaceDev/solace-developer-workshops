@@ -1,4 +1,5 @@
 ---
+published: true
 title: Prompts
 description: "Save, organize, and re-use prompts across conversations from the Agent Mesh UI."
 sidebar_position: 653

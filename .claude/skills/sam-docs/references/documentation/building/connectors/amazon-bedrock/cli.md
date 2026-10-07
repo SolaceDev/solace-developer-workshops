@@ -1,4 +1,5 @@
 ---
+published: true
 title: Amazon Bedrock Connectors via the CLI
 description: Configure an Amazon Bedrock Knowledge Base connector as declarative YAML and apply it with the Agent Mesh CLI, so agents can retrieve context from your knowledge base for Retrieval-Augmented Generation.
 sidebar_position: 2

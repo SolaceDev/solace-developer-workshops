@@ -1,22 +1,12 @@
----
-name: sam-concepts
-description: Core concepts of Solace Agent Mesh — component types, how they relate, agent anatomy, tool ecosystem, workflow nodes, and when to use what.
-tags:
-  - builder
-  - concepts
-  - architecture
-  - sam
----
-
-# SAM Core Concepts
+# Agent Mesh Core Concepts
 
 ## What is Solace Agent Mesh
 
-Solace Agent Mesh (SAM) is an event-driven AI agent platform. Agents communicate through a message broker rather than calling each other directly. This decoupled architecture means any component — an agent, an entrypoint, a workflow — can be added, removed, or replaced independently without affecting the rest of the system.
+Solace Agent Mesh (Agent Mesh) is an event-driven AI agent platform. Agents communicate through a message broker rather than calling each other directly. This decoupled architecture means any component — an agent, an entrypoint, a workflow — can be added, removed, or replaced independently without affecting the rest of the system.
 
 All inter-component communication uses the A2A (Agent-to-Agent) protocol over the event mesh. Components discover each other automatically: agents announce their capabilities, and other components find them dynamically through agent card publishing. There is no manual wiring required.
 
-SAM supports real-time event-driven work (reacting to things as they happen) and scheduled work (recurring tasks on a timetable). Most real-world agents handle both.
+Agent Mesh supports real-time event-driven work (reacting to things as they happen) and scheduled work (recurring tasks on a timetable). Most real-world agents handle both. For design guidance on scheduled work, see *Scheduled work design* in the lookup table at the end of this guide.
 
 ---
 
@@ -24,7 +14,7 @@ SAM supports real-time event-driven work (reacting to things as they happen) and
 
 ### Agent
 
-An agent is an LLM-powered processing unit. It is the core building block of SAM. An agent has:
+An agent is an LLM-powered processing unit. It is the core building block of Agent Mesh. An agent has:
 
 - An instruction (system prompt) that defines its personality, expertise, and constraints
 - One or more skills (knowledge bundles) and capabilities (public descriptions for discovery)
@@ -66,14 +56,14 @@ Workflow node types are described in the Workflow Node Types section below.
 
 ### Entrypoint
 
-An entrypoint bridges external protocols into the SAM mesh. Users and external systems interact with agents through entrypoints. An entrypoint handles:
+An entrypoint bridges external protocols into Agent Mesh. Users and external systems interact with agents through entrypoints. An entrypoint handles:
 
 - Protocol translation (HTTP/SSE, REST, webhooks, Slack, Teams, etc.)
 - Authentication and authorization
 - Message formatting and response streaming
 - Session management for multi-turn conversations
 
-The most common entrypoint is the HTTP SSE entrypoint, which provides a streaming chat interface. Other entrypoints (Slack, Teams, Event Mesh) are available as plugins.
+The most common entrypoint is the HTTP SSE entrypoint, which provides a streaming chat interface. Slack, Teams, Event Mesh, MCP and webhook entrypoints are built-in types you configure; there is nothing extra to install.
 
 #### Event Mesh Entrypoint
 
@@ -88,15 +78,15 @@ An event mesh entrypoint configuration defines:
 
 This is the key component for building agents that operate autonomously without human interaction — reacting to events as they happen, processing data streams, and triggering actions based on real-time conditions. Without an event mesh entrypoint, agents can only respond to user-initiated chat requests.
 
-For configuration details, refer to the `sam-gateway-schema` skill.
+For configuration details, see *Entrypoint schema* in the lookup table at the end of this guide.
 
-You typically do not need to create custom entrypoints unless you are bridging a new external protocol. The built-in HTTP SSE entrypoint covers most interactive use cases. For event-driven use cases, use an event mesh entrypoint (see below).
+You typically do not need to create custom entrypoints unless you are bridging a new external protocol. The built-in HTTP SSE entrypoint covers most interactive use cases, and the event mesh entrypoint covers autonomous event-driven use cases.
 
-For design guidance on event mesh entrypoints, refer to `sam-event-mesh-design`. For configuration details, refer to `sam-event-mesh-schema`.
+For design guidance on event mesh entrypoints, see *Event mesh entrypoint design* in the lookup table at the end of this guide; for configuration details, *Event mesh entrypoint schema* in the same table.
 
 ### Proxy
 
-A proxy connects external A2A-over-HTTPS agents into the SAM mesh. It translates between the A2A/HTTPS protocol used by external agents and the A2A/Solace protocol used internally.
+A proxy connects external A2A-over-HTTPS agents into Agent Mesh. It translates between the A2A/HTTPS protocol used by external agents and the A2A/Solace protocol used internally.
 
 A single proxy can manage multiple external agents. It handles:
 
@@ -105,19 +95,11 @@ A single proxy can manage multiple external agents. It handles:
 - Artifact resolution between external and internal formats
 - Task lifecycle management (initiation, cancellation, completion)
 
-Use proxies when you need to integrate agents hosted outside your SAM deployment — third-party agents, agents in other organizations, or agents running on different infrastructure.
+Use proxies when you need to integrate agents hosted outside your Agent Mesh deployment — third-party agents, agents in other organizations, or agents running on different infrastructure.
 
-### Plugin
+### Toolset
 
-A plugin is a packaged, distributable SAM component. Plugins wrap agents, entrypoints, or custom functionality into installable units that can be shared across projects and teams.
-
-Plugin types:
-
-- **Agent plugins**: Package an agent with its tools, skills, and configuration
-- **Entrypoint plugins**: Package an entrypoint with its protocol adapters
-- **Custom plugins**: Package arbitrary functionality (tools, service providers, etc.)
-
-Plugins are the mechanism for reuse and distribution. Build a standalone agent first for prototyping, then package it as a plugin when it needs to be shared or deployed in multiple environments.
+A toolset is a named, reusable bundle of tools that any number of agents can reference. Custom tools are packaged and uploaded as a toolset; built-in tool groups, MCP connections and OpenAPI specs are exposed the same way. Toolsets, together with skills, are the unit of reuse: define the capability once and reference it from every agent that needs it, rather than copying tool configuration between agents.
 
 ### Project
 
@@ -134,7 +116,7 @@ Projects are organizational — they do not affect how agents run or communicate
 
 A prompt is a reusable template with variable substitution. Prompts let users save commonly used messages and fill in variables at use time.
 
-- Prompt groups contain one or more versioned prompts
+- Prompt groups contain one or more prompts
 - Variables use `{{Variable Name}}` syntax (title case with spaces)
 - Prompts can be accessed via shortcuts in the chat interface
 
@@ -149,7 +131,7 @@ Agents are the fundamental unit. Everything else either composes agents, exposes
 - **Workflows compose agents**: A workflow's agent nodes invoke agents as steps. The workflow controls the order and logic; the agents do the actual work.
 - **Entrypoints expose agents**: Users reach agents through entrypoints. The entrypoint translates the user's protocol (HTTP, Slack, etc.) into A2A messages.
 - **Proxies bridge agents**: External agents become available on the mesh through proxies, appearing as regular agents to everything else.
-- **Plugins package agents**: A plugin wraps an agent (or entrypoint, or tool) for distribution and reuse.
+- **Toolsets package tools**: A toolset bundles tools once so many agents can reference them.
 - **Skills provide agent knowledge**: Skills are loadable knowledge bundles with reference material and optional associated tools, loaded on demand.
 - **Capabilities describe agent expertise**: Listed on the agent card, capabilities tell other components what this agent can do.
 - **Tools extend agent reach**: Tools are how agents take actions — calling APIs, querying databases, managing artifacts, delegating to peers.
@@ -215,35 +197,40 @@ Artifacts are versioned files that agents can create, read, update, and share. T
 
 ## Tool Ecosystem
 
-Agents use tools to take actions. SAM supports four categories of tools:
+Agents use tools to take actions. Agent Mesh supports five categories of tools:
 
 ### Built-in Tools
 
-Go-native tools that run in-process with the agent. They are fast, reliable, and always available. Built-in tool groups include:
+Tools that ship with Agent Mesh. Most are Go-native and run in-process with the agent; a few (file and PDF conversion, Mermaid rendering) run in the Secure Tool Runtime, and the Python-backed ones are not available in the desktop app. Built-in tool groups include:
 
-- **Artifact management**: Create, read, update, search-replace, extract, and append to artifacts
+- **Artifact management**: List, load, delete, append to, grep, and search-and-replace in artifacts
 - **Web requests**: Make HTTP requests to external APIs and services
 - **Image processing**: Analyze, transform, and generate images
 - **Data analysis**: Process and visualize data
-- **General utilities**: Time, Markdown conversion, Mermaid diagrams
+- **General utilities**: Time, file-to-Markdown conversion, PDF text extraction
+- **Diagrams**: Render Mermaid syntax to an image
 
 Built-in tools are configured by referencing their group name in the agent config.
 
 ### Custom Python Tools
 
-User-written Python tools that run in the Secure Tool Runtime (STR) sandbox. Use custom tools when you need functionality not covered by built-in tools — integrating with a specific API, running domain-specific logic, processing specialized data formats.
+User-written tools that run in the Secure Tool Runtime (STR) sandbox, written in Python or in Go (a standalone binary built with the Agent Mesh tool SDK). Use custom tools when you need functionality not covered by built-in tools — integrating with a specific API, running domain-specific logic, processing specialized data formats.
 
 Custom tools are defined with:
 
 - A tool name and description
 - Input parameters with types and descriptions
-- A Python function that implements the tool logic
+- A Python function or Go handler that implements the tool logic
 
 The STR provides a secure execution environment with resource isolation.
 
+### OpenAPI and Connector Tools
+
+Tools generated from a service definition rather than written by hand. An OpenAPI spec becomes one tool per operation, and a connector (a REST API, database, event broker, or similar) produces tools for the system it connects to. Use them when the integration is a standard API or data source — no code to write or maintain.
+
 ### MCP Tools
 
-Tools exposed by external Model Context Protocol (MCP) servers. MCP is a standard protocol for connecting LLMs to external tool providers. SAM agents can connect to any MCP server via stdio, SSE, or HTTP transport.
+Tools exposed by external Model Context Protocol (MCP) servers. MCP is a standard protocol for connecting LLMs to external tool providers. Agent Mesh agents can connect to any MCP server via stdio, SSE, or HTTP transport.
 
 Use MCP tools when you want to leverage existing MCP-compatible tool servers — database access, code execution environments, third-party integrations that already have MCP support.
 
@@ -257,7 +244,7 @@ Peer delegation is automatic when the agent has peer routing enabled — the age
 
 ## Workflow Node Types
 
-Workflows are built from five node types:
+Workflows are built from six node types:
 
 ### Agent Node
 
@@ -284,6 +271,10 @@ Repeated execution with a termination condition. Runs a subgraph repeatedly unti
 
 Invokes another workflow as a node. Enables composition of workflows — complex processes can be broken into smaller, reusable sub-workflows.
 
+### Tool Node
+
+Calls a single tool directly, with no LLM in the loop. Use it for deterministic steps — a lookup, a conversion, a fixed API call — where an agent would only add cost and the risk of transcription errors. Tool nodes never retry.
+
 ### Workflow Execution Features
 
 - **Dependencies**: Nodes declare `depends_on` to define execution order. Nodes with no dependencies run in parallel.
@@ -296,7 +287,7 @@ Invokes another workflow as a node. Enables composition of workflows — complex
 
 ## When to Use What
 
-For detailed guidance on mapping requirements to SAM components, refer to the `sam-best-practices` skill. The brief guidance is:
+For detailed guidance on mapping requirements to Agent Mesh components, read the best-practices guide (*Best-practices guide* in the lookup table at the end of this guide). The brief guidance is:
 
 | Need | Component |
 |------|-----------|
@@ -304,11 +295,11 @@ For detailed guidance on mapping requirements to SAM components, refer to the `s
 | Deterministic multi-step process with explicit control flow | Workflow |
 | Expose agents to users or external systems | Entrypoint |
 | Integrate an agent hosted outside your deployment | Proxy |
-| Package a component for reuse and distribution | Plugin |
+| Package tools for reuse across agents | Toolset |
 | Organize user sessions and artifacts | Project |
 | Save reusable message templates | Prompt |
 | Provide loadable knowledge and associated tools to an agent | Skill |
-| React to external events with AI processing | Event Mesh Entrypoint |
+| Connect agents to real-world events for autonomous operation | Event Mesh Entrypoint |
 
 **Agent vs. Workflow**: Use an agent when the LLM should decide what to do next. Use a workflow when you know the sequence of steps ahead of time and want deterministic execution. Workflows often contain agents as nodes — the workflow controls the process, the agents handle the reasoning within each step.
 
@@ -320,13 +311,21 @@ For detailed guidance on mapping requirements to SAM components, refer to the `s
 
 ## Configuration
 
-All SAM components are defined as YAML configuration. Each component type has a specific schema that defines its required and optional fields.
+All Agent Mesh components are defined as YAML configuration. Each component type has a specific schema that defines its required and optional fields.
 
-For exact field definitions, required fields, and annotated examples, refer to the schema skills:
-- `sam-agent-schema` — agent configuration schema
-- `sam-workflow-schema` — workflow configuration schema
-- `sam-tool-schema` — tool definition schema
-- `sam-event-mesh-schema` — event mesh entrypoint configuration schema
-- `sam-gateway-schema` — full entrypoint configuration schema (HTTP SSE and event mesh entrypoints)
+For exact field definitions, required fields, and annotated examples, use the schema reference for the component type — *Agent, workflow, tool schema*, *Entrypoint schema* and *Event mesh entrypoint schema* in the lookup table at the end of this guide. Where the configuration itself lives, and how it reaches the platform, depends on where you are working; the same table says.
 
-When building components through the SAM builder, configurations are stored in the platform database and deployed through the platform service's control protocol. You do not need to manage config files directly.
+## Working with declarative config
+
+Where this guide says to look something up, read one of these files. Paths are relative to the `sam-declarative-config` skill root; a sibling skill is installed next to it.
+
+| Topic | Where |
+|---|---|
+| Agent, workflow, tool schema | `references/agent.md`, `references/workflow.md`, `references/toolset.md` |
+| Entrypoint schema | `references/entrypoint.md` |
+| Event mesh entrypoint schema | `references/entrypoint.md`, section *type: event_mesh* |
+| Event mesh entrypoint design | the rule under *Event Mesh Entrypoint* above is the whole pattern |
+| Scheduled work design | `workflows.md` under the `sam-author-agent` skill's references, the scheduled-task paragraph |
+| Best-practices guide | `references/design/best-practices.md` |
+
+Every component is a YAML file in your config repo, applied with `sam config apply`; `references/layout.md` says where each kind lives.

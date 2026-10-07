@@ -1,4 +1,5 @@
 ---
+published: true
 title: SQL Connectors
 description: Configure SQL connectors so agents can query MySQL, PostgreSQL, MariaDB, Microsoft SQL Server, or Oracle databases through natural language.
 sidebar_position: 1

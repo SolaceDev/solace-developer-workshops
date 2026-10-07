@@ -1,4 +1,5 @@
 ---
+published: true
 title: Graph Database Connectors via the CLI (Experimental)
 description: Define a Graph Database connector as declarative-config YAML and apply it into Agent Mesh with sam config.
 sidebar_position: 2

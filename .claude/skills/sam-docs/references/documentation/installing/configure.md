@@ -1,4 +1,5 @@
 ---
+published: true
 title: Configuring Agent Mesh
 description: Configure the event broker, LLM provider, artifact and session storage, authentication, and secrets for a Kubernetes install of Agent Mesh.
 sidebar_position: 360
@@ -54,7 +55,7 @@ Every agent, and the entrypoint's system agent when present, calls a model ident
 
 | Prefix | Provider | Notes |
 |---|---|---|
-| `openai/` | OpenAI direct, or any OpenAI-compatible endpoint | The default when you give no prefix. |
+| `openai/` | OpenAI direct, or any OpenAI-compatible endpoint | The default when you give no prefix. An OpenAI-compatible endpoint also requires its endpoint URL. |
 | `anthropic/` | Anthropic Claude direct | Inferred from any model name that contains `claude` or `anthropic`. |
 | `azure/` | Azure OpenAI | Requires an endpoint, an API version, and a deployments map. |
 | `bedrock/` | AWS Bedrock | Requires an IAM principal with `bedrock:InvokeModel`, plus an access key, a secret key, and a region. |

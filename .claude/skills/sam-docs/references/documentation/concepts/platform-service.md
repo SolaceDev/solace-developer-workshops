@@ -1,4 +1,5 @@
 ---
+published: true
 title: Platform Service
 description: "The Agent Mesh Platform service: the HTTP control plane that exposes agents, deployments, skills, toolsets, models, RBAC, evaluations, audit logs, and the AI Assistant on top of the runtime fabric."
 sidebar_position: 5110
@@ -39,11 +40,12 @@ The Platform service exposes a set of REST resources under `/api/v1/platform/`. 
 | Entrypoint deployments | `/api/v1/platform/entrypointDeployments` | Lifecycle of an entrypoint deployment. Uses the same `deploy`, `update`, and `undeploy` action set as agents. |
 | Connectors | `/api/v1/platform/connectors` | External-system integrations such as OpenAPI services, MCP servers, and OAuth-fronted APIs. Connectors are cataloged at the platform level and referenced from agent configurations. |
 | Remote A2A agents | `/api/v1/platform/remoteAgents` | Agents that live outside this deployment, registered as proxies so the local mesh can call them. Each remote agent becomes a proxy deployment that bridges A2A traffic to the external endpoint. |
-| Skills | `/api/v1/platform/skills` | Skill bundles: a `SKILL.md` manifest plus its tools and resources. The Platform service stores the bundle, the Secure Tool Runtime loads it, and the runtime serves its contents to agents over the broker. |
+| Skills | `/api/v1/platform/skills` | Skill bundles: a `SKILL.md` manifest plus its tools and resources. The Platform service stores the bundle, the Secure Tool Runtime loads it, and the runtime serves its contents to agents over the event broker. |
 | Toolsets | `/api/v1/platform/toolsets` | Named tool groupings used to package related tools and reference them from many agents. |
 | Tools | `/api/v1/platform/tools` | Read-only registry of every tool the deployment knows about: built-in tools, skill-bundled tools, MCP tools, and OpenAPI tools. |
 | Models | `/api/v1/platform/models` | The LLM provider catalog: model name aliases plus provider credentials. Agents reference models by alias so credentials and endpoints can rotate without touching agent configurations. |
 | RBAC roles and mappings | `/api/v1/platform/rbac/roles`, `/api/v1/platform/profileProvider` | Role definitions, role-to-claim mappings, and the configured profile provider. The Platform service is the authority for these. The entrypoint calls the Platform service at JWT-mint time to resolve a user's roles into scopes. |
+| Web UI settings | `/api/v1/platform/webuiSettings` | Instance-wide Agent Mesh UI branding and assistant defaults, including application name, welcome message, and logos. These override the Web UI entrypoint's own YAML and environment-variable values. A single record, not a list. For the full list, see [Web UI Settings](../building/declarative-config/the-manifest.md#web-ui-settings). |
 | Evaluation datasets, evaluators, experiments, runs | `/api/v1/platform/evaluations/datasets`, `/evaluations/evaluators`, `/evaluations/experiments`, `/evaluations/runs` | The evaluation pipeline. Datasets hold input and expected pairs. Evaluators are the scoring logic. An experiment binds a dataset and an evaluator to a target agent. A run executes the experiment. Run status lifecycle is `pending`, `running`, `completed`, `completed_with_warnings`, `failed`, and `cancelled`. |
 | Builder Agent test sessions | `/api/v1/platform/builder/sessions/{sessionId}/test-agent` | Ephemeral agents the AI Assistant spawns to sanity-check a generated configuration before the user commits it. |
 
@@ -57,9 +59,9 @@ An agent is a stored configuration. Creating or updating an agent records the ch
 
 An agent deployment is a directive to the Agent-Workflow Executor to start running that agent, stop running it, or pick up an updated version. A deployment captures a snapshot of the agent configuration at the moment of the action, so the running agent and the stored configuration cannot drift unless someone explicitly issues a new deployment.
 
-Deployment is synchronous. The Platform service issues the control-plane RPC to the Agent-Workflow Executor first and waits for the result. Only then does the Platform service persist a deployment row carrying the final outcome (`success` or `failed`). There is no transient pending state and no asynchronous transition: by the time the client receives a response, the row already reflects whether the Agent-Workflow Executor accepted the configuration. The deployment DTO exposes a user-visible status of `deployed`, `not_deployed`, or `deploy_failed`.
+Deployment is synchronous. The Platform service issues the control-plane RPC to the Agent-Workflow Executor first and waits for the result. Only then does the Platform service persist a deployment row carrying the final outcome (`success` or `failed`). There is no transient pending state and no asynchronous transition on that path: by the time the client receives a response, the row already reflects whether the Agent-Workflow Executor accepted the configuration. A deployment row does not always come from a client request. The Platform service also reconciles on its own startup and whenever an Agent-Workflow Executor or Entrypoint Executor restarts. It replays the last successful deployment for each deployed agent, and records a new row only when the replay outcome differs from the last recorded one. Those rows carry a `createdBy` of `reconciler` rather than a user identity. The deployment DTO exposes a user-visible status of `deployed`, `not_deployed`, or `deploy_failed`.
 
-What happens after a successful deployment is tracked separately. Each agent carries a runtime status: `running`, `starting`, `disconnected`, or `stopped`. The runtime status reflects whether the Agent-Workflow Executor is actually serving the agent right now. The deployment record describes the moment the configuration was pushed. The runtime status describes whether the agent is up at this instant. The two are decoupled because an agent can be deployed and not running (for example, the Agent-Workflow Executor pod restarted, or a peer disconnected) without the operator having taken any deployment action.
+What happens after a successful deployment is tracked separately. Each agent carries a runtime status: `running`, `degraded`, `starting`, `disconnected`, or `stopped`. The runtime status reflects whether the Agent-Workflow Executor is actually serving the agent right now, and whether it is currently reporting any active problems. The deployment record describes the moment the configuration was pushed. The runtime status describes whether the agent is up at this instant. The two are decoupled because an agent can be deployed and not running (for example, the Agent-Workflow Executor pod restarted, or a peer disconnected) without the operator having taken any deployment action. A `degraded` agent is still up and serving requests. It differs from `running` only in that it is also reporting one or more active problems.
 
 Workflow deployments and entrypoint deployments follow the same synchronous shape. A change to an entrypoint configuration does nothing until an entrypoint deployment is issued to push the change into a running Entrypoint Executor.
 
@@ -93,7 +95,7 @@ The Assistant does not write directly to the platform database. The deploy step 
 
 The Platform service authenticates every request with a JWT carried in the `Authorization: Bearer <token>` header. The signing key belongs to the entrypoint whose trust card the Platform service has received over the event broker. The same trust-manager machinery that authenticates Agent-to-Agent (A2A) messages between the Agent-Workflow Executor and the entrypoint authenticates HTTP requests from an entrypoint to the Platform service.
 
-Authorization runs per-endpoint. Each route declares a required scope (`agent_builder:_:create`, `entrypoint:*:read`, `rbac:_:update`, and so on). The Platform service rejects the request with HTTP 403 if the JWT's scope set does not include the required scope. For the full list of platform scopes, see [RBAC Reference](../reference/rbac-reference.md).
+Authorization runs per-endpoint. Each route declares a required scope (`agent_builder:_:create`, `entrypoint:*:read`, `rbac:_:read`, and so on). The Platform service rejects the request with HTTP 403 if the JWT's scope set does not include the required scope. RBAC management endpoints are the exception: they require the superadmin grant rather than a scope. For the full list of platform scopes, see [RBAC Reference](../reference/rbac-reference.md).
 
 The Platform service is also the authority for RBAC resolution. When the entrypoint mints a JWT for a new user task, the entrypoint calls the Platform service over the event broker on the `<namespace>/sam/v1/authz/lookup/<gatewayId>` topic to resolve the user's roles into a concrete scope set. The Platform service looks up the user's role assignments, the scopes those roles map to, and any IdP-claim-driven mappings, applies the configured profile provider, and returns the resolved scopes. The entrypoint embeds the result in the JWT and the rest of the system reads from the signed claims. For more information about JWT signing and trust, see [Agent-to-Agent Protocol](./a2a-protocol.md).
 
@@ -109,7 +111,7 @@ Discovery is how the platform Agent Mesh UI distinguishes a configured-but-undep
 
 ## Persistence
 
-The Platform service stores its configuration state in SQLite (the default) or PostgreSQL (for production). The pure-Go SQLite driver `modernc.org/sqlite` keeps the deployment story for the single-container case straightforward, with no native dependencies. PostgreSQL is the recommended store for multi-instance deployments because the Platform service is stateless apart from the database.
+The Platform service stores its configuration state in SQLite (the default) or PostgreSQL (for production). The pure-Go SQLite driver `modernc.org/sqlite` keeps the deployment story for the single-container case straightforward, with no C dependencies. PostgreSQL is the recommended store for multi-instance deployments because the Platform service is stateless apart from the database.
 
 The Platform service uses goose to manage schema migrations, with the migration files embedded in the binary. The migration set runs automatically at startup; you do not need to run migrations manually.
 
@@ -131,5 +133,5 @@ The two-surface split lets the entrypoint scale on connection count and the Plat
 
 ## Next Steps
 
-- To configure the Platform service's broker connection, database, and identity provider, see [Configuring Agent Mesh](../installing/configure.md).
+- To configure the Platform service's event broker connection, database, and identity provider, see [Configuring Agent Mesh](../installing/configure.md).
 - To author RBAC roles and scope mappings, see [RBAC Reference](../reference/rbac-reference.md).

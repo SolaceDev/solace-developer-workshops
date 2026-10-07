@@ -1,4 +1,5 @@
 ---
+published: true
 title: Operator Workflows
 description: Operator workflow walkthroughs — rotating a large language model credential without downtime, running a pre-upgrade dry-run in staging, and scaling the Agent-Workflow Executor under sustained load.
 sidebar_position: 8120
@@ -119,8 +120,8 @@ Throughout, the long-running workloads are the Entrypoint Executor, the Agent-Wo
    The metric definitions are in [Monitoring Your Agent Mesh](./observability.md).
 
 2. **Pick vertical or horizontal.**
-   - Vertical (raise the resource limit on the existing replicas) is fastest and keeps the topology simple. It fits when the bottleneck is CPU on a single agent's loop and the workload is not concurrency-bound.
-   - Horizontal (add more replicas) provides concurrent capacity. It fits when one user's task does not block another's. Agent-Workflow Executor replicas discover each other through the broker and need no coordination to scale out — see [Install and Deploy](../installing/index.md).
+   - Vertical (raise the resource limit on the existing replicas) is fastest and leaves the topology unchanged. It fits when the bottleneck is CPU on a single agent's loop and the workload is not concurrency-bound.
+   - Horizontal (add more replicas) provides concurrent capacity. It fits when one user's task does not block another's. Agent-Workflow Executor replicas discover each other through the event broker and need no coordination to scale out — see [Install and Deploy](../installing/index.md).
 
 3. **Roll the change.** In Kubernetes:
 
@@ -141,7 +142,7 @@ Throughout, the long-running workloads are the Entrypoint Executor, the Agent-Wo
 
 **What can go wrong.**
 
-- **Adding replicas increases broker subscription pressure.** Every Agent-Workflow Executor replica subscribes to its share of the Agent-to-Agent (A2A) topic tree. A significant horizontal scale (10 times the existing count) is best paired with a broker capacity review.
+- **Adding replicas increases event broker subscription pressure.** Every Agent-Workflow Executor replica subscribes to its share of the Agent-to-Agent (A2A) topic tree. A significant horizontal scale (10 times the existing count) is best paired with an event broker capacity review.
 - **The session store becomes the new bottleneck.** A SQLite file cannot be shared across replicas — multiple Agent-Workflow Executor replicas contend on it. Run production on Postgres; the gate is in [Production Readiness Checklist](./production-readiness-checklist.md).
 - **The LLM provider rate limit is the actual bottleneck.** No amount of Agent-Workflow Executor scaling helps. Raise the limit at the provider, or shard across multiple keys or accounts, instead.
 

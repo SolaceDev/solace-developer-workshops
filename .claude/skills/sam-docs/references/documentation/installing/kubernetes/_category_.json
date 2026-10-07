@@ -1,0 +1,8 @@
+{
+  "label": "Deploying with Kubernetes",
+  "position": 350,
+  "link": {
+    "type": "doc",
+    "id": "documentation/installing/kubernetes/index"
+  }
+}

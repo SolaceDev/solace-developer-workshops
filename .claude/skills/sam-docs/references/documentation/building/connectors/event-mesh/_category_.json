@@ -1,0 +1,8 @@
+{
+  "label": "Event Mesh Connectors",
+  "position": 90,
+  "link": {
+    "type": "doc",
+    "id": "documentation/building/connectors/event-mesh/index"
+  }
+}

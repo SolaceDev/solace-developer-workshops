@@ -1,4 +1,5 @@
 ---
+published: true
 title: OpenAPI Connectors
 description: Configure OpenAPI connectors so agents can call REST APIs described by an OpenAPI 3.0 or 3.1 specification.
 sidebar_position: 1

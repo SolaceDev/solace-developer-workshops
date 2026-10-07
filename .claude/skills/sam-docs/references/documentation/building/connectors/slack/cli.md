@@ -1,4 +1,5 @@
 ---
+published: true
 title: Slack Connectors via the CLI
 description: Configure a Slack connector as declarative YAML and apply it with the Agent Mesh CLI, so agents can send and update messages in Slack channels.
 sidebar_position: 2

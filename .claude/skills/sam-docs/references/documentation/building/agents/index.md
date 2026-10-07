@@ -1,4 +1,5 @@
 ---
+published: true
 title: Creating Agents
 description: Create, configure, and manage agents from the Agent Mesh UI.
 sidebar_position: 1
@@ -106,7 +107,7 @@ To create an agent manually, perform the following steps:
     - **Name**: `My-First-release-notes-assistant`
     - **Description**: `Turns a list of merged changes into a grouped Markdown release-notes summary.`
 
-5. In the **Instructions** section, click **Add Instructions**, enter a prompt that is at least 100 characters, then click **Apply**. For example:
+5. In the **Instructions** section, click **Add Instructions**, enter a prompt, then click **Apply**. For example:
    ```text
    You are a release-notes assistant for a software team. When given a list of merged changes, group them into Features, Fixes, and Breaking Changes, and write a concise Markdown summary in a friendly, professional tone. Ask a clarifying question if the version number or release date is missing.
    ```
@@ -129,7 +130,7 @@ To create an agent manually, perform the following steps:
 
 11. Click one of the following buttons to create your agent:
     - **Create** to only create the agent. You must deploy it to make it available to Agent Mesh.
-    - **Create and Deploy** to create and deploy the agent. This button is available only if the instructions for your agent are at least 100 characters.
+    - **Create and Deploy** to create and deploy the agent. This button stays disabled until you add instructions.
 
 For example, to test the release-notes assistant, start a new chat, and enter a list of merged changes.
 
@@ -143,6 +144,7 @@ Select an agent's row to open its detail panel, which shows the agent's status, 
 For a **Deployed** agent:
    - **Chat with Agent** — Open a chat session with the agent.
    - **Edit** — Reopen the agent editor to change its instructions, tools, model, or agent card.
+   - **View Access** — List the users who can invoke this agent, whether they receive that access directly or through a claim mapping. For more information, see [Managing Users and Roles](../user-management/index.md).
    - **Undeploy** — Take the agent offline. The agent moves to the **Undeployed** tab and stops responding, but its configuration is retained. Confirmation is required to undeploy an agent.
 
 For an **Undeployed** agent:

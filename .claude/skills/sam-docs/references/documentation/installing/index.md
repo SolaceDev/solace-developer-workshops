@@ -1,4 +1,5 @@
 ---
+published: true
 title: Install and Deploy
 description: Choose your install path — desktop bundle or Kubernetes — then configure, monitor, and troubleshoot your deployment.
 sidebar_position: 0

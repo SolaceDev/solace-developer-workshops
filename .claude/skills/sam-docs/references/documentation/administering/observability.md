@@ -1,4 +1,5 @@
 ---
+published: true
 title: Monitoring Your Agent Mesh
 description: Operational logs, OpenTelemetry metrics, traceID correlation, and health endpoints — and how to ship them to your aggregator.
 sidebar_position: 850
@@ -6,7 +7,7 @@ sidebar_position: 850
 
 # Monitoring Your Agent Mesh
 
-Operating an Agent Mesh deployment day-two means watching three streams: **operational logs** (structured output covering startup, request handling, broker activity, and errors), **metrics** (OpenTelemetry histograms and counters for entrypoint latency, large language model (LLM) duration, token usage, and tool execution), and **`traceID` correlation** so a single user task can be followed across the Entrypoint Executor, the Agent-Workflow Executor, the Secure Tool Runtime, and tool boundaries.
+Operating an Agent Mesh deployment day-two means watching three streams: **operational logs** (structured output covering startup, request handling, event broker activity, and errors), **metrics** (OpenTelemetry histograms and counters for entrypoint latency, large language model (LLM) duration, token usage, and tool execution), and **`traceID` correlation** so a single user task can be followed across the Entrypoint Executor, the Agent-Workflow Executor, the Secure Tool Runtime, and tool boundaries.
 
 Agent Mesh runs the OpenTelemetry SDK in-process and exposes a Prometheus `/metrics` endpoint plus optional OpenTelemetry Protocol (OTLP) exporters for shipping metrics and logs to an external aggregator (OpenTelemetry Collector, Datadog, New Relic, Grafana Cloud, and similar). It does **not** run a metrics backend, a long-term log store, or a distributed-tracing collector — those are aggregator concerns. The audit channel — the closed, security-relevant log stream — has its own page; see [Managing Audit and Compliance](./audit-and-compliance.md).
 
@@ -17,11 +18,11 @@ Deploy-time wiring (scrape configs, health probes, and log collectors) lives in 
 Agent Mesh writes structured logs to stderr by default. The shape is controlled by the optional `log:` block read from the **root** of each component's runtime config — it is process-level, not per-agent. The same keys are read by the `sam` CLI, the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime, and the Platform service. On a Platform or Solace Cloud deployment, agents are deployed into a shared Agent-Workflow Executor, so the `log:` block governing them lives on that process's config, not on any individual agent file. Point `LOGGING_CONFIG_PATH` at a standalone file (below) to apply one policy across every component.
 
 ```yaml
-# logging.yaml — point LOGGING_CONFIG_PATH at this; applies to every component
+# logging.yaml - point LOGGING_CONFIG_PATH at this; applies to every component
 log:
   format: json
   stdout_log_level: INFO
-  log_file_level: DEBUG
+  log_file_level: INFO
   log_file: /var/log/sam/agent.log
   max_size_mb: 50
   max_backups: 10
@@ -34,17 +35,21 @@ Recognized keys and their defaults:
 | Key | Default | Notes |
 |---|---|---|
 | `format` | `json` | `text` for human-readable local dev, `json` for any aggregator. Case-insensitive. |
-| `stdout_log_level` | `INFO` | Stderr threshold: `DEBUG` / `INFO` / `WARNING` / `WARN` / `ERROR` / `CRITICAL`. |
-| `log_file_level` | `DEBUG` | File threshold (only used when `log_file` is set). |
+| `stdout_log_level` | `INFO` | Stderr threshold: `DEBUG` / `INFO` / `WARNING` / `WARN` / `ERROR` / `CRITICAL`. An omitted or unrecognized value resolves to `INFO`. |
+| `log_file_level` | `INFO` | File threshold (only used when `log_file` is set). An omitted or unrecognized value resolves to `INFO`. |
 | `log_file` | unset (stderr only) | Absolute path. When set, records fan out to stderr *and* the file. |
 | `max_size_mb` | `0` (no rotation) | Rotation trigger in MiB. `0` grows the file unbounded with a startup warning. |
 | `max_backups` | `10` | Backups to keep. Explicit `0` = unlimited (audit/compliance). |
 | `max_age_days` | `0` (forever) | Maximum age of rotated backups, in days. |
 | `compress` | `false` | Gzip rotated backups. |
 
+If a level is spelled in a way the runtime doesn't recognize, it falls back to `INFO` and prints a warning to stderr at startup.
+
 Every value supports `${VAR, default}` environment substitution, so you can drive any of these keys from the environment without editing YAML — for example `stdout_log_level: ${SAM_STDOUT_LOG_LEVEL, INFO}`. Any such `SAM_LOG_*` names are a naming convention you choose, not built-in overrides. The one setting with a hardcoded override is `format`: the `LOG_FORMAT` environment variable wins even when the YAML sets `format:` explicitly.
 
 Set `LOGGING_CONFIG_PATH` to point at a standalone YAML file when you want one logging policy across every component — its `log:` block fully replaces the per-app block. The file shape matches the `log:` block above: a single top-level `log:` key followed by the same fields. The runtime prints a `logging configured from LOGGING_CONFIG_PATH` line to stderr at startup so an operator can confirm the active file even when `stdout_log_level` is `WARNING` or higher.
+
+Raise a threshold to `DEBUG` only while you are actively debugging, and prefer stderr over the file when you do. The `DEBUG` level adds per-message diagnostics, including the tail end of what a tool writes to stderr. When `log_file_level` is `DEBUG`, the runtime writes those diagnostics to disk and keeps them for as long as your rotation settings allow.
 
 Log attribute *values* pass through a defense-in-depth redaction pass before they reach any handler: keys matching `password`, `client_secret`, `api_key`, `token`, or `credential` (with an optional `_` prefix) emit `[REDACTED]` in place of the value. Treat this as a safety net, not a substitute for not logging the secret in the first place — keys outside the pattern (`url`, DSN-style fields) still pass through verbatim. See [Managing Secrets](./secrets-management.md) for the redaction contract in full.
 
@@ -104,13 +109,13 @@ Distributed-tracing spans are not emitted today — use `traceID` correlation in
 
 ## Trace ID Correlation
 
-Every user task carries an immutable UUIDv7 `traceID` minted by the Entrypoint Executor the moment the task is submitted. The same value is forwarded at every subsequent hop — broker user-properties, agent task loop, peer-agent delegation, Secure Tool Runtime dispatch, and tool context — so one identifier spans the entire causal chain. Built-in tools see the same `traceID` on the tool context they receive.
+Every user task carries an immutable UUIDv7 `traceID` minted by the Entrypoint Executor the moment the task is submitted. The same value is forwarded at every subsequent hop — event broker user-properties, agent task loop, peer-agent delegation, Secure Tool Runtime dispatch, and tool context — so one identifier spans the entire causal chain. Built-in tools see the same `traceID` on the tool context they receive.
 
 ```mermaid
 sequenceDiagram
   participant User
   participant Entrypoint
-  participant Broker
+  participant Broker as Event Broker
   participant AgentRuntime as Agent-Workflow Executor
   participant ToolRuntime as Secure Tool Runtime
   participant Tool
@@ -149,9 +154,9 @@ If you build alerts that need cross-process correlation, alert on the operationa
 
 ## Health Endpoints
 
-Two health surfaces serve different needs:
+Two kinds of health endpoint serve different needs:
 
-- **Entrypoint proxy `/health`** — the entrypoint's request-path listener (typically `:8800`) responds to `GET /health` with `200 OK` and a JSON body (`{"status":"A2A Web UI Backend is running"}`). Use this for cheap external liveness checks (load-balancer health probes, smoke tests).
+- **Entrypoint proxy `/health`** — the entrypoint's request-path listener (typically `:8800`) responds to `GET /health` with `200 OK` and a plain-text `ok` body, unconditionally, as long as the listener is up. Use this for cheap external liveness checks (load-balancer health probes, smoke tests).
 - **Dedicated health server `/health` and `/ready`** — every workload runs an independent health server on its own port that returns a component-aware JSON envelope suitable for a liveness/readiness probe:
 
   ```bash
@@ -162,9 +167,21 @@ Two health surfaces serve different needs:
   {"status":"healthy"}
   ```
 
-  A failed check returns `{"status":"unhealthy","error":"<failing component>"}` with status `503 Service Unavailable`. `GET /ready` returns a `ready` boolean alongside a `checks` map (runtime phase and broker state) — for example `{"ready":true,"checks":{"phase":"running","broker":"connected"}}` — and returns `503` until the runtime reaches the running phase with a live broker.
+  A failed check returns `{"status":"unhealthy","error":"component <name> unhealthy: <cause>"}` with status `503 Service Unavailable`. `GET /ready` returns a `ready` boolean alongside a `checks` map (runtime phase and event broker state) — for example `{"ready":true,"checks":{"phase":"running","broker":"connected"}}` — and returns `503` until the runtime reaches the running phase with a live event broker.
 
-A split deployment gives each workload its own management port. The binary defaults are the Entrypoint Executor `:9090`, the Platform service `:9091`, the Agent-Workflow Executor `:8090`, and the Secure Tool Runtime `:8090`. The Agent-Workflow Executor and Secure Tool Runtime share the same `:8090` default, so when you co-locate them give one an explicit `--health-addr` (or `management_server.port`) to avoid a bind collision. In single-process mode a single `:8090` health server speaks for every component. Point probes at the per-workload management port rather than the request-path listener — the JSON envelope is what tells you *which* component is sick.
+The `/health` envelope carries only those two values, but the Agent-Workflow Executor classifies its agents and workflows into three outcomes before it answers. It answers `200 OK` with `{"status":"healthy"}` when every instance is serving, or when none is configured. It answers `503` when no configured instance is serving at all, so a genuinely dead workload is still restarted. In between, when some instances stopped serving and at least one still serves, it answers `200 OK` with `{"status":"healthy"}` again. That third outcome is deliberate: it stops a single failed agent from crash-looping a pod that is still serving its other agents.
+
+:::warning
+`{"status":"healthy"}` from the Agent-Workflow Executor does not mean every agent is serving. One agent that never came up, or that stopped serving, leaves both the body and the HTTP status unchanged, so no liveness or readiness probe detects it. `/ready` does not help either: it reports the lifecycle phase and the event broker connection, never per-agent health.
+:::
+
+Three signals detect that case, and none of them is the probe:
+
+- **The log.** Each instance that fails to come up writes an `ERROR` record with the message `instance failed to initialize; it will not serve` or `instance failed to start; it will not serve`, carrying `name` and `kind` fields. The `instances started` record carries `started`, `attempted`, and `configured` counts; `started` lower than `attempted` is always a failure, and `started` lower than `configured` means either a failure or a deliberately disabled instance.
+- **The agent list.** An agent that never starts never publishes an agent card, so it never appears in `GET /api/v1/agentCards` on the entrypoint. An agent that stops serving later is removed from that list 2 to 3 minutes after its last heartbeat: the entry expires 120 seconds after the last heartbeat, and the check that removes it runs every 60 seconds. An agent that is in your configuration but absent from the list, on a workload still answering `200 OK`, is the case this callout describes.
+- **The metrics.** `sam.component.count` carries one series per running agent, tagged `type=agent` and `name=<agent>`. An isolated agent drops its series, while `sam.instance.up` for that workload (tagged `component_type=AWE`) keeps reporting `1`. Alert on the missing `name` series rather than on the probe.
+
+A split deployment gives each workload its own management port. The binary defaults are the Entrypoint Executor `:9090`, the Platform service `:9091`, the Agent-Workflow Executor `:8090`, and the Secure Tool Runtime `:8090`. The Agent-Workflow Executor and Secure Tool Runtime share the same `:8090` default, so when you co-locate them give one an explicit `--health-addr` (or `management_server.port`) to avoid a bind collision. In single-process mode a single `:8090` health server speaks for every component. Point probes at the per-workload management port rather than the request-path listener — a `503` there names the component that is sick, which the request-path `ok` body never does.
 
 ## Shipping to Your Aggregator
 
@@ -256,4 +273,4 @@ If you do not run an OTel collector and your aggregator only ingests JSON logs, 
 
 ## What Next?
 
-You have logs flowing, metrics scraped, and `traceID` queries answering "what happened to this task?". When those signals flag a failure, the per-scenario playbook for broker, agent, persistence, and tool-execution failures is in [Troubleshooting a Running Deployment](./scenario-troubleshooting.md).
+You have logs flowing, metrics scraped, and `traceID` queries answering "what happened to this task?". When those signals flag a failure, the per-scenario playbook for event broker, agent, persistence, and tool-execution failures is in [Troubleshooting a Running Deployment](./scenario-troubleshooting.md).

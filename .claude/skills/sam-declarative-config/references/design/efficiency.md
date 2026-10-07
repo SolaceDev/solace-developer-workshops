@@ -1,19 +1,9 @@
----
-name: sam-efficiency
-description: Design guidance for cutting LLM token usage and latency in SAM — keep data out of context, instantiate templates, load skills on demand, structured output, parallelism, compaction, and model/runtime settings.
-tags:
-  - builder
-  - design
-  - efficiency
-  - sam
----
-
 # Designing for efficiency
 
-This reference is *design guidance* — the levers SAM gives you to cut LLM token
+This reference is *design guidance* — the levers Agent Mesh gives you to cut LLM token
 usage and wall-clock latency, and when to reach for each. It covers **what to do
-and why**; for the exact YAML fields, follow the per-kind references it links to
-(`references/agent.md`, `references/workflow.md`, `references/skill.md`).
+and why**; for the exact YAML fields, follow the schema references in the
+lookup table at the end of this guide.
 
 The single biggest idea: **the LLM should orchestrate data, not carry it.** Most
 waste comes from large content flowing *through* the model's context — file
@@ -39,13 +29,14 @@ tokens for everything it writes. Both are avoidable for bulk data.
   filters and reshapes content before it reaches the model:
 
   ```
-  «artifact_content:sales.csv >>> jsonpath:$.rows >>> select_cols:month,revenue >>> head:20»
+  «artifact_content:sales.csv >>> select_cols:month,revenue >>> slice_rows:0:20 >>> format:csv»
   ```
 
-  A 10 MB CSV becomes 20 rows of 2 columns. Available modifiers include
-  `jsonpath`, `select_cols`/`select_fields`, `filter_rows_eq`, `slice_rows`,
-  `slice_lines`, `grep`, `head`, and `tail`. Reach for these instead of asking the
-  model to read a whole file and summarize it.
+  A 10 MB CSV becomes 20 rows of 2 columns. Each modifier works on one shape:
+  `jsonpath` needs JSON; `select_cols`/`select_fields`, `filter_rows_eq`, and
+  `slice_rows` work on rows (a CSV, or a JSON list of objects); `slice_lines`,
+  `grep`, `head`, and `tail` work on plain text. Reach for these instead of asking
+  the model to read a whole file and summarize it.
 
 ## 2. Instantiate templates instead of generating files
 
@@ -60,13 +51,14 @@ of data it generated, not the ~100 KB of document it would otherwise have typed.
 Bind the data by **logical name** via `instantiate_template`'s `data_inputs`
 arg — `{ <binding>: <the artifact you produced> }` — and the tool rewrites the
 document's references to point at that artifact, pinned to the exact version it
-validated, so the model never has to reproduce the sidecar's magic filenames. The same call works from a **workflow `tool`
-node**: bind `data_inputs` to an upstream node's artifact and the workflow
-renders the document with no LLM in the loop at all.
+validated, so the model never has to reproduce the template's internal filenames.
+The same call works from a **workflow `tool` node**: bind `data_inputs` to an
+upstream node's artifact and the workflow renders the document with no LLM in
+the loop at all.
 
-See [Asset templates](https://solacedev.github.io/solace-agent-mesh-go/documentation/building/skills#asset-templates)
-for the `assets/` + `.template.yaml` authoring contract, and prefer this pattern
-for any repeatable report or document deliverable.
+A template ships as a single packaged `.samt` file in the skill's `assets/`; see
+the skill-design guide for bundling one, and prefer this pattern for any
+repeatable report or document deliverable.
 
 ## 3. Load knowledge on demand, not up front
 
@@ -85,7 +77,7 @@ or not it's relevant to the task at hand.
   An agent wired with every toolset pays for every schema on every turn; give it
   the tools its role actually needs and delegate the rest to a peer agent.
 
-See `references/design/skill-design.md` and `references/design/agent-design.md`.
+See the skill-design and agent-design guides (lookup table at the end of this guide).
 
 ## 4. Use structured output to avoid re-prompting
 
@@ -94,24 +86,28 @@ model produces slightly-malformed output and gets re-prompted. Declaring an
 `outputSchema` makes the runtime validate the result and retry only on real
 failure (bounded retries), turning a 3–5 attempt loop into 1–2. Use it for any
 agent or workflow node whose output is consumed by a machine rather than read by
-a human. See `references/design/agent-design.md` (structured output) and
-`references/workflow.md` (structured node I/O).
+a human. See the agent-design guide (structured output) and the workflow schema
+reference (structured node I/O), both in the lookup table at the end of this guide.
 
 ## 5. Parallelize independent work
 
 Serial fan-out pays a full LLM round-trip per branch; parallel fan-out collapses
-the wall-clock and avoids per-branch re-prompting overhead.
+the wall-clock.
 
-- **`sub_task` for concurrent branches.** Independent research or fetch branches
-  (look up A, check B, fetch C) issued as parallel sub-tasks run concurrently;
-  each sub-task's intermediate tool calls and re-prompts stay scoped to it, so
-  the main agent's context stays clean and only final results return. Use forked
-  context when the branch needs the conversation so far, fresh context when it
-  doesn't.
+- **`sub_task` for substantial, independent branches.** Several multi-step pieces
+  of work (generating separate documents, researching unrelated questions) issued
+  as parallel sub-tasks run concurrently; each sub-task's intermediate tool calls
+  stay scoped to it, so the main agent's context stays clean and only final
+  results return. Each sub-task is a fresh agent loop that re-pays the system
+  prompt and tool definitions, so it only pays off when the work it keeps out of
+  context is larger than that setup. Do single tool calls, short lookups, and
+  anything whose result you need before continuing inline. Use forked context
+  when the branch needs the conversation so far, fresh context when it doesn't.
 - **Workflows for declarative fan-out.** Workflow DAG nodes without dependencies
   execute in parallel automatically. For a fixed set of independent steps, a
   workflow expresses the parallelism declaratively and keeps each step's context
-  isolated. See `references/workflow.md` and `references/design/workflow-design.md`.
+  isolated. See the workflow schema reference and the workflow-design guide (lookup
+  table at the end of this guide).
 
 Delegate to a **peer agent** when a sub-problem has its own distinct tool set or
 knowledge — it keeps each agent's instructions and tools lean (lever 3) rather
@@ -121,11 +117,13 @@ than building one agent that carries everything.
 
 For conversations that span many turns, history is the dominant cost.
 
-- **Enable auto-summarization (compaction).** When history grows past a
-  threshold, the runtime summarizes the oldest portion into a single message,
-  replacing tens of thousands of tokens of transcript with a compact summary at
-  the cost of one summarization call. Worth it for any long-lived or
-  multi-session agent. See `references/agent.md` for the exact fields.
+- **Keep auto-summarization (compaction) on.** It is on by default: when history
+  grows past a threshold, the runtime summarizes the oldest portion into a single
+  message, replacing tens of thousands of tokens of transcript with a compact
+  summary at the cost of one summarization call. Its settings (the `enabled`
+  switch, the compaction percentage, and the summary's token cap) sit in the
+  agent's auto-summarization block; turn it off only for short, single-turn
+  agents where the summarization call never pays back.
 - **Don't let agents accumulate unbounded transcripts** without compaction — a
   500-turn conversation re-sends its entire history on every turn otherwise.
 
@@ -136,14 +134,17 @@ For conversations that span many turns, history is the dominant cost.
   repeated turns within the window get a large discount on those input tokens.
   You benefit by keeping the system prompt and tool set **stable** across a task —
   dynamically rewriting instructions per turn defeats the cache.
-- **Bound runaway loops.** A cap on LLM calls per task stops a pathological
-  tool-calling loop from burning tokens indefinitely; the final allowed call
-  nudges the model to answer rather than call another tool. See `references/agent.md`.
+- **Bound runaway loops.** A per-task cap on LLM calls (the agent's max LLM
+  calls per task setting, on by default) stops a pathological tool-calling loop
+  from burning tokens indefinitely; the final allowed call nudges the model to
+  answer rather than call another tool. Lower it for agents whose job is a
+  handful of tool calls.
 - **Streaming cuts perceived latency**, not token count — enable it for
   interactive agents so users see output as it's produced.
 - **Match the model to the job.** Route cheap, high-volume, or simple-classifier
   work to a smaller/faster model and reserve the frontier model for reasoning-heavy
-  steps. See `references/model.md` and `references/design/agent-design.md` (model selection).
+  steps. See the model configuration reference and the agent-design guide (model
+  selection), both in the lookup table at the end of this guide.
 
 ## Anti-patterns
 
@@ -156,3 +157,17 @@ For conversations that span many turns, history is the dominant cost.
 - **Free-text "return JSON"** where a schema would prevent re-prompting (lever 4).
 - **Unbounded conversations** with no compaction (lever 6).
 - **Per-turn instruction churn** that defeats prompt caching (lever 7).
+
+## Working with declarative config
+
+Where this guide says to look something up, read one of these files. Paths are relative to the `sam-declarative-config` skill root.
+
+| Topic | Where |
+|---|---|
+| Agent schema | `references/agent.md` |
+| Workflow schema | `references/workflow.md` |
+| Skill schema | `references/skill.md` |
+| Model configuration | `references/model.md` |
+| Skill-design guide | `references/design/skill-design.md` |
+| Agent-design guide | `references/design/agent-design.md` |
+| Workflow-design guide | `references/design/workflow-design.md` |

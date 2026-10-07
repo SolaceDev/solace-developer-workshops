@@ -1,4 +1,5 @@
 ---
+published: true
 title: MCP Connectors
 description: Configure MCP connectors so agents can discover and invoke tools served by remote Model Context Protocol servers over SSE or Streamable HTTP.
 sidebar_position: 1

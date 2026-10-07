@@ -1,0 +1,8 @@
+{
+  "label": "SQL Connectors",
+  "position": 20,
+  "link": {
+    "type": "doc",
+    "id": "documentation/building/connectors/sql/index"
+  }
+}

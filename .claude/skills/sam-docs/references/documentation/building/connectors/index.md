@@ -1,4 +1,5 @@
 ---
+published: true
 title: Configuring Connectors
 description: Configure shared external data sources and services—knowledge bases, databases, MCP servers, OpenAPI endpoints—and assign them to agents in Agent Mesh.
 sidebar_position: 0

@@ -1,4 +1,5 @@
 ---
+published: true
 title: Configuring Tools
 description: Built-in tools, MCP servers, OpenAPI services, and remote tools (Python and Go via samtoolsdk) — what they are, where they run, and how to declare them on an agent.
 sidebar_position: 630
@@ -25,7 +26,7 @@ This page covers all four. The configuration-or-code choice (declare a tool in Y
 
 The Agent-Workflow Executor holds the agent's LLM loop. Tools that run there run in-process: when the LLM calls one, the agent invokes a Go function directly and the result comes back without leaving the process. The trade-off is that in-process code has full access to the agent's memory and is not sandboxed.
 
-The Secure Tool Runtime is a separate workload that runs alongside the Agent-Workflow Executor to execute tool work that should not happen in-process. Tools routed there communicate over the event broker: the Agent-Workflow Executor publishes an invocation message, a Secure Tool Runtime worker picks it up, executes the tool in isolation, and returns the result over the event broker. The trade-off is the event broker hop, the sandbox cost, and the language boundary. The benefit is process isolation, language flexibility (Python or Go), and resource caps.
+The Secure Tool Runtime is a separate workload that runs alongside the Agent-Workflow Executor to execute tool work that is unsafe to run in-process. Tools routed there communicate over the event broker: the Agent-Workflow Executor publishes an invocation message, a Secure Tool Runtime worker picks it up, executes the tool in isolation, and returns the result over the event broker. The trade-off is the event broker hop, the sandbox cost, and the language boundary. The benefit is process isolation, language flexibility (Python or Go), and resource caps.
 
 The split is not negotiable per agent. It is determined by the tool kind. Built-in tools shipped inside the runtime always run in-process. Remote tools (Python scripts and Go binaries built with `pkg/samtoolsdk`) always run in the Secure Tool Runtime. MCP tools always run in their external MCP server, with the agent acting as the MCP client. OpenAPI tools always run in-process as HTTP clients calling the target service.
 
@@ -33,7 +34,7 @@ The split is not negotiable per agent. It is determined by the tool kind. Built-
 
 Built-in tools require no scopes: access to the agent (`agent:<name>:invoke`) implies access to every tool configured on it, so role setup never enumerates per-tool grants. This includes `schedule_task` — the scheduled invocation re-authorizes against the creator's invoke scopes when it fires. The deliberate exceptions are capabilities with externalized side effects — `notify_user` (`notify:_:send`), `send_email` (`tool:email:send`), and `datadog_logs` (`tool:datadog_logs:invoke`) — which stay individually grantable.
 
-Custom tools (Secure Tool Runtime packages, MCP, OpenAPI, connectors) can declare a list of role-based access control (RBAC) scopes the caller must hold before the tool is invokable:
+Custom tools (Secure Tool Runtime packages, MCP, OpenAPI, connectors) can declare a list of role-based access control (RBAC) scopes the caller must hold before the tool is invokable. For a tool declared directly on the agent's `tools:` list, name the scopes on the tool entry:
 
 ```yaml
 tools:
@@ -42,6 +43,8 @@ tools:
     required_scopes:
       - "connector:database:invoke"
 ```
+
+Tools that come from an uploaded toolset or a connector are different. The Platform service expands them onto the agent's `tools:` list at deploy time, so there is no entry for you to edit. Gate toolset tools on the toolset's configuration instead. For more information, see [Restricting Who Can Run a Tool](./toolsets.md#restricting-who-can-run-a-tool).
 
 Scope strings follow the standard `<category>:<resource>:<verb>` grammar — see [RBAC Reference](../reference/rbac-reference.md).
 
@@ -66,7 +69,7 @@ The resolver enforces a recursion-depth cap and ignores unknown embed types (the
 
 Built-in tools are Go implementations shipped inside the runtime, listed in the agent's tool list with `tool_type: builtin` and a `tool_name:` identifying which built-in to expose.
 
-The built-ins span several families covering artifact management, data analysis, web requests, image and audio handling, time, file conversion, human-in-the-loop interaction, and research. For the complete list with parameters, returns, and per-tool behavior, see [Built-In Tools](../reference/built-in-tools.md).
+The built-ins span several families covering artifact management, data analysis, web requests, handling of images and audio, time, file conversion, human-in-the-loop interaction, and research. For the complete list with parameters, returns, and per-tool behavior, see [Built-In Tools](../reference/built-in-tools.md).
 
 To enable one built-in, list it by name:
 
@@ -261,7 +264,15 @@ Provide exactly one of:
 
 ### Response Size and Filtering
 
-The runtime caps the HTTP response body at 10 MiB by default to prevent a misbehaving API from exhausting agent memory. Override with `max_response_size: <bytes>`.
+The runtime limits the HTTP response body to 10 MiB by default, so a misbehaving API cannot exhaust agent memory. When a successful response exceeds the limit, the tool returns an error and the agent receives none of the body, rather than a shortened version of it. When the response also carries an HTTP error status, the runtime reports that status instead, together with as much of the body as the limit allowed, because the status is the more useful diagnosis. In both cases the runtime logs a warning naming the limit.
+
+Set `max_response_size: <bytes>` to raise or lower the limit for one toolset. The value is a whole number of bytes, greater than zero and no larger than 50 MiB, because the runtime holds the body in memory while it reads it. Leave the key out, or set it to an empty value, to take the default. No value switches the limit off.
+
+Any other value is a configuration error. The toolset fails to load and the runtime logs the failure, but the agent still starts, without the tools that toolset would have provided. Registration is deliberately resilient per toolset, so one bad entry does not stop the rest.
+
+:::warning
+Check this setting when you upgrade. Earlier releases parsed `max_response_size` and then ignored it, so values that are now errors used to load and run at the 10 MiB default: `0`, anything above 50 MiB, a size with units such as `10MB`, and non-numeric values. A configuration carrying one of those loses that toolset's tools after the upgrade, and the agent reports no failure of its own, so the symptom is a tool the model can no longer call.
+:::
 
 `allow_list` and `deny_list` work the same as MCP. Entries are `operationId` values from the spec.
 
@@ -383,7 +394,7 @@ The runtime delivers `tool_config` to the tool process as part of the invocation
 
 ## Remote Tools: Packaged SQL Tool
 
-The runtime ships a remote tool that connects an agent to a persistent SQL database: Postgres, MySQL, SQLite (on-disk file), MS SQL Server, or Oracle. The binary ships with the Secure Tool Runtime image, which loads it from the configured toolsets directory. Use this tool when the agent needs to query a real database the operator runs. Use the in-process `query_data_with_sql` built-in (listed under [Built-In Tools](#built-in-tools)) when the agent should query a small in-memory copy assembled from artifacts within the conversation.
+The runtime ships a remote tool that connects an agent to a persistent SQL database: Postgres, MySQL, SQLite (on-disk file), MS SQL Server, or Oracle. The binary ships with the Secure Tool Runtime image, which loads it from the configured toolsets directory. Use this tool when the agent needs to query a real database the operator runs. Use the in-process `query_data_with_sql` built-in (listed under [Built-In Tools](#built-in-tools)) when the agent queries a small in-memory copy assembled from artifacts within the conversation.
 
 The tool is a remote tool but operators do not author it. They wire it into an agent by name and supply a connection string.
 
@@ -526,7 +537,7 @@ sdk.NewTool("upload",
 - `WithInstructions(s)`: long-form LLM guidance attached to the tool.
 - `WithVolumeParams(...)`: declare volume mounts the tool expects.
 - `WithConfigSchema(...)`: declare the shape of operator-supplied `tool_config:` so the platform UI can render a form for it.
-- `WithAuth(...)`: declare an auth requirement (OAuth flow) the runtime should drive before invoking the tool.
+- `WithAuth(...)`: declare an auth requirement (OAuth flow) the runtime drives before invoking the tool.
 
 ## The Tool Sandbox Model
 
@@ -589,7 +600,7 @@ The container layer (Kubernetes) intentionally enforces memory limits rather tha
 
 ### Timeouts
 
-`timeout_seconds:` is the wall-clock budget for a single tool invocation. The Secure Tool Runtime cancels the tool process if it overruns. The default is 300 seconds; lower it for tools that should finish quickly, or raise it for tools that legitimately need longer to finish (large file conversions, long-running searches, multi-step workflows).
+`timeout_seconds:` is the wall-clock budget for a single tool invocation. The Secure Tool Runtime cancels the tool process if it overruns. The default is 300 seconds; lower it for tools that finish quickly, or raise it for tools that legitimately need longer to finish (large file conversions, long-running searches, multi-step workflows).
 
 ## Skill-Bundled Tools
 

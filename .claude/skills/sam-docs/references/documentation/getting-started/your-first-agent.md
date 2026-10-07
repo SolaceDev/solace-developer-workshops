@@ -1,4 +1,5 @@
 ---
+published: true
 title: Create Your First Agent
 description: Create, deploy, and chat with your own agent in the Agent Mesh UI, with no code and no YAML.
 sidebar_position: 150
@@ -44,7 +45,7 @@ You create an agent of your own from the Agent Mesh UI. Agent Mesh stores it, de
    You are HaikuBot, a friendly assistant. Answer questions clearly and concisely. Whenever the user asks for a poem, reply with a traditional three-line haiku of five, seven, and five syllables on the topic they request.
    ```
 
-   Instructions must be at least 100 characters. Until you add them, **Create and Deploy** stays disabled.
+   **Create and Deploy** stays disabled until you add instructions.
 
 5. Select **Create and Deploy**. Agent Mesh saves the agent and brings it online: its status moves to **Running** and it appears under the **Deployed** tab.
 

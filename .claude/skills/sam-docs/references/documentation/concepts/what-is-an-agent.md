@@ -1,4 +1,5 @@
 ---
+published: true
 title: What Is an Agent?
 description: "An introduction to agents in Agent Mesh: what they are, what they do, and how they relate to the other building blocks."
 sidebar_position: 520

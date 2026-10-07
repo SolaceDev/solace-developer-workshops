@@ -1,4 +1,5 @@
 ---
+published: true
 title: Creating Workflows with the CLI (Early Access)
 description: Define a workflow as declarative-config YAML and apply it into Agent Mesh with sam config.
 sidebar_position: 2
@@ -147,4 +148,4 @@ To confirm the running state, open the **Workflows** page in the Agent Mesh UI, 
 
 ## What Next?
 
-You have a workflow defined as version-controllable YAML and deployed with `sam config apply`. Most readers next want to build the agents a workflow delegates to, covered in [Creating Agents](../agents/index.md).
+You have a workflow defined as version-controllable YAML and deployed with `sam config apply`. To confirm it's running and see it as a graph diagram, see [Viewing and Managing Workflows](./index.md#viewing-and-managing-workflows).

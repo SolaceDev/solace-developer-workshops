@@ -1,0 +1,8 @@
+{
+  "label": "Install and Deploy",
+  "position": 300,
+  "link": {
+    "type": "doc",
+    "id": "documentation/installing/index"
+  }
+}

@@ -1,31 +1,44 @@
 ## Common Mistakes
 
-- **Forgetting `--manifest`.** Apply / plan / migrate all require
-  `--manifest path/to/manifest.yaml`. Pull is the exception (it builds
-  a manifest from platform state).
-- **Casing mismatch.** YAML field names are camelCase
+- **Assuming the manifest is found.** Apply / plan / migrate read
+  `--manifest path/to/manifest.yaml`, falling back to `./manifest.yaml`
+  (or `./manifest.yml`) in the current directory. Pass the flag
+  explicitly whenever you are not in the repo root, or you will act on
+  the wrong manifest or none at all. Pull is the exception (it builds a
+  manifest from platform state).
+- **Casing mismatch.** A resource's `spec:` field names are camelCase
   (e.g. `modelName`, `systemPrompt`, `apiBase`) — the same names the
-  platform's REST API uses. snake_case fields are silently ignored.
+  platform's REST API uses — and a camelCase field misspelled in
+  snake_case is silently ignored. That rule covers the `spec:` layer
+  only. Several nested bodies are snake_case by design: connector
+  `values:` (`require_approval`, `require_approval_when`,
+  `tool_name_prefix`), workflow node bodies, and per-type entrypoint
+  `values:` such as the `event_mesh` type token. Follow the per-kind
+  reference for those rather than "correcting" them to camelCase —
+  renaming a working `require_approval` silently disables the gate.
 - **Hard-coding secrets.** Don't commit auth tokens or API keys.
-  Reference an env var via `${VAR}` (manifest auth) or rely on the
-  pull-side `${RESOURCE_NAME_FIELD}` placeholder pattern.
+  Name the token's env var in the manifest's `auth.envVar`, reference
+  secrets in resource files via `${VAR}` or a `vault://path#field`
+  reference (`references/manifest.md`), or rely on the pull-side
+  `${KIND_NAME_FIELD}` placeholder pattern.
 - **Floating refs in production.** Sources without a pinned ref
   (branch, short SHA, HEAD) require `--allow-floating-refs` and make
   apply non-reproducible. Pin to a tag or full SHA.
 - **Panicking at `plan` deletes on a partial manifest.** `plan` always
   diffs the *whole* platform against the manifest, so a focused manifest
-  that lists only one resource shows every other resource as `- delete`.
+  that lists only one resource shows every other resource as
+  `- delete (needs --prune)`.
   That is display-only: `apply` performs creates/updates but **skips
   deletes unless you pass `--prune`** (you'll see `skipped (use --prune
   to delete)`). This is exactly what makes selective single-resource
   manifests safe — apply without `--prune` and the rest of the platform
   is untouched. Only reach for `--prune` with a full manifest that is
   genuinely the complete desired state.
-- **Omitting `systemPrompt` on a standard agent.** The schema marks it
-  optional, but the platform enforces it at create/update time: a
+- **Omitting `systemPrompt` on a standard agent.** The platform enforces
+  it at create/update time: a
   `standard` agent (the only supported type) without a system prompt is
   rejected with HTTP 422 `system prompt is required for standard agents`.
-  Always set `spec.systemPrompt` to at least 100 characters.
+  Always set `spec.systemPrompt`; its length is bounded by the platform's `agent_instruction_min_chars` and `agent_instruction_max_chars` (1 and 32000 by default).
 - **Flat agent YAML instead of `spec:`.** Agent fields (`systemPrompt`,
   `toolsets`, …) live under a top-level `spec:` block; only `kind:`,
   `name:`, and `description:` sit at the root. The flat form passes `plan`
@@ -46,10 +59,11 @@
   own `kind:` (e.g. `kind: agent`); the manifest's `kind: manifest`
   is unrelated. Setting `kind: agent` inside a manifest is a parse
   error.
-- **Trying to mutate immutable fields.** Agent and entrypoint `type`
-  fields are immutable after creation; apply silently ignores
-  attempts to change them. Recreate the resource (delete + apply) to
-  switch type.
+- **Trying to mutate immutable fields.** An entrypoint's `type` is
+  immutable after creation: `plan` fails with `type change (...) is not
+  supported on update`. Delete the entrypoint and apply it again to
+  switch type. Agents accept only `type: standard`, so there is no
+  agent type to change.
 - **Tool param missing both optional signals.** A Go toolset param
   field is optional if it is a pointer type (`*string`, `*int`) OR
   carries `json:",omitempty"`; otherwise it is required. Authors
@@ -68,7 +82,8 @@
   short-circuits the build and re-uploads whatever zip is cached for
   that target. Cross-target poisoning is now prevented by segmenting
   the cache by `<os>-<arch>/` and mixing the target into the hash, so
-  a darwin/arm64 zip can no longer satisfy a linux/arm64 apply. A
+  a darwin/arm64 zip can no longer satisfy a linux/arm64 apply, and a
+  CLI upgrade that changes the bundle format invalidates it too. A
   once-bad zip from a stale SDK or missing tool registrations still
   stays bad until you `rm -rf toolsets/<name>/.sam-cache/build/` and
   re-apply. Confirm by inspecting the cached binary:

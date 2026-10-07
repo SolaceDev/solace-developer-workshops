@@ -1,0 +1,8 @@
+{
+  "label": "Getting Started with Agent Mesh",
+  "position": 100,
+  "link": {
+    "type": "doc",
+    "id": "documentation/getting-started/index"
+  }
+}

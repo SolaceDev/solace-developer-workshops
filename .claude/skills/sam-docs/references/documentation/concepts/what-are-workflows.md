@@ -1,4 +1,5 @@
 ---
+published: true
 title: What Are Workflows? (Early Access)
 description: "An introduction to workflows in Agent Mesh: what they are, when to use them instead of agents, and how they fit into the system."
 sidebar_position: 540

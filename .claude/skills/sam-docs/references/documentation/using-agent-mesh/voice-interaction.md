@@ -1,4 +1,5 @@
 ---
+published: true
 title: Talking to Agents with Voice
 description: "Use speech-to-text to talk to agents and text-to-speech to hear responses in the Agent Mesh UI, and configure the underlying voice and transcription providers."
 sidebar_position: 657

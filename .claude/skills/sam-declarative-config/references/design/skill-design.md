@@ -1,16 +1,6 @@
----
-name: sam-skill-design
-description: Design guidance for SAM skills — when to create skills, instruction content structure, reference design, agent integration, and common pitfalls.
-tags:
-  - builder
-  - design
-  - skill
-  - sam
----
+Design guidance for creating Agent Mesh skills. Skills are knowledge bundles that agents load on demand via `load_skill`.
 
-Design guidance for creating SAM skills. Skills are knowledge bundles that agents load on demand via `load_skill`.
-
-For **schema details** see `sam-skill-schema`.
+For **schema details** see *Skill schema* in the lookup table at the end of this guide.
 
 ## What Are Skills?
 
@@ -77,25 +67,7 @@ When you need endpoint details:
 
 ## Reference Design
 
-References are optional supporting documents stored in the `references/` directory. They're accessed via `grep_skill_resources` (search) and `read_skill_resource` (read).
-
-### Inline vs Artifact References
-
-Each reference can be provided as:
-- **Inline content** — The content is embedded directly in the skill config. Use for builder-generated content that the builder creates during the build.
-- **Artifact reference** — Points to a user-uploaded artifact by name. Use for large documents the user has already uploaded.
-
-### When to Use Each
-
-**Inline content:**
-- Builder is generating the reference content as part of the build
-- Content is relatively short (under ~5000 tokens per file)
-- Content is specific to this skill and doesn't exist elsewhere
-
-**Artifact reference:**
-- User uploaded a document (PDF extract, API spec, manual)
-- Content is large and already exists as an artifact
-- Multiple skills might reference the same document
+References are optional supporting documents stored in the `references/` directory. They're accessed via `grep_skill_resources` (search) and `read_skill_resource` (read). How you supply them — as files, inline content, or an existing artifact — depends on where you author the skill; see *Supplying reference files* at the end of this guide.
 
 ### File Organization
 
@@ -110,24 +82,15 @@ Avoid putting everything in a single huge file. Agents search references with `g
 
 ## Asset Templates
 
-A skill's `assets/` directory can ship report and document **templates**, not just static files. Pair an asset (for example `report.html`) with a `<name>.template.yaml` sidecar and it becomes a template the agent fills with `@@KEY@@` substitutions and instantiates with `instantiate_template` — the embeds and Liquid in the body render live each time the artifact is downloaded. An asset with no sidecar is copied verbatim.
+A skill's `assets/` directory can ship report and document **templates**, not just static files. A template is a single packaged `.samt` file (the document body and its contract bundled together); the agent fills its `@@KEY@@` substitutions and renders it with `instantiate_template`, and the embeds and Liquid in the body render live each time the artifact is downloaded. Any other asset is copied verbatim.
 
 Prefer a template over having the agent generate a structured document token by token: the model produces only the small data artifact, and the template engine renders the document. This is both cheaper and more reliable for any repeatable report or export.
 
-When building a skill that should ship a template, emit two files under `assets/` — the asset body (with `@@KEY@@` tokens and `«…»`/Liquid embeds) and its `.template.yaml` sidecar declaring the `substitutions` and `data_inputs` contract. The sidecar shape, the closed-set `@@KEY@@` rules, the `data_inputs` schema/columns contract, and a worked example are documented once in the customer docs — follow that page rather than restating the rules:
-
-- [Asset templates](https://solacedev.github.io/solace-agent-mesh-go/documentation/building/skills#asset-templates)
+A `.samt` is produced by packaging a finished report, not written by hand; bundle the packaged file into the skill as-is. The contract inside it — the closed-set `@@KEY@@` rules, the `data_inputs` schema/columns contract, and a worked example — is documented once in the product documentation; follow that page rather than restating the rules. *Supplying reference files* at the end of this guide says how to bundle the file and where to read that page.
 
 ## Agent Integration
 
-When creating an agent that uses a skill, configure it in the agent's YAML:
-
-```yaml
-skills:
-  - name: my-api-reference
-```
-
-And include guidance in the agent instruction about when to load the skill:
+When creating an agent that uses a skill, attach the skill by name in the agent's configuration — the key differs by where you author; see *Attaching a skill to an agent* at the end of this guide — and include guidance in the agent instruction about when to load the skill:
 
 ```
 You have access to an API reference skill. When the user asks about API endpoints
@@ -137,9 +100,9 @@ documentation.
 
 ### Agent Card Skills vs Knowledge Skills
 
-There are two different uses of the word "skills" in SAM:
-- **Agent card skills** — Capabilities listed in `agent_card.skills[]`. These describe what the agent can do (A2A protocol).
-- **Knowledge skills** — Skill bundles configured in `skills[]`. These provide reference material.
+There are two different uses of the word "skills" in Agent Mesh:
+- **Agent card skills** — Capabilities published on the agent card. These describe what the agent can do (A2A protocol).
+- **Knowledge skills** — Skill bundles attached to the agent. These provide reference material.
 
 They are separate. An agent can have capabilities listed in its card without any knowledge skills, and vice versa. A knowledge skill often supports one or more agent card capabilities — for example, an "API Integration" capability might be supported by an "api-reference" knowledge skill.
 
@@ -155,36 +118,24 @@ They are separate. An agent can have capabilities listed in its card without any
 - **References**: Each file should be independently useful. 500-10000 tokens per file. Very large files (>10000 tokens) should be split.
 - **Total references**: 1-10 files is typical. More than 10 usually means the skill's scope is too broad — consider splitting into multiple skills.
 
-## Builder Workflow for Skills
+## Working with declarative config
 
-### 1. Identify skill needs during Discovery phase
+Where this guide says to look something up: *Skill schema* is `references/skill.md`, relative to the `sam-declarative-config` skill root.
 
-Listen for signals that suggest skills:
-- "I have reference documentation for..."
-- "The agent needs to know about our API..."
-- "Can you include these docs for the agent to reference?"
+### Supplying reference files
 
-### 2. Create skill artifacts BEFORE agent artifacts
+A skill is a directory: `SKILL.md` holds the instruction content and, in its frontmatter, the `name` and `description`; `references/` holds one markdown file per topic; `assets/` holds templates and other files. Write the files — there is no inline-content or artifact-reference choice to make; a `.samt` template is copied into `assets/` as-is. Layout and rules: `references/skill.md`; templates: `references/skill-asset-templates.md`; the template contract: the `sam-docs` skill, `building/skills.md` (*Asset Templates*).
 
-Skills should be created before agents that reference them. The build manifest should list skills before agents that depend on them.
+### Attaching a skill to an agent
 
-### 3. Generate instruction content and references
-
-For each skill:
-1. Write focused instruction content (purpose, key concepts, reference guide)
-2. For builder-generated references, use inline `content` fields
-3. For user-uploaded documents, use `artifact` fields referencing existing artifacts
-
-### 4. Validate before saving
-
-Always validate skill artifacts with `ValidateComponentConfig`:
-```
-ValidateComponentConfig(
-  config_yaml: '<the YAML string>',
-  mime_type: 'application/vnd.sam-skill-config+yaml'
-)
+```yaml
+spec:
+  skillRefs:
+    - my-api-reference
 ```
 
-### 5. Wire skills to agents
+Agent card capabilities are `spec.skills[]`; knowledge skills are `spec.skillRefs[]`. Do not put a knowledge skill under `spec.skills`.
 
-After creating the skill, ensure the agent config includes the skill reference and the agent instruction mentions when to load it.
+### Validating
+
+`sam config plan` checks the bundle, its manifest entry and every `skillRefs` reference before anything is applied. The frontmatter `name` must match both the directory name and the manifest entry, and a `skillRefs` entry that names no skill in the manifest is a plan-time error.

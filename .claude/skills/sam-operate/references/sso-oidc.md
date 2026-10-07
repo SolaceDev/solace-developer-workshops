@@ -1,6 +1,6 @@
 # SSO / OIDC for the entrypoint
 
-SAM-Go's entrypoint implements **native, in-process OIDC**. There is no `oauth2-proxy` sidecar and no `oauth2_config.yaml` (those are Python SAM). You configure a **providers catalog** in the entrypoint runtime YAML; the entrypoint owns the login and callback routes itself (callback is `/api/v1/auth/callback`).
+The Agent Mesh entrypoint implements **native, in-process OIDC**. There is no `oauth2-proxy` sidecar and no `oauth2_config.yaml` (those are Python Agent Mesh). You configure a **providers catalog** in the entrypoint runtime YAML; the entrypoint owns the login and callback routes itself (callback is `/api/v1/auth/callback`).
 
 ## The providers catalog
 
@@ -26,6 +26,7 @@ YAML keys stay snake_case (operator-written YAML convention). Secrets are `${VAR
 - **One entry** in the catalog → auto-selected.
 - **More than one** → the entrypoint's `app_config` must set `external_auth_provider` to a catalog key; a missing/mismatched name fails at startup with an error listing the available providers.
 - `external_auth_callback_uri` (per-app) overrides the entry's `redirect_uri`, which overrides the value derived from `frontend_server_url` + `/api/v1/auth/callback`.
+- A catalog entry missing `issuer` or `client_id` is **dropped with a WARN, not a hard failure** — a mistyped entry silently disappears and login just won't offer that provider. If a provider "isn't there," check the entrypoint logs for the drop warning before anything else.
 
 ## Session secret
 
@@ -44,4 +45,4 @@ Create a **confidential** client, set its valid redirect URI to your entrypoint'
 
 ## Docs note
 
-There is currently **no published customer SSO page** under the docs site — the public SSO material describes the Python architecture and will mislead. This reference is the verified Go surface; don't link the Python SSO doc or invent a Go doc URL. The shipped enterprise entrypoint example config (which the customer receives with their distribution) is the working template to copy from.
+There **is** a published **Enabling Single Sign-On (SSO)** page on the docs site, and it describes the Go architecture — in-process OIDC login with no separate auth proxy — covering IdP registration, redirect URIs, the provider catalog and the login flow. Point operators there, and treat this reference as the verified config surface for shapes that page doesn't spell out. Don't link the older Python SSO material, and don't invent a doc URL. The shipped enterprise entrypoint example config (which the customer receives with their distribution) is the working template to copy from.

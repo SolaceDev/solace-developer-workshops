@@ -1,4 +1,5 @@
 ---
+published: true
 title: Using Agent Mesh
 sidebar_position: 0
 description: "Chat with agents, manage projects and prompts, schedule tasks, and monitor live activity from the Agent Mesh UI."
@@ -33,6 +34,7 @@ To build and configure agents, entrypoints, connectors, tools, and skills, see [
 - [Sharing Prompts](./sharing-prompts.md) — Share a saved prompt with colleagues, select Viewer or Editor access, and manage or revoke access.
 - [Scheduling Tasks (Experimental)](./scheduled-tasks.md) — Set up recurring or one-shot agent runs.
 - [Monitoring Activity](./monitoring-activity.md) — Watch live task execution and review the artifacts a task produces.
+- [Chatting with the Activity Monitor (Experimental)](./activity-monitor.md) — Ask a built-in agent for usage reports, failure lists, and task traces.
 - [Talking to Agents with Voice](./voice-interaction.md) — Use speech input and hear responses spoken back.
 
 :::note

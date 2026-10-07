@@ -1,4 +1,5 @@
 ---
+published: true
 title: Creating Agents with the CLI
 description: Define an agent as declarative-config YAML and apply it into Agent Mesh with sam config.
 sidebar_position: 2
@@ -64,7 +65,7 @@ The top-level `name` and `description` identify the agent; `description` is requ
 
 | Field | Description |
 |---|---|
-| `systemPrompt` | The instructions that define the agent's role and behavior. Required, and between 100 and 10,000 characters; the preceding example clears the minimum. |
+| `systemPrompt` | The instructions that define the agent's role and behavior. Required, and up to 32,000 characters by default. An operator can change the bounds with the `agent_instruction_min_chars` and `agent_instruction_max_chars` Platform service settings. For more information, see [Platform Service Configuration](../../reference/config-schema.md#platform-service-configuration) in Configuration Schema. |
 | `modelProvider` | The model alias the agent uses for its reasoning, such as `general`. This is the **Model** picker in the Agent Mesh UI. |
 | `toolsets` | The toolset IDs the agent can call. `builtin_time_tools` is the **Time Tools** toolset. For the other built-in toolsets, see [Creating Toolsets](../toolsets.md). |
 | `inputModes`, `outputModes` | The communication modes the agent accepts and produces, such as `text`. |

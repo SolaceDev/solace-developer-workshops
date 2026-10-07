@@ -1,6 +1,7 @@
 ---
+published: true
 title: Troubleshooting a Running Deployment
-description: Failure scenarios organized by what broke — broker connectivity, crash loops, persistence, and tool execution — each with symptoms, diagnostics, resolution, and prevention.
+description: Failure scenarios organized by what broke — event broker connectivity, crash loops, persistence, and tool execution — each with symptoms, diagnostics, resolution, and prevention.
 sidebar_position: 890
 ---
 
@@ -13,46 +14,47 @@ Entries are organized by **what broke**, not by surface symptom, because the sam
 Before you open a scenario:
 
 - Logs are JSON when `log.format: json` is set — set this on every component so a single `traceID` grep returns a complete chain across the Entrypoint Executor, the Agent-Workflow Executor, the Secure Tool Runtime, and tool boundaries. The format, levels, rotation keys, and `traceID` story are in [Monitoring Your Agent Mesh](./observability.md).
-- Probes: the entrypoint's request-path `/health` returns `200 OK` with a JSON body (`{"status":"A2A Web UI Backend is running"}`) *unconditionally* — it confirms the HTTP listener is up, nothing more. The dedicated workload health server returns the JSON envelope (`{"status":"healthy"}` or `{"status":"unhealthy","error":"component <name> unhealthy: <wrapped error>"}`) and is the one to point Kubernetes probes at.
+- Probes: the entrypoint's request-path `/health` returns `200 OK` with a plain-text `ok` body *unconditionally* — it confirms the HTTP listener is up, nothing more. The dedicated workload health server returns the JSON envelope (`{"status":"healthy"}` or `{"status":"unhealthy","error":"component <name> unhealthy: <wrapped error>"}`) and is the one to point Kubernetes probes at.
+- A `{"status":"healthy"}` response from the Agent-Workflow Executor proves the workload is up, not that every agent is serving. The workload answers `200 OK` whenever at least one of its agents or workflows still serves, so a single agent that never came up is invisible to both probes. For more information, see [Agents That Stop Serving While the Workload Reports Healthy](#agents-that-stop-serving-while-the-workload-reports-healthy).
 - Audit records on RBAC denies and authentication failures carry the failure context you need to tell a policy problem from a credential problem. The audit schema is in [Managing Audit and Compliance](./audit-and-compliance.md).
 
 ---
 
-## Broker Connectivity Failures
+## Event Broker Connectivity Failures
 
-A Solace event broker (or the dev broker for local development) is the transport that realizes the event mesh — every Agent Mesh component publishes and subscribes on it. When it is unreachable, using the wrong credentials, or refusing the Transport Layer Security (TLS) handshake, every cross-process flow stops — discovery, task submission, Agent-to-Agent (A2A) peer routing, status streams. Restarting components in a loop without fixing the broker is the usual amplifier.
+A Solace event broker (or the dev event broker for local development) is the transport that realizes the event mesh — every Agent Mesh component publishes and subscribes on it. When it is unreachable, using the wrong credentials, or refusing the Transport Layer Security (TLS) handshake, every cross-process flow stops — discovery, task submission, Agent-to-Agent (A2A) peer routing, status streams. Restarting components in a loop without fixing the event broker is the usual amplifier.
 
 **Symptoms**
 
 - Operational stderr / log file shows `solace broker: connect to <url>: <underlying error>` at startup, repeated on every reconnect attempt.
 - The dedicated workload health server returns `{"status":"unhealthy","error":"component broker unhealthy: <wrapped error>"}` with HTTP 503.
 - Task submissions (an HTTP `POST` to the entrypoint) succeed on the HTTP listener but never produce Server-Sent Events (SSE); the entrypoint-side log carries the `traceID` but no agent ever consumes the task.
-- In the broker's own logs, you see authentication-failure lines, or no TCP accept from the Agent Mesh IP at all (DNS / network policy).
+- In the event broker's own logs, you see authentication-failure lines, or no TCP accept from the Agent Mesh IP at all (DNS / network policy).
 
 **Diagnostic steps**
 
-1. From the workload host, exercise the broker URL directly:
+1. From the workload host, exercise the event broker URL directly:
 
    ```bash
    curl -fsS --connect-timeout 5 "${SOLACE_BROKER_URL}" || echo "unreachable"
    ```
 
-2. If the URL resolves but authentication fails, grep the log file for the connect line and read the wrapped error — it carries the broker software development kit (SDK) reason (`Access denied`, `Authentication failed`, `Host not found`).
-3. If the broker is using TLS, confirm the certificate chain the workload sees matches what the broker presents. The TLS-side procedure is in [Configuring TLS](./tls.md).
-4. If the broker is reachable from one workload but not another, suspect a network policy or egress rule — Agent Mesh does not buffer through a sidecar.
+2. If the URL resolves but authentication fails, grep the log file for the connect line and read the wrapped error — it carries the event broker software development kit (SDK) reason (`Access denied`, `Authentication failed`, `Host not found`).
+3. If the event broker is using TLS, confirm the certificate chain the workload sees matches what the event broker presents. The TLS-side procedure is in [Configuring TLS](./tls.md).
+4. If the event broker is reachable from one workload but not another, suspect a network policy or egress rule — Agent Mesh does not buffer through a sidecar.
 
 **Resolution**
 
 - **Wrong credentials** — Update the relevant environment variable (`SOLACE_BROKER_USERNAME`, `SOLACE_BROKER_PASSWORD`) or file-mounted secret. The rotation procedure is in [Managing Secrets](./secrets-management.md). Restart every component that holds the credential.
-- **Unreachable URL** — Confirm `SOLACE_BROKER_URL` matches the broker's exposed protocol and port (`tcps://broker.example:55443` versus `tcp://broker.example:55555`). If the broker has moved, every component's environment must be updated and rolled.
-- **TLS handshake failure** — Push the missing certificate authority (CA) certificate into the workload's trust store or point the broker configuration at the right CA file. See [Configuring TLS](./tls.md).
-- **Network policy** — Open the egress rule from the workload's namespace / host to the broker's Solace Message Format (SMF) / SMF-over-TLS (SMFS) port.
+- **Unreachable URL** — Confirm `SOLACE_BROKER_URL` matches the event broker's exposed protocol and port (`tcps://broker.example:55443` versus `tcp://broker.example:55555`). If the event broker has moved, every component's environment must be updated and rolled.
+- **TLS handshake failure** — Push the missing certificate authority (CA) certificate into the workload's trust store or point the event broker configuration at the right CA file. See [Configuring TLS](./tls.md).
+- **Network policy** — Open the egress rule from the workload's namespace / host to the event broker's Solace Message Format (SMF) / SMF-over-TLS (SMFS) port.
 
 **Prevention**
 
-- Pin the broker URL and credential into a single `Secret` / `ConfigMap` and apply it across all components together so they cannot drift apart.
-- In Kubernetes, set the deployment's readiness probe to the dedicated workload health server (not the request-path `/health`). A broker outage then takes the pod out of rotation instead of silently dropping requests.
-- Alert on the workload health server returning 503 for more than one probe interval. Cross-check the broker's own connection-count metric.
+- Pin the event broker URL and credential into a single `Secret` / `ConfigMap` and apply it across all components together so they cannot drift apart.
+- In Kubernetes, set the deployment's readiness probe to the dedicated workload health server (not the request-path `/health`). An event broker outage then takes the pod out of rotation instead of silently dropping requests.
+- Alert on the workload health server returning 503 for more than one probe interval. Cross-check the event broker's own connection-count metric.
 
 ---
 
@@ -76,7 +78,7 @@ A crash loop is what you see when a workload comes up, fails fast at startup or 
 
 2. Categorize the message:
    - **YAML parse / schema error** — a line / column or unknown-field message → fix the configuration.
-   - **Missing required environment variable** — a downstream SDK reports the problem (the large language model (LLM) client failing to authenticate, the broker SDK failing to resolve the URL). Confirm every `${VAR}` placeholder in the active YAML has a value set in the process environment.
+   - **Missing required environment variable** — a downstream SDK reports the problem (the large language model (LLM) client failing to authenticate, the event broker SDK failing to resolve the URL). Confirm every `${VAR}` placeholder in the active YAML has a value set in the process environment.
    - **Database connection or migration startup error** (`run migrations: goose up (table=gateway_goose_version): …`) — see the following Persistence-Layer Failures scenario.
    - **No log output at all** — the binary may be exiting on a Go panic before logging is wired. Run the binary directly (without the orchestrator wrapper) and capture stderr.
 3. If startup succeeded but the workload crashes on the first inbound task, the failure is in the request path. Submit a task with operational logs at `DEBUG` and follow the `traceID` chain — see [Monitoring Your Agent Mesh](./observability.md).
@@ -86,13 +88,54 @@ A crash loop is what you see when a workload comes up, fails fast at startup or 
 - **Configuration error** — Fix the YAML and redeploy. Where the same key is set in YAML and overridden by an environment variable, the environment wins; check both layers before concluding the YAML is wrong.
 - **Missing secret** — Substitution against the process environment treats an unset `${VAR}` as the empty string. Downstream consumers reject the empty value, often with a confusing message. Set the variable explicitly to a known-bad sentinel during diagnosis so the failure is loud: `export ANTHROPIC_API_KEY="sentinel-fix-me"`.
 - **Resource constraint** — If the out-of-memory (OOM) killer is involved, container memory limits are the issue. Raise the limit or split the workload (run the Agent-Workflow Executor and the Entrypoint Executor in separate pods rather than co-located in one).
-- **Dependency failure** — A broker outage, a database outage, or an LLM provider returning 5xx during startup can manifest as a crash loop. Resolve the dependency first, then re-roll.
+- **Dependency failure** — An event broker outage, a database outage, or an LLM provider returning 5xx during startup can manifest as a crash loop. Resolve the dependency first, then re-roll.
 
 **Prevention**
 
 - Validate the production configuration in CI before it reaches a running pod — boot the binary against it in a sandbox, or run the equivalent validation step in your release pipeline, so a misconfigured YAML fails the build rather than the pod.
 - Treat every `${VAR}` placeholder in production YAML as a required variable. Document them in the runbook. The canonical list of secret-bearing variables is in [Managing Secrets](./secrets-management.md).
-- Set the container restart policy to a finite back-off; do not let a tight crash loop saturate the broker's reconnect queue.
+- Set the container restart policy to a finite back-off; do not let a tight crash loop saturate the event broker's reconnect queue.
+
+---
+
+## Agents That Stop Serving While the Workload Reports Healthy
+
+This scenario is the crash loop's silent counterpart. The Agent-Workflow Executor isolates each agent and workflow from the others, so one instance that fails to initialize, fails to start, or stops serving later does not take the process down. The pod keeps running, the probes keep passing, and only the tasks addressed to that one agent fail. That isolation is intended, because a bad agent must not crash-loop a pod that is serving its other agents. The cost is that no probe tells you the deployment is incomplete.
+
+**Symptoms**
+
+- Tasks addressed to one agent never complete, while other agents on the same workload answer normally.
+- The dedicated workload health server returns `200 OK` with `{"status":"healthy"}`, and `/ready` reports `"ready":true`. `kubectl get pods` shows the pod `Running` with no restarts.
+- The agent is missing from `GET /api/v1/agentCards` on the entrypoint, and from the agent list in the Agent Mesh UI.
+- The Agent-Workflow Executor log carries an `ERROR` record with the message `instance failed to initialize; it will not serve` or `instance failed to start; it will not serve`, with `name` and `kind` fields and the wrapped cause.
+- The `instances started` record shows a `started` count lower than its `configured` count.
+- The `sam.component.count` series for that agent name is absent, while `sam.instance.up` for the workload still reports `1`.
+
+**Diagnostic steps**
+
+1. Confirm the workload itself is not the problem. A `200 OK` from its health server rules out a dead process and tells you nothing about the individual agent, which is why this scenario needs the log.
+2. Name the failing instance and the phase it failed in:
+
+   ```bash
+   kubectl logs deployment/solace-agent-mesh-go-awe | grep 'it will not serve'
+   ```
+
+   The message distinguishes the two phases. An initialization failure means the instance's configuration was rejected before anything was constructed. A start failure means the configuration parsed but a dependency the instance needs at start, such as its event broker queue, was unavailable.
+3. Read the `error` field on that record. It carries the same wrapped cause a crash loop would print, so the categories in the preceding crash-loop scenario apply: a configuration or schema error, a missing environment variable, or a dependency outage confined to that one instance.
+4. Compare the agents in your configuration against `GET /api/v1/agentCards`. The difference between the two lists is the set of agents that are not serving.
+
+**Resolution**
+
+- **Configuration rejected at initialization** — Fix the instance's configuration and redeploy it. A failed instance is not retried in place, so it stays out of service until it is replaced or the workload restarts.
+- **Dependency unavailable at start** — Resolve the dependency, then redeploy that agent. Redeploying replaces the failed entry in place and leaves the agents that are serving untouched. Restarting the whole workload interrupts them as well.
+- **Agent stopped serving after a clean start** — Restart the workload. The other agents on it are interrupted, so drain traffic first if the deployment is serving users.
+
+**Prevention**
+
+- Alert on the log messages, not on the probes. `instance failed to initialize; it will not serve` and `instance failed to start; it will not serve` are the only records that name the failing instance, and neither one changes the probe result.
+- Alert on the `instances started` counts. A `started` count lower than `attempted` is always a failure; lower than `configured` means either a failure or an instance you disabled deliberately.
+- Add a synthetic check per business-critical agent that submits a task and asserts a response. A probe confirms the workload is up; only a task confirms a specific agent is serving.
+- Run an agent whose availability you must guarantee on a workload of its own. When it is the only instance configured there, its failure is the workload's failure: the health server returns `503` and the orchestrator restarts the pod. Co-locating it with other agents hides its failure behind their health.
 
 ---
 
@@ -148,7 +191,7 @@ The session store and the artifact store are the two stateful surfaces. Failures
 
 ## Tool Execution Failures
 
-Tool execution covers built-in tools (the runtime's Go-native catalog), Secure Tool Runtime-hosted tools (the sandbox-worker bridge that runs Python and Go tool binaries), Model Context Protocol (MCP) server tools (external MCP servers the agent connects to), and OpenAPI tools (external HTTP APIs the agent invokes). Each has a distinct failure shape; the agent loop surfaces all of them as a tool-error event to the LLM, which is why "the agent said the tool failed" by itself is not diagnostic.
+Tool execution covers built-in tools (the runtime's Go-implemented catalog), Secure Tool Runtime-hosted tools (the sandbox-worker bridge that runs Python and Go tool binaries), Model Context Protocol (MCP) server tools (external MCP servers the agent connects to), and OpenAPI tools (external HTTP APIs the agent invokes). Each has a distinct failure shape; the agent loop surfaces all of them as a tool-error event to the LLM, which is why "the agent said the tool failed" by itself is not diagnostic.
 
 **Symptoms**
 

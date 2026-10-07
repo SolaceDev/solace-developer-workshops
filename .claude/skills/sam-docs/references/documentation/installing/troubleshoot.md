@@ -1,4 +1,5 @@
 ---
+published: true
 title: Troubleshooting Your Installation
 description: Common installation and startup failure modes, how to diagnose them, and how to prevent them.
 sidebar_position: 380

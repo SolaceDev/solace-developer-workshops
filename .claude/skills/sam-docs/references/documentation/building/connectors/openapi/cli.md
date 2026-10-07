@@ -1,4 +1,5 @@
 ---
+published: true
 title: OpenAPI Connectors via the CLI
 description: Configure an OpenAPI connector as declarative YAML and apply it with the Agent Mesh CLI, so agents can call the operations of a REST API described by an OpenAPI specification.
 sidebar_position: 2

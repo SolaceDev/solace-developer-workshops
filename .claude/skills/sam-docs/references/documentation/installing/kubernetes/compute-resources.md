@@ -1,4 +1,5 @@
 ---
+published: true
 title: Compute Resources
 description: Advisory CPU and memory requests/limits for the Entrypoint Executor, Agent-Workflow Executor, and Secure Tool Runtime workloads, node-sizing guidance, the bundled event broker cost, and how to size and scale for your own load.
 sidebar_position: 354

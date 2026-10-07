@@ -11,15 +11,15 @@ The config loader expands placeholders on raw YAML **before parsing**. Forms:
 | `${VAR:-default}` | value if set **and non-empty**; else default. |
 | `${VAR:+alt}` | `alt` if set and non-empty; else empty. |
 
-Nesting is depth-1 (`${A, ${B, x}}` resolves; deeper does not). Secrets are **only ever** `${VAR}` references or `*_file` mounts — never literals in YAML.
+Nesting is depth-1 (`${A, ${B, x}}` resolves; deeper does not). Secrets are **never** literals in YAML: use a `${VAR}` reference, or — on model configs only — a `*_file` mount (see below; there is no universal `*_file` sibling). Runtime YAML does not resolve `vault://` references — those are a `sam config` and skill `tools:` feature (`sam-declarative-config`); to feed a runtime process from Vault, populate its environment or a mounted file (for example with a Vault Agent sidecar).
 
 ## File-mounted secrets
 
-Any field with a `*_file` sibling reads from a mounted file instead of a literal: `api_key_file`, `auth_credentials_file` (Vertex), `credentials_file` (GCS), `oauth_client_secret_file`. Use these with Kubernetes Secret mounts.
+The `*_file` convention is a **model/LLM-config credential** feature — not a universal loader rule. On a model config, a credential field can be supplied from a mounted file: `api_key_file`, `oauth_client_secret_file`, Vertex `auth_credentials_file`. (Separately, the GCS artifact store takes a `credentials_file` — a path handed to the cloud SDK, not a model-config key.) Use these with Kubernetes Secret mounts. Elsewhere — broker password, OIDC `client_secret`, the session DB URL — there is no `_file` sibling; use `${VAR}` references instead.
 
 ## `!include`
 
-YAML supports `!include path/to/file` for modular config (relative to the config base dir; circular/traversal guarded). Useful for keeping an auth or secrets fragment separate.
+YAML supports `!include path/to/file` for modular config (relative to the config base dir; circular-include and recursion-depth guarded). Useful for keeping an auth or secrets fragment separate.
 
 ## Common secret-bearing surfaces
 
@@ -53,26 +53,24 @@ The docs site has a published **secrets-management** page with the full surface 
 ### What changes
 Three surfaces: **binary version** (new image tag per workload), **database schema** (embedded migrations auto-applied on pod boot), **YAML config keys** (renames/removals/value restrictions need operator edits). The A2A wire protocol is forward-compatible within a major version; YAML and DB schema are not.
 
-### Before upgrading
-1. Read the per-version **migrations** notes on the docs site (currently no breaking entries — upgrades between current releases are transparent).
-2. Confirm fresh backups of the session store and artifact store; test-restore in staging.
-3. Pin a specific image tag/digest (not a floating tag).
-4. Drain scheduled/cron tasks that shouldn't fire mid-roll.
-5. Run `sam-doctor` (it runs automatically as the Helm pre-upgrade hook) to preflight broker/DB/LLM/TLS/OIDC.
+### What to know before advising
+- **Read the release notes first** — they call out YAML renames and behavior changes that need edits before the new version starts.
+- **Back up the databases before upgrading.** Migrations run automatically when each workload starts and only go forward, so rolling back means restoring the pre-upgrade backup along with the previous image.
+- **Pin the image tag or digest**, never a floating tag, so a rollback lands on a known version.
+- **A failed migration stops that workload from starting** rather than degrading quietly. The Helm pre-upgrade `sam-doctor` hook catches broken prerequisites (broker, database, LLM, TLS, OIDC) before any pod rolls.
+- **`sam config migrate` is unrelated** — it converts legacy YAML files to the current format and never touches a database.
+- **A migration waits at most 15 s for a table lock.** If another session holds the lock longer (an open transaction, a long report query), the migration fails with a lock timeout and the pod restarts, instead of hanging until the startup probe kills it. While it waits, the pod logs `migration still running` at WARN every 10 s; `blockedBy` names each session holding the lock (pid, role, application name, state, transaction age), so the operator knows what to end or wait out.
 
-### Roll order
-**platform → GWE → AWE → STR.** Wait for each workload's health server to report healthy before rolling the next. During the roll mixed versions coexist: A2A traffic crosses freely; the DB schema is shared (N+1 extends it; an old-N pod started *after* the extension may refuse to boot, so don't roll backward mid-upgrade); each workload reads its YAML at startup, so a config-key mismatch fails that workload's start.
+### Index builds after startup (Postgres)
+Indexes on tables that grow with every task (for example `task_events`) are not built during migrations, because a large build can outlast the startup probe. A migration queues them instead, and the gateway pod builds them in the background with `CREATE INDEX CONCURRENTLY` once it is serving. The queue is the `gateway_async_indexes` table (`evidence.evidence_async_indexes` for the evidence store). Reads and writes keep working during a build, but the first build after an upgrade on a large database can keep the database disk busy for tens of minutes, so upgrade when traffic is low.
+- **Watch progress** in the gateway logs: `async index operation in progress` every minute with the build phase and block counts, then a row's `completed_at` is set. Another replica that finds the build taken logs `async index builds held by another process` once at INFO and waits.
+- **Failures retry on their own** with a backoff from one minute up to one hour, recorded in `attempts`, `last_error` and `next_attempt_at`. After 10 failures the pod logs `async index build gave up after repeated failures` at ERROR and skips that row; after a restart it logs `async index builds gave up and are skipped until attempts is reset` at WARN instead, naming the rows. Fix the cause from `last_error`, set `attempts = 0, next_attempt_at = NULL` on the row, and restart the gateway: the builder stops once nothing is left to retry, so it only sees the reset row on its next start.
+- **To stop a running build**, connect as the role Agent Mesh uses and run `SELECT pg_cancel_backend(q.builder_pid) FROM gateway_async_indexes q JOIN pg_stat_activity a ON a.pid = q.builder_pid WHERE q.name = '<index>' AND q.completed_at IS NULL AND a.state = 'active' AND a.usename = current_user AND a.query ILIKE '%concurrently%' AND a.query ILIKE '%' || q.name || '%'`. The checks matter: `builder_pid` alone can point at a session that has moved on to another row or reused the pid. The gateway drops the half-built index and builds it again after a minute; a cancel does not count toward the 10 failures. Stopping or restarting the gateway pod does not stop a build that is already running in Postgres; the next gateway finishes the row.
+- **A later migration that needs a table under a running build** cancels the build (`cancelled a running async index build so a migration can take its lock`), or, if the build is in its last phase, Postgres aborts one of the two as a deadlock: a build aborted that way starts over, and a migration aborted that way is retried once (`migration aborted by a deadlock; retrying it once`). The migration then applies and a cancelled build starts over; neither a cancel nor a deadlock abort counts toward the build's 10 failures. Until the cancel, up to the 15 s lock timeout, reads and writes on that table wait behind the migration, including those of a gateway still serving during a rolling update.
+- **Before rolling the gateway back**, check that every row in `gateway_async_indexes` has `completed_at` set. An older release may expect an index the queue has not built yet.
+- **Connection pooling:** the builder and the migration lock need session-level connections, so a transaction-pooling PgBouncer in front of the database is not supported.
 
-### Migrations are automatic
-The runtime applies goose migrations at startup (`session_*`, `gateway_*`, `platform_*` version tables) — there's no separate `sam migrate` command. A migration failure on a **configured** store **fails the workload fast**: entrypoint/platform log `migration failed` and exit (orchestrator restarts them), and a configured AWE/entrypoint session store that can't be opened or migrated returns `migrate session db: …` so the workload refuses to start. This is deliberate — it will **not** silently fall back to in-memory and drop sessions. The **only** in-memory fallback is when **no** durable store is configured at all (`session_service` absent / `type: memory` / empty `database_url`): the workload comes up on a volatile in-memory store with a loud WARN (`no session database_url configured — using a volatile in-memory session store; chat history will NOT survive a restart`). So treat a *configured*-store migration failure as a hard startup failure, and an unexpected in-memory WARN as "the DB wasn't configured," not a migration problem.
-
-### `sam config migrate` is a different thing
-`sam config migrate <legacy-path> <output-path>` is a **one-shot, bootstrap-only** converter from legacy SAC YAML to clean-spec YAML — pure file transformation, doesn't touch the platform or the DB. It is **not** the schema-migration mechanism. Don't conflate "upgrade migrations" (automatic, DB) with `sam config migrate` (manual, YAML format).
-
-### Rollback
-No auto-rollback. Scale new pods to zero → restore the DBs from the pre-upgrade backup (this is why backups are non-negotiable) → redeploy the pinned previous image → restart in order (platform → GWE → AWE → STR) and confirm healthy. Blue-green/canary uses the same principle: DB state must match the binary's expected schema version.
+For the step-by-step procedure — staging dry-run, roll order, health checks between steps, rollback — point to the Agent Mesh docs: the **Rollback and Upgrade** section of the production readiness checklist and **Running a Pre-Upgrade Dry-Run in Staging** under operator workflows. After an upgrade, confirm agents and workflows report running — in the UI or with `sam api /api/v1/platform/agents` — because a healthy pod does not prove every agent on it started.
 
 ### Checking the deployed version
-`sam --version` covers the CLI. The long-running binaries (`platform`/`gateway`/`awe`/`str`) don't expose `--version` today — confirm version via the deployed image tag/digest.
-
-The docs site has a published **upgrade-guides** page covering this procedurally — point operators there.
+`sam --version` covers the CLI. The long-running binaries each accept a `-version` (also `--version`) flag that prints the build version and exits — handy for confirming what a pod is actually running, alongside the deployed image tag/digest.

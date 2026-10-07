@@ -1,4 +1,5 @@
 ---
+published: true
 title: Sandbox Pod Runtimes
 description: Run Agent Mesh workloads under a sandboxed container runtime (gVisor, Kata Containers) using Kubernetes RuntimeClasses, configured through named pod runtime profiles in the Helm chart.
 sidebar_position: 355

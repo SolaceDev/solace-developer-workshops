@@ -1,4 +1,5 @@
 ---
+published: true
 title: Scheduling Tasks (Experimental)
 description: "Set up recurring or one-shot agent invocations from the Agent Mesh UI: schedule types, lifecycle, and managing existing tasks."
 sidebar_position: 654
@@ -74,14 +75,14 @@ Every execution moves through a small state machine, surfaced in the **Execution
 | **Pending** | The schedule fired; the execution is queued and waiting for a worker slot. |
 | **Running** | The worker dispatched the task; the agent is processing it. |
 | **Completed** | The agent returned a result, and that result was recorded. |
-| **Failed** | The execution ended in an error. Triggers include: the agent returned an error, the caller was unauthorized, the entrypoint rejected the task because the agent entered an interactive state (see [Behavior You Should Know About](#behavior-you-should-know-about)), or orphan recovery on restart. |
+| **Failed** | The execution ended in an error. Triggers include: the agent returned an error, the caller was unauthorized, the entrypoint rejected the task because the agent entered an interactive state (see [Production Considerations](#production-considerations)), or orphan recovery on restart. |
 | **Timeout** | The per-execution timeout elapsed before the agent finished, OR the stale-cleanup sweep transitioned a long-running execution. Distinct from Failed. |
 | **Cancelled** | The operator canceled the execution mid-run. |
 | **Skipped** | The scheduler tried to fire but could not proceed — either the target agent was not discoverable, the task was already running from a previous fire, or the global concurrent-execution cap was exhausted. The schedule continues on cadence; the next fire produces a fresh execution. |
 
 Task-level status (shown on the card and side panel) is a separate concept: `Active` (running on cadence), `Paused` (registered but not firing), or `Error` (the schedule itself is in a bad state).
 
-## Behavior You Should Know About
+## Production Considerations
 
 A few things worth knowing before you rely on a scheduled task in production:
 
@@ -96,7 +97,7 @@ A few things worth knowing before you rely on a scheduled task in production:
 The scheduler is configured on the Web UI entrypoint under the top-level `scheduler_service:` key:
 
 ```yaml
-# Web UI entrypoint config — scheduler_service fragment
+# Web UI entrypoint config - scheduler_service fragment
 scheduler_service:
   enabled: true
   default_timeout_seconds: 3600

@@ -1,4 +1,5 @@
 ---
+published: true
 title: Sharing Prompts
 description: "Share a saved prompt with colleagues: select Viewer or Editor access, and manage or revoke access when the prompt is no longer needed."
 sidebar_position: 653.5

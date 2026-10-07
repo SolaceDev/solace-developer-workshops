@@ -1,6 +1,7 @@
 ---
+published: true
 title: Configuring TLS
-description: Configure TLS for the inbound HTTP/SSE Entrypoint listener, the Solace broker connection, and outbound traffic to OIDC providers, LLM endpoints, and MCP servers.
+description: Configure TLS for the inbound HTTP/SSE Entrypoint listener, the Solace event broker connection, and outbound traffic to OIDC providers, LLM endpoints, and MCP servers.
 sidebar_position: 840
 ---
 
@@ -11,10 +12,10 @@ Agent Mesh has three independent TLS surfaces, each configured separately:
 | Surface | What it secures | Where it lives |
 |---|---|---|
 | Inbound | Browser and CLI traffic to the Entrypoint HTTP/SSE listener | Entrypoint app config |
-| Broker | The runtime's connection to the Solace event broker | Broker URL scheme + trust store |
+| Event Broker | The runtime's connection to the Solace event broker | Event broker URL scheme + trust store |
 | Outbound | The runtime's calls to OIDC providers, OAuth servers, LLM endpoints, and MCP servers | Per-consumer config |
 
-You can configure any subset. A typical production deployment runs all three; a development deployment behind a terminating load balancer may configure only broker TLS and let the load balancer handle inbound.
+You can configure any subset. A typical production deployment runs all three; a development deployment behind a terminating load balancer may configure only event broker TLS and let the load balancer handle inbound.
 
 For where the certificate and key material lives (environment variables, files on disk, mounted secrets), see [Managing Secrets](./secrets-management.md).
 
@@ -68,9 +69,9 @@ When both `fastapi_port` and `fastapi_https_port` are set, the Entrypoint Execut
 
 When `ssl_certfile`/`ssl_keyfile` are provided but no `fastapi_https_port` is set, the Entrypoint serves TLS directly on `fastapi_port` (single-port TLS) and no plain-HTTP listener is created.
 
-## Broker TLS (Solace)
+## Event Broker TLS (Solace)
 
-Solace broker TLS is selected by URL scheme — there is no separate enable flag. The runtime enables the TLS transport whenever the broker URL begins with `tcps://` or `wss://`:
+Solace event broker TLS is selected by URL scheme — there is no separate enable flag. The runtime enables the TLS transport whenever the event broker URL begins with `tcps://` or `wss://`:
 
 | URL scheme | Transport |
 |---|---|
@@ -91,11 +92,11 @@ apps:
       trust_store_path: /etc/ssl/certs
 ```
 
-When the scheme is `tcps://` or `wss://`, the runtime uses the Solace Go API to validate the event broker certificate. Broker authentication in Agent Mesh is username/password. Client-certificate (mutual-TLS) authentication to the broker is not currently exposed in the broker connection configuration.
+When the scheme is `tcps://` or `wss://`, the runtime uses the Solace Go API to validate the event broker certificate. Event broker authentication in Agent Mesh is username/password. Client-certificate (mutual-TLS) authentication to the event broker is not currently exposed in the event broker connection configuration.
 
 ### Trust Store
 
-The Solace Go API links a native library that uses OpenSSL, which requires a **file-based trust store**: a directory of PEM Certificate Authority (CA) files. The runtime resolves the trust-store directory in this order:
+The Solace Go API links a C library that uses OpenSSL, which requires a **file-based trust store**: a directory of PEM Certificate Authority (CA) files. The runtime resolves the trust-store directory in this order:
 
 1. The `trust_store_path` key on the `broker:` block (shown above).
 2. The `SOLACE_TLS_TRUST_STORE_DIR` environment variable.
@@ -107,11 +108,11 @@ The Solace Go API links a native library that uses OpenSSL, which requires a **f
 export SOLACE_TLS_TRUST_STORE_DIR=/etc/ssl/certs
 ```
 
-On Linux the platform default validates against the system CA bundle with no configuration. On macOS the runtime ships and uses an embedded Mozilla CA bundle automatically, so broker TLS validates against public roots out of the box — no `brew install`, no manual bundle, no skip-verify. Set `trust_store_path` or `SOLACE_TLS_TRUST_STORE_DIR` only to trust a **private** CA, such as a broker with an internally issued certificate. In a minimal container image that ships no system CA bundle, mount one and point one of these knobs at it.
+On Linux the platform default validates against the system CA bundle with no configuration. On macOS the runtime ships and uses an embedded Mozilla CA bundle automatically, so event broker TLS validates against public roots out of the box — no `brew install`, no manual bundle, no skip-verify. Set `trust_store_path` or `SOLACE_TLS_TRUST_STORE_DIR` only to trust a **private** CA, such as an event broker with an internally issued certificate. In a minimal container image that ships no system CA bundle, mount one and point one of these knobs at it.
 
 ### Disabling Verification
 
-The `broker:` block accepts `tls_skip_verify: true`, which turns off broker certificate validation entirely. It is for local development against a broker with a self-signed certificate; the runtime logs an insecure warning when it is active.
+The `broker:` block accepts `tls_skip_verify: true`, which turns off event broker certificate validation entirely. It is for local development against an event broker with a self-signed certificate; the runtime logs an insecure warning when it is active.
 
 ```yaml
 # agent config
@@ -122,14 +123,14 @@ apps:
       tls_skip_verify: true   # DEV ONLY
 ```
 
-Prefer minting the dev broker's CA into a directory and pointing `trust_store_path` at it over disabling verification. The Platform service's connector-deployment path deliberately never emits `tls_skip_verify` — connector broker connections always validate.
+Prefer minting the dev event broker's CA into a directory and pointing `trust_store_path` at it over disabling verification. The Platform service's connector-deployment path deliberately never emits `tls_skip_verify` — connector event broker connections always validate.
 
 ## Outbound: OIDC Providers
 
 Each provider in the OIDC catalog accepts two TLS keys. The catalog is a top-level `providers:` map, conventionally kept in its own file and pulled into the Entrypoint config with `!include`:
 
 ```yaml
-# oidc_providers.yaml — included into the entrypoint config via !include
+# oidc_providers.yaml - included into the entrypoint config via !include
 providers:
   keycloak:
     issuer: https://idp.example.com/realms/sam
@@ -171,7 +172,7 @@ apps:
 
 | Key | Behavior |
 |---|---|
-| `api_ca_cert` | PEM file with additional CA certificates the LLM client should trust. |
+| `api_ca_cert` | PEM file with additional CA certificates for the LLM client to trust. |
 | `api_skip_tls_verify` | Disables TLS verification entirely. `api_ca_cert` is ignored when this is `true`. |
 
 Both knobs are threaded end-to-end into the LLM client's HTTP transport per model. When `api_skip_tls_verify: true` the runtime logs `TLS certificate verification disabled for LLM provider — do not use in production` at config-load time. Setting both keys logs `api_ca_cert is ignored when api_skip_tls_verify is true` and proceeds with skip-verify.
@@ -224,9 +225,9 @@ OIDC, OAuth2 client-credentials, and MCP outbound HTTPS traffic all honor the st
 | `SSL_CERT_FILE` / `SSL_CERT_DIR` | On Linux/BSD, honored by the Go runtime's system certificate pool — `SSL_CERT_FILE` adds a single PEM CA file, `SSL_CERT_DIR` a directory of them — used for outbound TLS that does not specify its own CA bundle. **Not read by Agent Mesh directly, and not effective on macOS or Windows** (those platforms use the OS trust store and ignore these variables). For a portable per-surface trust anchor, use the YAML CA-bundle knobs (`ca_cert_path`, `api_ca_cert`, `ssl_config.ca_bundle`) instead. |
 | `SAM_MCP_CONNECTOR_TLS_VERIFY` | When set to `false` (case-insensitive), disables TLS verification for every MCP HTTP/SSE connector that does not set `ssl_config.verify` explicitly. Per-connector YAML overrides this variable. Intended for development against MCP servers with self-signed certificates; the runtime logs a warning at startup whenever this path is active (`mcp TLS verification disabled via SAM_MCP_CONNECTOR_TLS_VERIFY=false — do not use in production`). Stdio MCP transports ignore this variable. |
 
-The inbound listener and broker connection are not affected by these variables — the broker connects using the Solace Go API's own trust-store mechanism (see [Broker TLS (Solace)](#broker-tls-solace)), and the inbound listener accepts connections rather than making them.
+The inbound listener and event broker connection are not affected by these variables — the event broker connects using the Solace Go API's own trust-store mechanism (see [Event Broker TLS (Solace)](#event-broker-tls-solace)), and the inbound listener accepts connections rather than making them.
 
-For air-gapped deployments behind a forward proxy, set `HTTPS_PROXY` on the Entrypoint and add internal hosts (broker, internal MCP servers) to `NO_PROXY`. If the proxy is a TLS-terminating man-in-the-middle (MITM) with its own CA, point `SSL_CERT_FILE` (on Linux) at the corporate CA PEM so outbound HTTPS through the proxy validates correctly, or set the per-surface CA-bundle knob for the specific consumer.
+For air-gapped deployments behind a forward proxy, set `HTTPS_PROXY` on the Entrypoint and add internal hosts (event broker, internal MCP servers) to `NO_PROXY`. If the proxy is a TLS-terminating man-in-the-middle (MITM) with its own CA, point `SSL_CERT_FILE` (on Linux) at the corporate CA PEM so outbound HTTPS through the proxy validates correctly, or set the per-surface CA-bundle knob for the specific consumer.
 
 ## Verifying TLS
 
@@ -240,7 +241,7 @@ curl --cacert /etc/pki/ca-bundle.crt https://sam.example.com/health
 
 Expected response: HTTP 200 with a JSON body (`{"status":"A2A Web UI Backend is running"}`). Add `-v` to inspect the certificate chain the Entrypoint returned.
 
-**Broker:**
+**Event Broker:**
 
 ```bash
 openssl s_client -connect broker.example.com:55443 -showcerts < /dev/null
@@ -270,9 +271,9 @@ The key file is empty, binary, or PEM-armored with no recognizable block header.
 
 The path in `ssl_certfile` or `ssl_keyfile` is unreadable, or the key password is wrong. Confirm the files exist, the Entrypoint Executor has read permission, and the paths are absolute. Benign TLS handshake noise from clients is logged at debug level and does not fail startup — genuine misconfiguration surfaces at certificate-load time.
 
-### Broker Connects with `tcp://` but `tcps://` Hangs or Fails
+### Event Broker Connects with `tcp://` but `tcps://` Hangs or Fails
 
-The trust store is not where the Solace Go API is looking, or it does not contain the broker's CA. On Linux and minimal container images, confirm `/etc/ssl/certs` exists and holds the relevant CA PEM file, or point `trust_store_path` / `SOLACE_TLS_TRUST_STORE_DIR` at a directory that does. On macOS the runtime uses its embedded Mozilla bundle automatically; if a `solace broker: embedded CA materialization failed` warning appears in the logs, set `trust_store_path` to a readable CA directory. For a broker with a private CA, point one of the trust-store knobs at that CA. For a quick smoke test against a self-signed dev broker, `tls_skip_verify: true` on the `broker:` block bypasses validation.
+The trust store is not where the Solace Go API is looking, or it does not contain the event broker's CA. On Linux and minimal container images, confirm `/etc/ssl/certs` exists and holds the relevant CA PEM file, or point `trust_store_path` / `SOLACE_TLS_TRUST_STORE_DIR` at a directory that does. On macOS the runtime uses its embedded Mozilla bundle automatically; if a `solace broker: embedded CA materialization failed` warning appears in the logs, set `trust_store_path` to a readable CA directory. For an event broker with a private CA, point one of the trust-store knobs at that CA. For a quick smoke test against a self-signed dev event broker, `tls_skip_verify: true` on the `broker:` block bypasses validation.
 
 ### OIDC Discovery Fails with `x509: certificate signed by unknown authority`
 

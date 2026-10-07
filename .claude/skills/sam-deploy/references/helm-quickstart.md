@@ -1,6 +1,6 @@
 # Helm Quickstart (local or connected evaluation)
 
-Stand up SAM on Kubernetes for evaluation using the Helm chart's self-contained defaults — embedded broker, bundled PostgreSQL, bundled object storage. This is the **same chart** you later promote to production: values change at promotion, the architecture doesn't. Applies to the go-only 2.x chart line (take the exact chart version from the `Charts/` filename in your download).
+Stand up Agent Mesh on Kubernetes for evaluation using the Helm chart's self-contained defaults — embedded broker, bundled PostgreSQL, bundled object storage. This is the **same chart** you later promote to production: values change at promotion, the architecture doesn't. Applies to the go-only 2.x chart line (take the exact chart version from the `Charts/` filename in your download).
 
 ## Prerequisites
 

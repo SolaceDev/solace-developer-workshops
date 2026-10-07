@@ -1,4 +1,5 @@
 ---
+published: true
 title: Connecting External Agents with the CLI
 description: External agents are configured through the Agent Mesh UI, not declarative config.
 sidebar_position: 2

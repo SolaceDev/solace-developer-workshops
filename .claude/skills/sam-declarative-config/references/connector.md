@@ -43,10 +43,15 @@ spec:
           approval_message: "{{.method}} {{.path}}"
 ```
 
-The keys must exactly match the MCP server's `tools/list` names — not
-the prefixed names that surface after `tool_name_prefix:`. For
-OAuth-gated MCP servers shipping a static `manifest:`, match the
-`name:` field on each manifest entry.
+The keys must match the **registered** tool name — the name Agent Mesh
+ends up using, not the raw string the server advertises. Two transformations
+apply: any character outside `[A-Za-z0-9_]` becomes `_`, and when the
+entry sets `tool_name_prefix:` the prefix is **included**. An advertised
+`rest-request` under `tool_name_prefix: atlassian` is therefore keyed
+`atlassian_rest_request`. For OAuth-gated MCP servers shipping a static
+`manifest:`, start from the `name:` field on each manifest entry and
+apply the same two transformations. A key that matches no registered
+tool parses cleanly and gates nothing, so the approval never fires.
 
 `require_approval_when:` gates conditionally on the LLM-supplied arg
 values rather than all-or-nothing. Useful for MCP tools that expose
@@ -127,7 +132,7 @@ REST API that has an OpenAPI (Swagger) specification. The spec URL points
 to the API's OpenAPI JSON or YAML definition. The connector will parse
 the spec and expose the API's endpoints as tools.
 
-If the user provides the spec URL, you can use the ParseOpenAPISpec tool
+If the user provides the spec URL, you can use the parse_openapi_spec tool
 to detect what authentication the API requires. This helps you set the
 correct auth_type and fill in what you can.
 
@@ -149,17 +154,17 @@ never appear in artifacts.
 | `specification_url` | `string` |  |  |  | URL to your OpenAPI specification (leave empty if uploading file) |
 | `base_url` | `string` | yes |  | len 11–2048; matches regex | Base URL for the API server |
 | `auth_type` | `select` | yes | `none` | one of: none, apikey, http, oauth | (no description) |
-| `auth_apikey_location` | `select` | yes | `header` | one of: header, query | Where to include the API key (header or query parameter) |
-| `auth_http_scheme` | `select` | yes | `basic` | one of: basic, bearer | Select the HTTP Authorization header scheme to use |
-| `auth_apikey_name` | `string` | yes |  | len 1–200; matches regex | Name of the header or query parameter |
-| `auth_http_basic_username` | `string` | yes |  | len 1–320 | Username for Basic Authentication |
-| `auth_http_bearer_token` | `password (secret)` | yes |  | len 10–8192; secret | The bearer token (JWT, OAuth2 access token, API token, etc.). Leave placeholder to keep existing value. After saving, this will no longer be displayed. |
-| `auth_oauth_authorization_url` | `string` | yes |  | len 11–2048; matches regex | The OAuth authorization endpoint where users grant permission |
-| `auth_apikey_value` | `password (secret)` | yes |  | len 8–2048; secret | The actual API key value. Leave placeholder to keep existing value. After saving, this value will no longer be displayed. |
-| `auth_http_basic_password` | `password (secret)` | yes |  | len 4–1024; secret | Password for Basic Authentication. Leave placeholder to keep existing value. After saving, this will no longer be displayed. |
-| `auth_oauth_token_url` | `string` | yes |  | len 11–2048; matches regex | The OAuth token endpoint where codes are exchanged for access tokens |
+| `auth_apikey_location` | `select` | yes, when `auth_type`=`apikey` | `header` | one of: header, query | Where to send the API key with each request. |
+| `auth_http_scheme` | `select` | yes, when `auth_type`=`http` | `basic` | one of: basic, bearer | HTTP Authorization header scheme. |
+| `auth_apikey_name` | `string` | yes, when `auth_type`=`apikey` |  | len 1–200; matches regex | Name of the header or query parameter |
+| `auth_http_basic_username` | `string` | yes, when `auth_http_scheme`=`basic` and `auth_type`=`http` |  | len 1–320 | Username for Basic Authentication |
+| `auth_http_bearer_token` | `password (secret)` | yes, when `auth_http_scheme`=`bearer` and `auth_type`=`http` |  | len 10–8192; secret | The bearer token (JWT, OAuth2 access token, API token, etc.). Leave placeholder to keep existing value. After saving, this will no longer be displayed. |
+| `auth_oauth_authorization_url` | `string` | yes, when `auth_type`=`oauth` |  | len 11–2048; matches regex | The OAuth authorization endpoint where users grant permission |
+| `auth_apikey_value` | `password (secret)` | yes, when `auth_type`=`apikey` |  | len 8–2048; secret | The actual API key value. Leave placeholder to keep existing value. After saving, this value will no longer be displayed. |
+| `auth_http_basic_password` | `password (secret)` | yes, when `auth_http_scheme`=`basic` and `auth_type`=`http` |  | len 4–1024; secret | Password for Basic Authentication. Leave placeholder to keep existing value. After saving, this will no longer be displayed. |
+| `auth_oauth_token_url` | `string` | yes, when `auth_type`=`oauth` |  | len 11–2048; matches regex | The OAuth token endpoint where codes are exchanged for access tokens |
 | `auth_oauth_refresh_url` | `string` |  |  | len 11–2048; matches regex | The OAuth refresh endpoint. If not specified, will use the token URL. |
-| `auth_oauth_client_id` | `string` | yes |  | len 1–512 | The OAuth client ID for your application |
+| `auth_oauth_client_id` | `string` | yes, when `auth_type`=`oauth` |  | len 1–512 | The OAuth client ID for your application |
 | `auth_oauth_client_secret` | `password (secret)` |  |  | len 4–1024; secret | The OAuth client secret. Leave empty for PKCE-only flows. Leave placeholder to keep existing value. After saving, this will no longer be displayed. |
 | `auth_oauth_scopes` | `string` |  |  | max len 2048 | Space-separated OAuth scopes for API access (e.g., `openid email read:api`) |
 | `auth_oauth_token_endpoint_auth_method` | `select` |  | `client_secret_basic` | one of: client_secret_basic, client_secret_post, none | How to authenticate at the token endpoint |
@@ -181,27 +186,13 @@ spec:
     # optional: specification_url: "http://localhost:8002/openapi.json or upload file"
     base_url: "xxxxxxxxxxx"
     auth_type: "none"
-    auth_apikey_location: "header"
-    auth_http_scheme: "basic"
-    auth_apikey_name: "x"
-    auth_http_basic_username: "x"
-    auth_http_bearer_token: ${EXAMPLE_API_OPENAPI_AUTH_HTTP_BEARER_TOKEN}  # secret — provide via env var
-    auth_oauth_authorization_url: "xxxxxxxxxxx"
-    auth_apikey_value: ${EXAMPLE_API_OPENAPI_AUTH_APIKEY_VALUE}  # secret — provide via env var
-    auth_http_basic_password: ${EXAMPLE_API_OPENAPI_AUTH_HTTP_BASIC_PASSWORD}  # secret — provide via env var
-    auth_oauth_token_url: "xxxxxxxxxxx"
-    # optional: auth_oauth_refresh_url: "xxxxxxxxxxx"
-    auth_oauth_client_id: "x"
-    auth_oauth_client_secret: ${EXAMPLE_API_OPENAPI_AUTH_OAUTH_CLIENT_SECRET}  # secret — provide via env var
-    # optional: auth_oauth_scopes: "..."
-    # optional: auth_oauth_token_endpoint_auth_method: "client_secret_basic"
-    # optional: custom_headers: null  # TODO: provide a value of type key_value
-    # optional: allow_list: null  # TODO: provide a value of type text
+    # optional: custom_headers: null  # value of type key_value
+    # optional: allow_list: null  # value of type text
 ```
 
 ## type: document_db
 
-### subtype: dynamodb
+### subtype: dynamodb *(experimental)*
 
 **DynamoDB**
 
@@ -212,7 +203,7 @@ Connect to an Amazon DynamoDB table
 Use the DynamoDB connector when the user wants an agent to query an
 Amazon DynamoDB table. Each connector targets a single table.
 Authentication supports either AWS Access Keys or IAM Role Chaining
-(only available when SAM is deployed on AWS). For Role Chaining,
+(only available when Agent Mesh is deployed on AWS). For Role Chaining,
 provide the role ARN to assume.
 
 Always use <<__SAM_REQUIRED__>> for the access key, secret key, and
@@ -225,10 +216,10 @@ appear in artifacts.
 |---|---|---|---|---|---|
 | `region` | `string` | yes | `us-east-1` | len 1–50; matches regex | AWS region where the DynamoDB table lives. |
 | `table_name` | `string` | yes |  | len 3–255; matches regex | DynamoDB table this connector will query. |
-| `auth_type` | `select` | yes | `access_key` | one of: access_key, iam | Authentication method for connecting to DynamoDB. AWS IAM Role Chaining is only supported when SAM runs on AWS. |
-| `aws_access_key_id` | `password (secret)` | yes |  | len 16–128; secret | (no description) |
-| `aws_secret_access_key` | `password (secret)` | yes |  | len 30–255; secret | (no description) |
-| `role_arn` | `string` | yes |  | len 20–2048; matches regex | ARN of the IAM role with permissions to query the DynamoDB table. |
+| `auth_type` | `select` | yes | `access_key` | one of: access_key, iam | How the connector authenticates with AWS. |
+| `aws_access_key_id` | `password (secret)` | yes, when `auth_type`=`access_key` |  | len 16–128; secret | (no description) |
+| `aws_secret_access_key` | `password (secret)` | yes, when `auth_type`=`access_key` |  | len 30–255; secret | (no description) |
+| `role_arn` | `string` | yes, when `auth_type`=`iam` |  | len 20–2048; matches regex | ARN of the IAM role with permissions to query the DynamoDB table. |
 | `session_name` | `string` |  |  | len 2–64 | Session name for auditing the assumed role in AWS CloudTrail logs. Defaults to 'solace-document-db-session'. |
 | `external_id` | `password (secret)` |  |  | len 2–1224; secret | Optional security token for cross-account access. Required if configured in the IAM role's trust policy. |
 
@@ -247,12 +238,9 @@ spec:
     auth_type: "access_key"
     aws_access_key_id: ${EXAMPLE_DOCUMENT_DB_DYNAMODB_AWS_ACCESS_KEY_ID}  # secret — provide via env var
     aws_secret_access_key: ${EXAMPLE_DOCUMENT_DB_DYNAMODB_AWS_SECRET_ACCESS_KEY}  # secret — provide via env var
-    role_arn: "arn:aws:iam::123456789012:role/SolaceDynamoDBAccess"
-    # optional: session_name: "solace-dynamodb-session"
-    external_id: ${EXAMPLE_DOCUMENT_DB_DYNAMODB_EXTERNAL_ID}  # secret — provide via env var
 ```
 
-### subtype: mongodb
+### subtype: mongodb *(experimental)*
 
 **MongoDB**
 
@@ -272,7 +260,7 @@ builder, use <<__SAM_REQUIRED__>> for the password.
 
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
-| `scheme` | `select` |  | `mongodb` | one of: mongodb, mongodb+srv | Use mongodb+srv for DNS seedlist clusters (e.g. MongoDB Atlas), which resolve hosts via SRV records and ignore the port. |
+| `scheme` | `select` |  | `mongodb` | one of: mongodb, mongodb+srv | Connection protocol scheme. |
 | `hostname` | `string` | yes |  | len 1–255; matches regex | MongoDB host or cluster address (without scheme or port). |
 | `port` | `number` |  | `27017` | range 1–65535 | Ignored for the mongodb+srv scheme. Defaults to 27017. |
 | `username` | `string` |  |  | max len 255 | Optional. Leave blank for unauthenticated access. |
@@ -299,101 +287,6 @@ spec:
     # optional: database: "..."
     collection: "x"
     # optional: options: "retryWrites=true&w=majority"
-```
-
-## type: email
-
-### subtype: smtp
-
-**SMTP Email**
-
-Send emails via SMTP server
-
-**Usage guidance**
-
-Use the SMTP Email connector when the user wants an agent to send outbound
-emails. The connector provides a send_email tool that agents can use to
-compose and send emails with optional HTML bodies and attachments.
-
-The user must provide the SMTP server host, port, and authentication
-credentials. TLS should be enabled for security (STARTTLS or implicit TLS).
-
-Authentication options:
-- PLAIN/LOGIN: Traditional username/password authentication
-- OAuth 2.0: Modern authentication for Microsoft 365 and Google Workspace
-  - Microsoft 365: Use Azure AD app registration with SMTP.Send permission
-  - Google: Use Google Cloud OAuth with Gmail API scope
-
-IMPORTANT: The connector enforces a recipient allowlist — agents can only
-send to approved domains. The envelope_from address is fixed and cannot be
-changed by agents.
-
-For passwords and credentials not provided, use <<__SAM_REQUIRED__>> as
-the placeholder value.
-
-> ⚠ The send_email tool allows agents to send emails externally. Configure the recipient allowlist carefully to prevent unauthorized outbound communication. All sent emails are logged for audit purposes.
-
-| Field | Type | Required | Default | Validation | Description |
-|---|---|---|---|---|---|
-| `smtp_host` | `string` | yes |  | len 1–255; matches regex | SMTP server hostname (e.g., smtp.office365.com for Microsoft, smtp.gmail.com for Google) |
-| `smtp_port` | `number` |  | `587` | range 1–65535 | SMTP port (587 for STARTTLS, 465 for implicit TLS, 25 for plain) |
-| `smtp_tls` | `select` | yes | `starttls` | one of: starttls, tls, none | TLS encryption mode for SMTP connection |
-| `smtp_auth_type` | `select` | yes | `plain` | one of: plain, login, oauth_microsoft, oauth_google, none | SMTP authentication method |
-| `oauth_google_client_id` | `string` | yes |  | len 10–256 | OAuth 2.0 Client ID from Google Cloud Console. |
-| `oauth_microsoft_tenant_id` | `string` | yes |  | len 36–36; matches regex | Your Azure AD tenant ID (directory ID). Found in Azure Portal > Azure Active Directory > Overview. |
-| `smtp_username` | `string` | yes |  | len 1–320 | Username for SMTP authentication (usually your email address) |
-| `smtp_username_login` | `string` | yes |  | len 1–320 | Username for SMTP authentication (usually your email address) |
-| `oauth_google_client_secret` | `password (secret)` | yes |  | len 1–256; secret | OAuth 2.0 Client Secret from Google Cloud Console. Leave placeholder to keep existing value. |
-| `oauth_microsoft_client_id` | `string` | yes |  | len 36–36; matches regex | Application (client) ID from your Azure AD app registration. |
-| `smtp_password` | `password (secret)` | yes |  | len 1–1024; secret | Password or App Password for SMTP authentication. Leave placeholder to keep existing value. |
-| `smtp_password_login` | `password (secret)` | yes |  | len 1–1024; secret | Password or App Password for SMTP authentication. Leave placeholder to keep existing value. |
-| `oauth_google_refresh_token` | `password (secret)` | yes |  | len 1–1024; secret | OAuth 2.0 Refresh Token obtained through authorization flow. Leave placeholder to keep existing value. |
-| `oauth_microsoft_client_secret` | `password (secret)` | yes |  | len 1–1024; secret | Client secret from your Azure AD app registration. Leave placeholder to keep existing value. |
-| `oauth_google_email` | `string` | yes |  | len 5–320; matches regex | The Gmail address to send from. |
-| `oauth_microsoft_email` | `string` | yes |  | len 5–320; matches regex | The email address to send from (must have SMTP.Send permission in Azure AD). |
-| `envelope_from` | `string` | yes |  | len 5–320; matches regex | Fixed sender address for all emails. Agents cannot override this. For OAuth, this should match the authenticated email. |
-| `envelope_from_login` | `string` | yes |  | len 5–320; matches regex | Fixed sender address for all emails. Agents cannot override this. |
-| `envelope_from_none` | `string` | yes |  | len 5–320; matches regex | Fixed sender address for all emails. Agents cannot override this. |
-| `recipient_allowlist` | `textarea` | yes |  | len 1–4096 | List of allowed recipient domains, one per line. Agents can only send to these domains. |
-| `rate_limit_per_minute` | `number` |  | `60` | range 0–10000 | Maximum emails per minute (0 = unlimited) |
-| `rate_limit_per_hour` | `number` |  | `500` | range 0–100000 | Maximum emails per hour (0 = unlimited) |
-| `max_attachment_size_mb` | `number` |  | `10` | range 1–100 | Maximum size for a single attachment in megabytes |
-| `max_total_attachment_size_mb` | `number` |  | `25` | range 1–100 | Maximum total size for all attachments in megabytes |
-
-#### Example
-
-```yaml
-kind: connector
-name: example_email_smtp
-description: "Example email/smtp connector. Replace with a real description (10+ chars)."
-spec:
-  type: email
-  subtype: smtp
-  values:
-    smtp_host: "x"
-    # optional: smtp_port: 587
-    smtp_tls: "starttls"
-    smtp_auth_type: "plain"
-    oauth_google_client_id: "xxxxxxxxxx"
-    oauth_microsoft_tenant_id: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    smtp_username: "x"
-    smtp_username_login: "x"
-    oauth_google_client_secret: ${EXAMPLE_EMAIL_SMTP_OAUTH_GOOGLE_CLIENT_SECRET}  # secret — provide via env var
-    oauth_microsoft_client_id: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-    smtp_password: ${EXAMPLE_EMAIL_SMTP_SMTP_PASSWORD}  # secret — provide via env var
-    smtp_password_login: ${EXAMPLE_EMAIL_SMTP_SMTP_PASSWORD_LOGIN}  # secret — provide via env var
-    oauth_google_refresh_token: ${EXAMPLE_EMAIL_SMTP_OAUTH_GOOGLE_REFRESH_TOKEN}  # secret — provide via env var
-    oauth_microsoft_client_secret: ${EXAMPLE_EMAIL_SMTP_OAUTH_MICROSOFT_CLIENT_SECRET}  # secret — provide via env var
-    oauth_google_email: "xxxxx"
-    oauth_microsoft_email: "xxxxx"
-    envelope_from: "xxxxx"
-    envelope_from_login: "xxxxx"
-    envelope_from_none: "xxxxx"
-    recipient_allowlist: "example.com\npartner.example.com"
-    # optional: rate_limit_per_minute: 60
-    # optional: rate_limit_per_hour: 500
-    # optional: max_attachment_size_mb: 10
-    # optional: max_total_attachment_size_mb: 25
 ```
 
 ## type: event_mesh
@@ -532,7 +425,7 @@ spec:
 
 ## type: graph_db
 
-### subtype: neo4j
+### subtype: neo4j *(experimental)*
 
 **Neo4j**
 
@@ -550,7 +443,7 @@ database name (defaults to "neo4j"). For the builder, use
 
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
-| `scheme` | `select` |  | `neo4j` | one of: neo4j, neo4j+s, bolt, bolt+s | bolt / bolt+s connect to a single instance; neo4j / neo4j+s route across a cluster. The +s variants use TLS. |
+| `scheme` | `select` |  | `neo4j` | one of: neo4j, neo4j+s, bolt, bolt+s | Connection protocol and encryption mode. |
 | `hostname` | `string` | yes |  | len 1–255; matches regex | Neo4j host or IP address (without scheme or port). |
 | `port` | `number` |  | `7687` | range 1–65535 | Bolt port. Defaults to 7687. |
 | `username` | `string` | yes |  | len 1–255 | (no description) |
@@ -575,7 +468,7 @@ spec:
     # optional: database: "neo4j"
 ```
 
-### subtype: neptune
+### subtype: neptune *(experimental)*
 
 **Amazon Neptune**
 
@@ -596,15 +489,15 @@ appear in artifacts.
 
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
-| `scheme` | `select` |  | `bolt+s` | one of: bolt+s, neo4j+s, bolt, neo4j | Neptune requires TLS; bolt+s is standard. neo4j+s enables routing. |
+| `scheme` | `select` |  | `bolt+s` | one of: bolt+s, neo4j+s, bolt, neo4j | Connection protocol and encryption mode. |
 | `hostname` | `string` | yes |  | len 1–255; matches regex | Neptune cluster endpoint host (without scheme or port). Neptune authenticates via the AWS credentials configured below. |
 | `port` | `number` |  | `8182` | range 1–65535 | Neptune port. Defaults to 8182. |
 | `database` | `string` |  |  | max len 255; matches regex | Optional. Most Neptune clusters do not require a database name. |
 | `region` | `string` | yes | `us-east-1` | len 1–50; matches regex | (no description) |
-| `auth_type` | `select` | yes | `access_key` | one of: access_key, iam | Authentication method for connecting to Neptune. AWS IAM Role Chaining is only supported when SAM runs on AWS. |
-| `aws_access_key_id` | `password (secret)` | yes |  | len 16–128; secret | (no description) |
-| `aws_secret_access_key` | `password (secret)` | yes |  | len 30–255; secret | (no description) |
-| `role_arn` | `string` | yes |  | len 20–2048; matches regex | ARN of the IAM role with permissions to query the Neptune cluster. |
+| `auth_type` | `select` | yes | `access_key` | one of: access_key, iam | How the connector authenticates with AWS. |
+| `aws_access_key_id` | `password (secret)` | yes, when `auth_type`=`access_key` |  | len 16–128; secret | (no description) |
+| `aws_secret_access_key` | `password (secret)` | yes, when `auth_type`=`access_key` |  | len 30–255; secret | (no description) |
+| `role_arn` | `string` | yes, when `auth_type`=`iam` |  | len 20–2048; matches regex | ARN of the IAM role with permissions to query the Neptune cluster. |
 | `session_name` | `string` |  |  | len 2–64 | Session name for auditing the assumed role in AWS CloudTrail logs. Defaults to 'solace-neptune-session'. |
 | `external_id` | `password (secret)` |  |  | len 2–1224; secret | Optional security token for cross-account access. Required if configured in the IAM role's trust policy. |
 
@@ -626,9 +519,6 @@ spec:
     auth_type: "access_key"
     aws_access_key_id: ${EXAMPLE_GRAPH_DB_NEPTUNE_AWS_ACCESS_KEY_ID}  # secret — provide via env var
     aws_secret_access_key: ${EXAMPLE_GRAPH_DB_NEPTUNE_AWS_SECRET_ACCESS_KEY}  # secret — provide via env var
-    role_arn: "arn:aws:iam::123456789012:role/SolaceNeptuneAccess"
-    # optional: session_name: "solace-neptune-session"
-    external_id: ${EXAMPLE_GRAPH_DB_NEPTUNE_EXTERNAL_ID}  # secret — provide via env var
 ```
 
 ## type: knowledge_base
@@ -650,17 +540,17 @@ AWS Bedrock console. The region defaults to us-east-1 if not specified.
 Always use <<__SAM_REQUIRED__>> for the access_key and secret_key fields
 since these are AWS credentials that should never appear in artifacts.
 
-> ⚠ All agents using this connector will have access to the same Knowledge Base. Access control must be configured at the AWS IAM level. For AWS IAM Role authentication, ensure SAM is deployed on AWS.
+> ⚠ All agents using this connector will have access to the same Knowledge Base. Access control must be configured at the AWS IAM level. For AWS IAM Role authentication, ensure Agent Mesh is deployed on AWS.
 
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
 | `kb_id` | `string` | yes |  | len 1–100 | (no description) |
 | `region` | `string` | yes | `us-east-1` | len 1–50; matches regex | (no description) |
-| `auth_type` | `select` | yes | `access_key` | one of: iam, access_key | Authentication method for connecting to Amazon Bedrock Knowledge Base. AWS IAM Role Chaining is only supported when SAM runs on AWS. |
-| `aws_access_key_id` | `password (secret)` | yes |  | len 16–128; secret | (no description) |
-| `aws_secret_access_key` | `password (secret)` | yes |  | len 30–255; secret | (no description) |
-| `aws_account_id` | `string` | yes |  | len 1–20; matches regex | The AWS Account ID where the Bedrock Knowledge Base is located. Required for IAM role assumption. |
-| `role_name` | `string` | yes |  | len 1–64 | Name of the IAM role with permissions to access the Bedrock Knowledge Base (e.g., 'BedrockKBAccessRole') |
+| `auth_type` | `select` | yes | `access_key` | one of: iam, access_key | How the connector authenticates with AWS. |
+| `aws_access_key_id` | `password (secret)` | yes, when `auth_type`=`access_key` |  | len 16–128; secret | (no description) |
+| `aws_secret_access_key` | `password (secret)` | yes, when `auth_type`=`access_key` |  | len 30–255; secret | (no description) |
+| `aws_account_id` | `string` | yes, when `auth_type`=`iam` |  | len 1–20; matches regex | The AWS Account ID where the Bedrock Knowledge Base is located. Required for IAM role assumption. |
+| `role_name` | `string` | yes, when `auth_type`=`iam` |  | len 1–64 | Name of the IAM role with permissions to access the Bedrock Knowledge Base (e.g., 'BedrockKBAccessRole') |
 | `session_name` | `string` |  |  | len 2–64 | Session name for auditing the assumed role in AWS CloudTrail logs. Defaults to 'solace-kb-session'. |
 | `external_id` | `password (secret)` |  |  | len 2–1224; secret | Optional security token for cross-account access. Required if configured in the IAM role's trust policy. |
 
@@ -676,13 +566,9 @@ spec:
   values:
     kb_id: "ABC123XYZ"
     region: "us-east-1"
-    auth_type: "iam"
+    auth_type: "access_key"
     aws_access_key_id: ${EXAMPLE_KNOWLEDGE_BASE_BEDROCK_AWS_ACCESS_KEY_ID}  # secret — provide via env var
     aws_secret_access_key: ${EXAMPLE_KNOWLEDGE_BASE_BEDROCK_AWS_SECRET_ACCESS_KEY}  # secret — provide via env var
-    aws_account_id: "123456789012"
-    role_name: "SolaceBedrockKBAccess"
-    # optional: session_name: "solace-kb-session"
-    external_id: ${EXAMPLE_KNOWLEDGE_BASE_BEDROCK_EXTERNAL_ID}  # secret — provide via env var
 ```
 
 ## type: mcp
@@ -702,7 +588,7 @@ a connection type (streamable-http or SSE). Authentication is optional and
 depends on the server.
 
 If the user provides credentials (or none are needed), you can use the
-DiscoverMCPTools tool to list available tools before saving. If credentials
+discover_mcp_tools tool to list available tools before saving. If credentials
 are required but not yet provided, skip discovery — the UI will handle it
 after the user fills in the <<__SAM_REQUIRED__>> placeholders.
 
@@ -715,20 +601,20 @@ good connector description.
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
 | `server_url` | `string` | yes |  | len 11–2048; matches regex | The Remote MCP Server URL (e.g., https://mcp.example.com/mcp) |
-| `connection_type` | `select` | yes | `streamable-http` | one of: streamable-http, sse | Protocol for connecting to MCP server |
+| `connection_type` | `select` | yes | `streamable-http` | one of: streamable-http, sse | Protocol for connecting to the MCP server. |
 | `auth_type` | `select` | yes | `none` | one of: none, apikey, http, oauth | (no description) |
-| `auth_apikey_location` | `select` | yes | `header` | one of: header, query | Where to include the API key (header or query parameter) |
-| `auth_http_scheme` | `select` | yes | `basic` | one of: basic, bearer | Select the HTTP Authorization header scheme to use |
-| `auth_oauth_mode` | `select` | yes | `discovery` | one of: discovery, manual | Choose how to configure OAuth: automatic discovery or manual setup |
-| `auth_apikey_name` | `string` | yes |  | len 1–200; matches regex | Name of the header or query parameter |
-| `auth_http_basic_username` | `string` | yes |  | len 1–320 | Username for Basic Authentication |
-| `auth_http_bearer_token` | `password (secret)` | yes |  | len 10–8192; secret | The bearer token (JWT, OAuth2 access token, API token, etc.). Leave placeholder to keep existing value. After saving, this will no longer be displayed. |
-| `auth_oauth_authorization_url` | `string` | yes |  | len 11–2048; matches regex | The OAuth authorization endpoint where users grant permission |
-| `auth_apikey_value` | `password (secret)` | yes |  | len 8–2048; secret | The actual API key value. Leave placeholder to keep existing value. After saving, this value will no longer be displayed. |
-| `auth_http_basic_password` | `password (secret)` | yes |  | len 4–1024; secret | Password for Basic Authentication. Leave placeholder to keep existing value. After saving, this will no longer be displayed. |
-| `auth_oauth_token_url` | `string` | yes |  | len 11–2048; matches regex | The OAuth token endpoint where codes are exchanged for access tokens |
+| `auth_apikey_location` | `select` | yes, when `auth_type`=`apikey` | `header` | one of: header, query | Where to send the API key with each request. |
+| `auth_http_scheme` | `select` | yes, when `auth_type`=`http` | `basic` | one of: basic, bearer | HTTP Authorization header scheme. |
+| `auth_oauth_mode` | `select` | yes, when `auth_type`=`oauth` | `discovery` | one of: discovery, manual | How to configure the OAuth endpoints. |
+| `auth_apikey_name` | `string` | yes, when `auth_type`=`apikey` |  | len 1–200; matches regex | Name of the header or query parameter |
+| `auth_http_basic_username` | `string` | yes, when `auth_http_scheme`=`basic` and `auth_type`=`http` |  | len 1–320 | Username for Basic Authentication |
+| `auth_http_bearer_token` | `password (secret)` | yes, when `auth_http_scheme`=`bearer` and `auth_type`=`http` |  | len 10–8192; secret | The bearer token (JWT, OAuth2 access token, API token, etc.). Leave placeholder to keep existing value. After saving, this will no longer be displayed. |
+| `auth_oauth_authorization_url` | `string` | yes, when `auth_oauth_mode`=`manual` and `auth_type`=`oauth` |  | len 11–2048; matches regex | The OAuth authorization endpoint where users grant permission |
+| `auth_apikey_value` | `password (secret)` | yes, when `auth_type`=`apikey` |  | len 8–2048; secret | The actual API key value. Leave placeholder to keep existing value. After saving, this value will no longer be displayed. |
+| `auth_http_basic_password` | `password (secret)` | yes, when `auth_http_scheme`=`basic` and `auth_type`=`http` |  | len 4–1024; secret | Password for Basic Authentication. Leave placeholder to keep existing value. After saving, this will no longer be displayed. |
+| `auth_oauth_token_url` | `string` | yes, when `auth_oauth_mode`=`manual` and `auth_type`=`oauth` |  | len 11–2048; matches regex | The OAuth token endpoint where codes are exchanged for access tokens |
 | `auth_oauth_refresh_url` | `string` |  |  | len 11–2048; matches regex | The OAuth refresh endpoint. If not specified, will use the token URL. |
-| `auth_oauth_client_id` | `string` | yes |  | len 1–512 | The OAuth client ID for your application |
+| `auth_oauth_client_id` | `string` | yes, when `auth_oauth_mode`=`manual` and `auth_type`=`oauth` |  | len 1–512 | The OAuth client ID for your application |
 | `auth_oauth_client_secret` | `password (secret)` |  |  | len 4–1024; secret | The OAuth client secret. Leave empty for PKCE-only flows. Leave placeholder to keep existing value. After saving, this will no longer be displayed. |
 | `auth_oauth_scopes` | `string` |  |  | max len 2048 | Space-separated OAuth scopes for API access (e.g., `openid email read:api`) |
 | `auth_oauth_token_endpoint_auth_method` | `select` |  | `client_secret_basic` | one of: client_secret_basic, client_secret_post, none | How to authenticate at the token endpoint |
@@ -737,7 +623,7 @@ good connector description.
 | `tool_name_prefix` | `string` |  |  |  | Prepended to every exposed tool name (lets the agent disambiguate tools when multiple MCP servers are bound). |
 | `allow_list` | `text` |  |  |  | Comma-separated MCP tool names to expose. Mutually exclusive with tool_name and deny_list. |
 | `deny_list` | `text` |  |  |  | Comma-separated MCP tool names to hide from the agent. Mutually exclusive with tool_name and allow_list. |
-| `manifest` | `textarea` |  |  |  | Optional full override of the tool definitions: a list of entries with name, description, optional inputSchema/outputSchema. When set, the connector skips live discovery and registers exactly these tools. |
+| `manifest` | `textarea` |  |  |  | Optional full override of the tool definitions: a list of entries with name, description, an optional inputSchema and an optional outputSchema. An outputSchema declares what the tool returns; its top-level properties are the fields a workflow addresses as {{node.output.mcp_structured_content.<field>}}, and a reference they do not name is reported as unverified. When set, the connector skips live discovery and registers exactly these tools, so it cannot be combined with Single Tool Name, Allow List or Deny List. |
 | `hil` | `textarea` |  |  |  | Optional per-tool approval gating. Map of tool names to HIL config under a top-level `tools:` key. Each entry supports require_approval (bool), approval_message (Go text/template string — use `{{.argName}}` to interpolate LLM-supplied args, e.g. `Update Jira issue {{.issueIdOrKey}}?`), show_args (bool), and timeout (duration string e.g. "30m"). When require_approval is true the agent pauses on tool invocation and surfaces approval_message in the UI before proceeding. |
 
 #### Example
@@ -753,33 +639,18 @@ spec:
     server_url: "https://example.com/mcp"
     connection_type: "streamable-http"
     auth_type: "none"
-    auth_apikey_location: "header"
-    auth_http_scheme: "basic"
-    auth_oauth_mode: "discovery"
-    auth_apikey_name: "x"
-    auth_http_basic_username: "x"
-    auth_http_bearer_token: ${EXAMPLE_MCP_REMOTE_AUTH_HTTP_BEARER_TOKEN}  # secret — provide via env var
-    auth_oauth_authorization_url: "xxxxxxxxxxx"
-    auth_apikey_value: ${EXAMPLE_MCP_REMOTE_AUTH_APIKEY_VALUE}  # secret — provide via env var
-    auth_http_basic_password: ${EXAMPLE_MCP_REMOTE_AUTH_HTTP_BASIC_PASSWORD}  # secret — provide via env var
-    auth_oauth_token_url: "xxxxxxxxxxx"
-    # optional: auth_oauth_refresh_url: "xxxxxxxxxxx"
-    auth_oauth_client_id: "x"
-    auth_oauth_client_secret: ${EXAMPLE_MCP_REMOTE_AUTH_OAUTH_CLIENT_SECRET}  # secret — provide via env var
-    # optional: auth_oauth_scopes: "..."
-    # optional: auth_oauth_token_endpoint_auth_method: "client_secret_basic"
-    # optional: custom_headers: null  # TODO: provide a value of type key_value
+    # optional: custom_headers: null  # value of type key_value
     # optional: tool_name: "..."
     # optional: tool_name_prefix: "..."
-    # optional: allow_list: null  # TODO: provide a value of type text
-    # optional: deny_list: null  # TODO: provide a value of type text
+    # optional: allow_list: null  # value of type text
+    # optional: deny_list: null  # value of type text
     # optional: manifest: "..."
     # optional: hil: "..."
 ```
 
 ## type: search
 
-### subtype: elasticsearch
+### subtype: elasticsearch *(experimental)*
 
 **Elasticsearch**
 
@@ -801,7 +672,7 @@ When an API key is supplied, use <<__SAM_REQUIRED__>> for it.
 
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
-| `scheme` | `select` |  | `https` | one of: https, http | Connection scheme for the host form. Ignored when a Cloud ID is provided. |
+| `scheme` | `select` |  | `https` | one of: https, http | Connection scheme. Ignored when a Cloud ID is provided. |
 | `hostname` | `string` |  |  | max len 255; matches regex | Elasticsearch host (without scheme). Provide either this or a Cloud ID. |
 | `port` | `number` |  | `9200` | range 1–65535 | Elasticsearch port. Defaults to 9200. |
 | `cloud_id` | `string` |  |  | max len 2048 | Elastic Cloud deployment ID. Provide either this or a Host. |
@@ -828,7 +699,7 @@ spec:
     password: ${EXAMPLE_SEARCH_ELASTICSEARCH_PASSWORD}  # secret — provide via env var
 ```
 
-### subtype: opensearch
+### subtype: opensearch *(experimental)*
 
 **Amazon OpenSearch**
 
@@ -852,14 +723,14 @@ appear in artifacts.
 
 | Field | Type | Required | Default | Validation | Description |
 |---|---|---|---|---|---|
-| `scheme` | `select` |  | `https` | one of: https, http | Connection scheme. Managed OpenSearch uses HTTPS. |
+| `scheme` | `select` |  | `https` | one of: https, http | Connection scheme. |
 | `hostname` | `string` | yes |  | len 1–255; matches regex | OpenSearch domain or serverless collection host (without scheme). |
 | `port` | `number` |  |  | range 1–65535 | Optional. Managed OpenSearch listens on 443 (leave blank). Set only for a non-standard port. |
 | `region` | `string` | yes | `us-east-1` | len 1–50; matches regex | AWS region used for SigV4 request signing. |
-| `auth_type` | `select` | yes | `access_key` | one of: access_key, iam | Authentication method for connecting to OpenSearch. AWS IAM Role Chaining is only supported when SAM runs on AWS. |
-| `aws_access_key_id` | `password (secret)` | yes |  | len 16–128; secret | (no description) |
-| `aws_secret_access_key` | `password (secret)` | yes |  | len 30–255; secret | (no description) |
-| `role_arn` | `string` | yes |  | len 20–2048; matches regex | ARN of the IAM role with permissions to query the OpenSearch cluster. |
+| `auth_type` | `select` | yes | `access_key` | one of: access_key, iam | How the connector authenticates with AWS. |
+| `aws_access_key_id` | `password (secret)` | yes, when `auth_type`=`access_key` |  | len 16–128; secret | (no description) |
+| `aws_secret_access_key` | `password (secret)` | yes, when `auth_type`=`access_key` |  | len 30–255; secret | (no description) |
+| `role_arn` | `string` | yes, when `auth_type`=`iam` |  | len 20–2048; matches regex | ARN of the IAM role with permissions to query the OpenSearch cluster. |
 | `session_name` | `string` |  |  | len 2–64 | Session name for auditing the assumed role in AWS CloudTrail logs. |
 | `external_id` | `password (secret)` |  |  | len 2–1224; secret | Optional security token for cross-account access. Required if configured in the IAM role's trust policy. |
 
@@ -880,9 +751,6 @@ spec:
     auth_type: "access_key"
     aws_access_key_id: ${EXAMPLE_SEARCH_OPENSEARCH_AWS_ACCESS_KEY_ID}  # secret — provide via env var
     aws_secret_access_key: ${EXAMPLE_SEARCH_OPENSEARCH_AWS_SECRET_ACCESS_KEY}  # secret — provide via env var
-    role_arn: "arn:aws:iam::123456789012:role/SolaceOpenSearchAccess"
-    # optional: session_name: "solace-opensearch-session"
-    external_id: ${EXAMPLE_SEARCH_OPENSEARCH_EXTERNAL_ID}  # secret — provide via env var
 ```
 
 ## type: slack
@@ -989,8 +857,8 @@ the conversation.
 | `port` | `number` |  | `1433` | range 1–65535 | If no value is provided, the default port number (1433) will be used. |
 | `username` | `string` | yes |  | len 1–255 | (no description) |
 | `password` | `password (secret)` | yes |  | secret | Leave placeholder to keep existing value. After saving, this value will no longer be displayed. |
-| `encrypt` | `select` |  | `yes` | one of: yes, no, strict | Encrypts data in transit using TLS between the connector and SQL Server. Strict requires encryption and always validates the server certificate (the Trust Server Certificate setting is ignored). |
-| `trust_server_certificate` | `select` |  | `no` | one of: no, yes | Controls whether the connector validates the SQL Server TLS certificate (expiry, trust chain, and server name match). Disabled validates (recommended). Enabled skips validation (use only for dev/test or controlled environments with self-signed certs). |
+| `encrypt` | `select` |  | `yes` | one of: yes, no, strict | TLS encryption for data in transit. |
+| `trust_server_certificate` | `select` |  | `no` | one of: no, yes | Whether to validate the server's TLS certificate. |
 
 #### Example
 

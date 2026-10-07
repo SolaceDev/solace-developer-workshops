@@ -1,4 +1,5 @@
 ---
+published: true
 title: Skills
 description: How skills package reusable instructions and tools as agentskills.io-style bundles, the progressive-disclosure model, the discovery lifecycle, and how skills relate to the Secure Tool Runtime and toolsets.
 sidebar_position: 11
@@ -9,6 +10,10 @@ sidebar_position: 11
 A skill is a bundle of instructions, reference material, and optional tools that an agent loads on demand. A skill follows the open agentskills.io format: a directory with a `SKILL.md` file at the top (YAML frontmatter plus Markdown instructions) and optional `references/`, `assets/`, and `tools/` subdirectories.
 
 Skills exist to keep an agent small at the prompt level while still reaching a large library of capabilities. Rather than packing every reference document and behavioral rule into one system prompt, you move that material into named bundles the agent pulls in only when a task calls for it. This page explains the concept, the progressive-disclosure model, and the lifecycle of a skill managed through the Platform service. For the hands-on authoring and management flow, see [Creating Skills](../building/skills.md).
+
+:::note Authoring Skills for Your AI Coding Assistant
+The `sam` CLI also installs *authoring skills* that guide an AI coding assistant while you author for Agent Mesh. They are a separate set that an agent never loads at runtime. See [Building with an AI Coding Assistant (Early Access)](../building/ai-coding-assistant.md).
+:::
 
 ## Progressive Disclosure
 
@@ -34,7 +39,7 @@ A skill bundles tools, and so does a toolset, but they enter the system through 
 | Toolset | A Platform resource: a zip of remote tools, always available to an agent it is attached to. | Attached by name. Expands into tool entries at deploy time. For more information, see [Toolsets](./toolsets.md). |
 | Skill | An agentskills.io bundle: instructions, references, assets, and optional bundled tools, loaded on demand. | Listed on the agent's `skills:`. The LLM loads the skill at runtime via `load_skill`. |
 
-The distinction that matters: a toolset's tools are always on the agent's tool list. A skill's instructions and tools appear only after the LLM loads the skill. A skill is the right home for behavioral guidance and reference material. A toolset is the right home for capabilities the agent should always have.
+The distinction that matters: a toolset's tools are always on the agent's tool list. A skill's instructions and tools appear only after the LLM loads the skill. A skill is the right home for behavioral guidance and reference material. A toolset is the right home for capabilities the agent must always have.
 
 ## What Is in a Skill Bundle
 
@@ -77,7 +82,7 @@ flowchart LR
   dev[Developer]
   plat[Platform service]
   str[Secure Tool Runtime]
-  broker[(Broker)]
+  broker[(Event Broker)]
   awe[Agent-Workflow Executor]
 
   dev -->|upload skill zip| plat

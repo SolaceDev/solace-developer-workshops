@@ -1,4 +1,5 @@
 ---
+published: true
 title: Amazon Bedrock Connectors
 description: Configure the Amazon Bedrock Knowledge Base connector so agents can retrieve context from your enterprise documentation for Retrieval-Augmented Generation.
 sidebar_position: 1

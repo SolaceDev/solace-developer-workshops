@@ -1,4 +1,5 @@
 ---
+published: true
 title: Managing Audit and Compliance
 description: The audit event types Agent Mesh emits, the audit slog schema, the JSON-handler requirement, and how to ship audit records to your log aggregator for retention and query.
 sidebar_position: 860
@@ -8,7 +9,7 @@ sidebar_position: 860
 
 Audit logging in Agent Mesh is **structured JSON slog output**. Every security-relevant event — authentication, role-based access control (RBAC) decisions on tools, agents, and the control plane, tool-execution outcomes, and resource-sharing changes — is emitted as a record on the process's standard slog handler. There is no built-in audit database, no audit query API, and no retention engine inside the runtime. Operators ship slog output to an external log aggregator (Datadog, Splunk, CloudWatch, Loki, or `journald` plus cold storage) and decide retention, immutability, query, and alerting *there*.
 
-Secrets that appear alongside audit records are handled separately — see [Managing Secrets](./secrets-management.md). The TLS material that protects the broker and HTTP listeners is in [Configuring TLS](./tls.md). The roles and scopes that the RBAC events reference are in [RBAC Reference](../reference/rbac-reference.md).
+Secrets that appear alongside audit records are handled separately — see [Managing Secrets](./secrets-management.md). The TLS material that protects the event broker and HTTP listeners is in [Configuring TLS](./tls.md). The roles and scopes that the RBAC events reference are in [RBAC Reference](../reference/rbac-reference.md).
 
 ## Enable Audit Logging
 
@@ -81,10 +82,10 @@ Across processes the counter resets at startup and is independent per process, s
 The audit logger checks at construction that its underlying slog handler is a `*slog.JSONHandler` (or a recognized wrapper around one). If it is not, a startup `WARN` is emitted:
 
 ```text
-audit logger initialised with non-JSON slog handler; recommended deployment is format: json — custom handlers may re-introduce log injection
+audit logger initialised with non-JSON slog handler; recommended deployment is format: json - custom handlers may re-introduce log injection
 ```
 
-The reason: audit field values include user-controlled material — the `userID` from a JWT claim, the `tool` and `agentName` values from request payloads. The standard library's JSON handler escapes those values safely. A text handler, a CSV handler, or an OpenTelemetry Protocol (OTLP)-flattening handler can reopen log injection, so an attacker who controls the `userID` claim could inject newlines or fake fields into your audit stream.
+The reason: audit field values include user-controlled material. The `userID` comes from a JWT claim; the `tool` and `agentName` values come from request payloads. The standard library's JSON handler escapes those values safely. A text handler, a CSV handler, or an OpenTelemetry Protocol (OTLP)-flattening handler can reopen log injection, so an attacker who controls the `userID` claim could inject newlines or fake fields into your audit stream.
 
 Set `log.format: json` in the component's runtime configuration (or `LOG_FORMAT=json` in the environment) to keep the audit logger on its supported path.
 
@@ -146,4 +147,4 @@ Agent Mesh does **not** carry a SOC 2 or GDPR attestation as a product. The audi
 
 ## What Next?
 
-You have audit emissions flowing, the schema understood, and a shipping path picked. The companion topic is what to do when those records flag a failure — the day-two playbook for broker, agent, persistence, and tool-execution failures is in [Troubleshooting a Running Deployment](./scenario-troubleshooting.md).
+You have audit emissions flowing, the schema understood, and a shipping path picked. The companion topic is what to do when those records flag a failure — the day-two playbook for event broker, agent, persistence, and tool-execution failures is in [Troubleshooting a Running Deployment](./scenario-troubleshooting.md).
