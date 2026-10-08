@@ -12,7 +12,6 @@ This workshop is designed for developers, architects, and technical practitioner
 
 - [What This Workshop Covers](#what-this-workshop-covers)
 - [Concepts Covered](#concepts-covered)
-- [Use-case Overview](#use-case-overview)
 - [Takeaways](#takeaways)
 - [Resources](#resources)
 
@@ -31,7 +30,7 @@ You will work directly with [Solace Agent Mesh](https://solace.com/lp/agent-mesh
   <img src="./img/sam_overview.jpg" alt="SAM Overview" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
-The workshop follows the Agent Development Lifecycle (ADLC). This is a structured approach to taking an agent from its first build to continuous improvement in production. The use case starts with a single agent and grows into a team of specialist agents that work together to plan a trip.
+The workshop follows the Agent Development Lifecycle (ADLC). This is a structured approach to taking an agent from its first build to continuous improvement in production. The use case starts with a single agent and grows into a team of specialist agents that work together to plan a trip. It is described in [The Use Case](./01_Usecase.md).
 
 ---
 
@@ -50,46 +49,6 @@ The workshop follows the Agent Development Lifecycle (ADLC). This is a structure
 | Multi-agent orchestration | Having an orchestrator agent delegate work to specialist agents |
 | A2A proxy | Bringing an external agent, built with another framework, into the mesh |
 | Workflows | Running a known process as a deterministic graph of agent and tool steps, and how that differs from dynamic orchestration |
-
----
-
-## Use-case Overview
-
-You will build a **multi-agent travel planning system**. Specialist agents each own one part of planning a trip. An orchestrator agent coordinates them so that a complete trip plan comes back from a single conversation.
-
-<div align="center">
-  <img src="./img/use-case.png" alt="Travel planning use case" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
-</div>
-
-| Agent | How it is built | Role |
-|---|---|---|
-| **FlightSearchAgent** | PostgreSQL connector | Searches a database of 350+ airports, 300+ airlines, and 14,000+ routes for direct and connecting flights |
-| **HotelSearchAgent** | PostgreSQL connector | Searches 700+ hotels worldwide, from city hotels to beachfront resorts, with star ratings, room types, and pricing |
-| **LocalExperiencesAgent** | MCP connector | Finds restaurants and attractions using live data from the Foursquare Places API |
-| **WeatherAdvisorAgent** | External A2A agent | A LangChain agent that fetches live forecasts from Open-Meteo and recommends what to pack |
-| **TravelOrchestratorAgent** | Custom toolset | Delegates to the four agents above, then uses the `compile_itinerary` and `calculate_budget` tools to produce the final plan |
-
-### Where everything runs
-
-| Component | Runs on |
-|---|---|
-| Solace Agent Mesh and your agents | Your GitHub Codespace (or SAM Desktop on your machine) |
-| Travel database (PostgreSQL) | AWS EC2, pre-deployed for you |
-| Places MCP server | AWS EC2, pre-deployed for you |
-| Weather Advisor A2A agent | AWS EC2, pre-deployed for you |
-
-You do not need to deploy any backend services. Connection details are provided in the hands-on guides.
-
-### Sample query
-
-By the end of the workshop, a single prompt like this one will plan a complete trip:
-
-```
-@TravelOrchestratorAgent Plan a 5-day trip from Singapore to Tokyo for 2 people.
-Departure: 10 days from today. Return: 5 days later.
-We enjoy Japanese cuisine, cultural sites, and outdoor activities.
-Include flights, hotels, restaurants, weather forecast, and full budget breakdown.
-```
 
 ---
 
