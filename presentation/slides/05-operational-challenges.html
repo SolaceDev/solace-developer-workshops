@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 05 · The Real Challenges</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  .wc-container {
+    position: absolute;
+    left: 4%; right: 4%;
+    top: 22%; bottom: 9%;
+    z-index: 2;
+    overflow: hidden;
+  }
+
+  /* words start hidden; JS positions them then adds .placed to reveal */
+  .wc {
+    position: absolute;
+    white-space: nowrap;
+    line-height: 1;
+    opacity: 0;
+    transform: scale(0.6) translateY(10px);
+    transition: opacity 0.44s cubic-bezier(0.34,1.56,0.64,1),
+                transform 0.44s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .wc.placed { opacity: 1; transform: scale(1) translateY(0); }
+
+  /* sizes */
+  .wc.xl { font-size: clamp(1.55rem, 2.9vw, 2.45rem); font-weight: 800; }
+  .wc.lg { font-size: clamp(1.05rem, 1.9vw, 1.55rem); font-weight: 700; }
+  .wc.ml { font-size: clamp(0.85rem, 1.45vw, 1.18rem); font-weight: 600; }
+  .wc.md { font-size: clamp(0.68rem, 1.05vw, 0.88rem); font-weight: 400; }
+
+  /* plain colours */
+  .c-green  { color: var(--green); }
+  .c-orange { color: var(--orange); }
+  .c-white  { color: var(--white); }
+  .c-sky    { color: var(--sky-blue); }
+  .c-lime   { color: var(--green-bright); }
+  .c-muted  { color: rgba(255,255,255,0.72); }
+  .c-dim    { color: rgba(255,255,255,0.42); }
+  .c-teal   { color: rgba(0,200,149,0.88); }
+
+  /* pill variants */
+  .p-gray   { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.11);
+              border-radius:20px; padding:3px 10px; color:rgba(255,255,255,0.52); }
+  .p-green  { background:rgba(0,200,149,0.10);   border:1px solid rgba(0,200,149,0.25);
+              border-radius:20px; padding:3px 10px; color:rgba(0,200,149,0.9); }
+  .p-orange { background:rgba(252,168,41,0.10);  border:1px solid rgba(252,168,41,0.22);
+              border-radius:20px; padding:3px 10px; color:rgba(252,168,41,0.88); }
+  .p-purple { background:rgba(171,255,136,0.08); border:1px solid rgba(171,255,136,0.20);
+              border-radius:20px; padding:3px 10px; color:var(--green-bright); }
+</style>
+<link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body>
+<div class="stage"><div class="slide">
+  <div class="bg-mesh"></div>
+  <div class="glow glow-green" style="top:5%;right:5%;width:30%;height:50%;opacity:0.07;"></div>
+  <div class="glow glow-green" style="bottom:5%;left:5%;width:25%;height:40%;opacity:0.05;"></div>
+
+  <div class="brand-bar"><span class="overline">The Real Challenges · Enterprise AI</span></div>
+  <div class="slide-num">05 / 13</div>
+
+  <div class="content" style="justify-content:flex-start;padding-top:7%;gap:0;z-index:1;">
+    <h2 class="h2 reveal" style="font-size:clamp(1.3rem,2.4vw,2rem);max-width:50%;line-height:1.2;">
+      Beyond the model, the hard work begins.
+    </h2>
+  </div>
+
+  <div class="wc-container">
+    <span class="wc xl c-green">Security</span>
+    <span class="wc xl c-orange">Compliance</span>
+    <span class="wc xl c-white">Cost Control</span>
+    <span class="wc xl c-muted">Governance</span>
+    <span class="wc xl c-white">Stuck in Pilots</span>
+    <span class="wc lg c-sky">Connecting to Data</span>
+    <span class="wc lg c-white">Agent Lifecycle</span>
+    <span class="wc lg c-lime">Token Cost</span>
+    <span class="wc lg c-teal">Feedback Loop</span>
+    <span class="wc ml c-muted">Observability</span>
+    <span class="wc ml p-green">Legacy Integration</span>
+    <span class="wc ml p-orange">Over-permissioned</span>
+    <span class="wc ml p-green">Data Silos</span>
+    <span class="wc ml c-teal">API Gaps</span>
+    <span class="wc ml c-orange">Shadow AI</span>
+    <span class="wc ml p-orange">Prompt Injection</span>
+    <span class="wc ml p-purple">ROI Pressure</span>
+    <span class="wc md p-gray">Audit Trail</span>
+    <span class="wc md p-gray">Agent Sprawl</span>
+    <span class="wc md p-gray">Guardrails</span>
+    <span class="wc md p-gray">Behavioral Drift</span>
+    <span class="wc md p-gray">Hallucinations</span>
+    <span class="wc md c-green">Latency</span>
+    <span class="wc md p-orange">IAM Failures</span>
+    <span class="wc md c-teal">Lock-in</span>
+    <span class="wc md c-dim">Reliability</span>
+    <span class="wc md c-dim">Talent Gap</span>
+    <span class="wc md p-gray">Accountability</span>
+    <span class="wc md p-gray">Vendor Risk</span>
+    <span class="wc md p-gray">Framework Churn</span>
+    <span class="wc md c-dim">Data Quality</span>
+    <span class="wc md p-gray">Stack Instability</span>
+    <span class="wc md p-gray">Tool Calling</span>
+    <span class="wc md c-dim">Monitoring</span>
+    <span class="wc md p-gray">Repeatability</span>
+    <span class="wc md p-green">Scaling Agents</span>
+    <span class="wc md p-green">Build Agents</span>
+  </div>
+
+  <div class="caption reveal d2" style="z-index:6;">Every word is a real engineering problem teams face in production</div>
+
+</div></div>
+<a class="nav-prev" href="04-real-challenges-stat.html" title="Previous slide">‹</a>
+<a class="nav-next" href="06-adlc-overview.html" title="Next slide">›</a>
+<script src="slides.js"></script>
+<script>
+(function () {
+  // Seeded XORSHIFT — deterministic, consistent layout across reloads
+  var seed = 73921;
+  function rand() {
+    seed ^= seed << 13;
+    seed ^= seed >> 17;
+    seed ^= seed << 5;
+    return (seed >>> 0) / 4294967296;
+  }
+
+  function layout() {
+    var container = document.querySelector('.wc-container');
+    if (!container) return;
+
+    var CW  = container.offsetWidth;
+    var CH  = container.offsetHeight;
+    var PAD = 10; // minimum gap between any two words (px)
+
+    var words = Array.from(container.querySelectorAll('.wc'));
+
+    // Read actual rendered sizes (offsetWidth/Height ignore transforms)
+    var items = words.map(function (w) {
+      return { el: w, w: w.offsetWidth, h: w.offsetHeight };
+    });
+
+    var placed = []; // [{x,y,w,h}] — bounding boxes with padding
+
+    items.forEach(function (item) {
+      var iw = item.w + PAD * 2;
+      var ih = item.h + PAD * 2;
+      var maxX = Math.max(0, CW - iw);
+      var maxY = Math.max(0, CH - ih);
+
+      // Try random positions; first non-overlapping one wins
+      var bx = rand() * maxX;
+      var by = rand() * maxY;
+
+      for (var i = 0; i < 600; i++) {
+        var tx = rand() * maxX;
+        var ty = rand() * maxY;
+        var ok = placed.every(function (p) {
+          return tx + iw <= p.x || tx >= p.x + p.w ||
+                 ty + ih <= p.y || ty >= p.y + p.h;
+        });
+        if (ok) { bx = tx; by = ty; break; }
+      }
+
+      placed.push({ x: bx, y: by, w: iw, h: ih });
+      item.el.style.left = (bx + PAD) + 'px';
+      item.el.style.top  = (by + PAD) + 'px';
+    });
+
+    // Staggered entrance — large words come in first (they're first in HTML)
+    items.forEach(function (item, i) {
+      setTimeout(function () { item.el.classList.add('placed'); }, 40 + i * 38);
+    });
+  }
+
+  // Two rAF passes: first to let browser paint, second to read stable sizes
+  function run() { requestAnimationFrame(function () { requestAnimationFrame(layout); }); }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', run);
+  } else {
+    run();
+  }
+})();
+</script>
+</body>
+</html>

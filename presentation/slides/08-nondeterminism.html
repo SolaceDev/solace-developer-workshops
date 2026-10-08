@@ -54,34 +54,79 @@
     color: rgba(255,255,255,0.8);
     line-height: 1.45;
   }
+
+  /* Step-reveal animation */
+  .step-row {
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.45s cubic-bezier(0.22,1,0.36,1),
+                transform 0.45s cubic-bezier(0.22,1,0.36,1);
+  }
+  .step-row.shown {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  /* Stagger right column slightly */
+  .step-row.shown.delay {
+    transition-delay: 0.1s;
+  }
+
+  /* Click hint */
+  .click-hint {
+    position: absolute;
+    bottom: 22px;
+    right: 32px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(0,200,149,0.45);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.4s;
+  }
+  .click-hint .hint-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: blink 1.4s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
 </style>
 <link rel="icon" type="image/png" href="favicon.png">
 </head>
 <body>
-<div class="stage"><div class="slide">
+<div class="stage"><div class="slide" id="slide">
   <div class="bg-mesh"></div>
   <div class="glow glow-green" style="bottom:10%;right:5%;width:20%;height:40%;opacity:0.1;"></div>
 
   <div class="brand-bar"><span class="overline">Why a New Lifecycle · The Core Problem</span></div>
-  <div class="slide-num">07 / 14</div>
+  <div class="slide-num">08 / 13</div>
 
   <div class="content" style="gap:14px;">
     <div class="overline reveal" style="margin-bottom:8px;">Traditional Software vs AI Agents</div>
     <h2 class="h2 reveal d1" style="font-size:clamp(1.7rem,3vw,2.6rem);margin-bottom:18px;">Same input. Different output. Every time.</h2>
 
     <div style="display:flex;gap:20px;" class="reveal d2">
+
+      <!-- Left: Deterministic -->
       <div class="compare-col col-old">
         <div class="col-label">Traditional Software</div>
         <div class="col-title" style="color:var(--orange);">Deterministic</div>
-        <div class="prop-row">
+
+        <div class="prop-row step-row" id="old-input">
           <div class="prop-label">Input → Output</div>
           <div class="prop-val">Same input always produces the same output. Predictable by design.</div>
         </div>
-        <div class="prop-row">
+        <div class="prop-row step-row" id="old-testing">
           <div class="prop-label">Testing</div>
           <div class="prop-val">Unit tests verify boolean conditions. Pass = correct.</div>
         </div>
-        <div class="prop-row">
+        <div class="prop-row step-row" id="old-failure">
           <div class="prop-label">Failure mode</div>
           <div class="prop-val">Code either works or it crashes. The boundary is clear.</div>
         </div>
@@ -89,28 +134,64 @@
 
       <div style="display:flex;align-items:center;justify-content:center;flex-shrink:0;width:32px;color:rgba(255,255,255,0.2);font-size:1.4rem;font-weight:300;">vs</div>
 
+      <!-- Right: Probabilistic -->
       <div class="compare-col col-new">
         <div class="col-label">AI Agents</div>
         <div class="col-title" style="color:var(--green);">Probabilistic</div>
-        <div class="prop-row">
+
+        <div class="prop-row step-row" id="new-input">
           <div class="prop-label">Input → Output</div>
           <div class="prop-val">Same input can produce different outputs. Distribution of answers, not a single value.</div>
         </div>
-        <div class="prop-row">
+        <div class="prop-row step-row" id="new-testing">
           <div class="prop-label">Testing</div>
           <div class="prop-val">Unit tests can pass while the agent answers incorrectly in production.</div>
         </div>
-        <div class="prop-row">
+        <div class="prop-row step-row" id="new-failure">
           <div class="prop-label">Failure mode</div>
           <div class="prop-val">The agent runs, responds confidently, and may still be wrong. Silent failure.</div>
         </div>
       </div>
+
     </div>
   </div>
-  <div class="caption reveal d3">A new methodology is required to handle this</div>
+
+  <div class="caption reveal d3" id="caption" style="opacity:0;transition:opacity 0.5s 0.2s;">A new methodology is required to handle this</div>
+
+  <div class="click-hint" id="hint">
+    <div class="hint-dot"></div>
+    click to continue
+  </div>
+
 </div></div>
-<a class="nav-prev" href="06-lifecycle-evolution.html" title="Previous slide">‹</a>
-<a class="nav-next" href="08-what-is-sam.html" title="Next slide">›</a>
+<a class="nav-prev" href="07-lifecycle-evolution.html" title="Previous slide">‹</a>
+<a class="nav-next" href="09-what-is-sam.html" title="Next slide">›</a>
+
 <script src="slides.js"></script>
+<script>
+  var step = 0;
+  var maxSteps = 3;
+  var steps = [
+    ['old-input',   'new-input'],
+    ['old-testing', 'new-testing'],
+    ['old-failure', 'new-failure'],
+  ];
+
+  function advance() {
+    if (step >= maxSteps) return false;
+    var ids = steps[step];
+    document.getElementById(ids[0]).classList.add('shown');
+    var right = document.getElementById(ids[1]);
+    right.classList.add('shown', 'delay');
+    step++;
+    if (step === maxSteps) {
+      document.getElementById('caption').style.opacity = '1';
+      document.getElementById('hint').style.opacity = '0';
+    }
+    return true;
+  }
+
+  window.advanceStep = advance;
+</script>
 </body>
 </html>

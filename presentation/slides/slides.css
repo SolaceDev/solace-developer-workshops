@@ -95,16 +95,7 @@ body {
   transform: translateY(-3px);
 }
 
-.nav-prev, .nav-next {
-  position: fixed; top: 50%; transform: translateY(-50%); z-index: 100;
-  background: rgba(3,33,59,0.8); border: 1px solid var(--border);
-  border-radius: 8px; color: var(--white); font-size: 1.4rem;
-  width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
-  text-decoration: none; transition: background 0.2s, border-color 0.2s;
-}
-.nav-prev { left: 10px; }
-.nav-next { right: 10px; }
-.nav-prev:hover, .nav-next:hover { background: rgba(0,200,149,0.15); border-color: var(--green); }
+.nav-prev, .nav-next { display: none; }
 
 .caption {
   position: absolute; bottom: 28px; left: 0; right: 0; text-align: center;

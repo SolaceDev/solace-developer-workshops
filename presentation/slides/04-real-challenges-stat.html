@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Slide 04 · The Real Challenges</title>
+<link rel="stylesheet" href="slides.css">
+<style>
+  /* ── two-column layout ── */
+  .col-ice {
+    flex: 0 0 38%;
+    position: relative;   /* anchor for absolute SVG */
+  }
+  .col-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-left: 5%;
+    min-width: 0;
+  }
+
+  /* ── above / below zones in the text column ── */
+  .zone-above {
+    flex: 40;             /* ~40% of column — matches SVG waterline position */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: 14px;
+    min-height: 0;
+  }
+  .zone-below {
+    flex: 60;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 14px;
+    min-height: 0;
+  }
+
+  /* ── waterline divider ── */
+  .wl-divider {
+    flex: 0 0 auto;
+    height: 1px;
+    background: linear-gradient(90deg,
+      var(--green) 0%, rgba(0,200,149,0.3) 70%, transparent 100%);
+    position: relative;
+  }
+
+  /* ── zone labels & numbers ── */
+  .zone-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(0.55rem, 0.85vw, 0.68rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .zone-above .zone-tag { color: rgba(255,255,255,0.38); }
+  .zone-below .zone-tag { color: rgba(0,200,149,0.6); }
+
+  .pct {
+    font-size: clamp(2.4rem, 4.8vw, 4rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .pct-above { color: var(--white); }
+  .pct-below {
+    background: var(--grad-green);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .pct-name {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(0.6rem, 1vw, 0.78rem);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 6px;
+    margin-bottom: 4px;
+  }
+  .zone-above .pct-name { color: rgba(255,255,255,0.48); }
+  .zone-below .pct-name { color: var(--green); }
+
+  .pct-desc {
+    font-size: clamp(0.72rem, 1.1vw, 0.9rem);
+    line-height: 1.5;
+    max-width: 38ch;
+  }
+  .zone-above .pct-desc { color: rgba(255,255,255,0.52); }
+  .zone-below .pct-desc { color: rgba(255,255,255,0.7); }
+
+  /* ── callout box ── */
+  .callout-box {
+    margin-top: 10px;
+    background: rgba(0,200,149,0.08);
+    border: 1px solid rgba(0,200,149,0.22);
+    border-radius: 8px;
+    padding: 12px 16px;
+    flex-shrink: 0;
+  }
+  .callout-title {
+    font-size: clamp(0.85rem, 1.35vw, 1.1rem);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.3;
+    margin-bottom: 5px;
+  }
+  .callout-sub {
+    font-size: clamp(0.68rem, 1.0vw, 0.86rem);
+    color: var(--muted);
+    line-height: 1.5;
+  }
+</style>
+<link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body>
+<div class="stage"><div class="slide" id="slide">
+  <div class="bg-mesh"></div>
+  <div class="glow glow-green" style="bottom:0;left:20%;width:40%;height:55%;opacity:0.07;"></div>
+
+  <div class="brand-bar"><span class="overline">The Real Challenges · Enterprise AI</span></div>
+  <div class="slide-num">04 / 13</div>
+
+  <div class="content" style="flex-direction:row;align-items:stretch;gap:0;padding:8% 6%;">
+
+    <!-- ── LEFT: iceberg ── -->
+    <div class="col-ice reveal d1">
+      <svg viewBox="0 0 320 410"
+           preserveAspectRatio="xMidYMid meet"
+           style="position:absolute;inset:0;width:100%;height:100%;display:block;"
+           fill="none" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- ── waterline ── -->
+        <line x1="0"   y1="148" x2="85"  y2="148"
+              stroke="rgba(0,200,149,0.38)" stroke-width="1" stroke-dasharray="7,5"/>
+        <line x1="85"  y1="148" x2="232" y2="148"
+              stroke="rgba(0,200,149,0.65)" stroke-width="1.5"/>
+        <line x1="232" y1="148" x2="320" y2="148"
+              stroke="rgba(0,200,149,0.38)" stroke-width="1" stroke-dasharray="7,5"/>
+
+        <!-- ── above water: angular flat-top silhouette ── -->
+        <polygon
+          points="85,148 74,112 130,28 172,64 186,40 228,90 232,148"
+          fill="rgba(210,232,255,0.22)"
+          stroke="rgba(210,232,255,0.72)"
+          stroke-width="2.2"
+          stroke-linejoin="miter"/>
+
+        <!-- ── below water: wide bold geometric mass ── -->
+        <polygon
+          points="85,148 28,198 22,268 44,328 95,368 162,385 192,355 218,372 260,308 254,198 232,148"
+          fill="rgba(0,200,149,0.22)"
+          stroke="rgba(0,200,149,0.72)"
+          stroke-width="2.2"
+          stroke-linejoin="miter"/>
+
+      </svg>
+    </div>
+
+    <!-- ── RIGHT: text ── -->
+    <div class="col-text">
+
+      <!-- above waterline -->
+      <div class="zone-above reveal d2">
+        <div class="zone-tag">Above the surface</div>
+        <div class="pct pct-above">20%</div>
+        <div class="pct-name">Model Quality</div>
+        <p class="pct-desc">GPT-4, Claude, Gemini all produce strong results on well-scoped tasks. The model question is largely solved.</p>
+      </div>
+
+      <!-- waterline divider -->
+      <div class="wl-divider reveal d2"></div>
+
+      <!-- below waterline -->
+      <div class="zone-below reveal d3">
+        <div class="zone-tag">Below the surface</div>
+        <div class="pct pct-below">80%</div>
+        <div class="pct-name">Data &amp; Integration</div>
+        <p class="pct-desc">Connecting agents to enterprise data, systems, and events reliably and at scale.</p>
+        <div class="callout-box">
+          <div class="callout-title">The hard problems are no longer about model quality.</div>
+          <div class="callout-sub">Context pipelines, routing, observability, and failure handling: these are where teams actually get stuck.</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="caption reveal d4">An 80 / 20 problem. The 80% is below the surface.</div>
+
+</div></div>
+<a class="nav-prev" href="03-takeaways.html" title="Previous slide">‹</a>
+<a class="nav-next" href="05-operational-challenges.html" title="Next slide">›</a>
+<script src="slides.js"></script>
+</body>
+</html>

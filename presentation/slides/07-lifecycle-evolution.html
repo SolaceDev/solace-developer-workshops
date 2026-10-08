@@ -73,51 +73,138 @@
     color: rgba(0,200,149,0.4);
     font-size: 1.5rem;
   }
+
+  /* Step-reveal animation */
+  .step-item {
+    opacity: 0;
+    transform: translateX(32px);
+    transition: opacity 0.55s cubic-bezier(0.22,1,0.36,1),
+                transform 0.55s cubic-bezier(0.22,1,0.36,1);
+    pointer-events: none;
+  }
+  .step-item.shown {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  /* Click hint */
+  .click-hint {
+    position: absolute;
+    bottom: 22px;
+    right: 32px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(0,200,149,0.45);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.4s;
+  }
+  .click-hint .hint-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: blink 1.4s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
 </style>
 <link rel="icon" type="image/png" href="favicon.png">
 </head>
 <body>
-<div class="stage"><div class="slide">
+<div class="stage"><div class="slide" id="slide">
   <div class="bg-mesh"></div>
   <div class="glow glow-green" style="top:20%;right:5%;width:25%;height:50%;opacity:0.1;"></div>
 
   <div class="brand-bar"><span class="overline">Why a New Lifecycle · Evolution</span></div>
-  <div class="slide-num">06 / 14</div>
+  <div class="slide-num">07 / 13</div>
 
   <div class="content" style="gap:14px;">
     <div class="overline reveal" style="margin-bottom:8px;">The Industry Has Done This Before</div>
     <h2 class="h2 reveal d1" style="font-size:clamp(1.8rem,3.2vw,2.8rem);margin-bottom:20px;">Each new paradigm required a new methodology</h2>
 
     <div style="display:flex;align-items:stretch;gap:0;" class="reveal d2">
-      <div class="era-card era-past">
+
+      <!-- SDLC: visible from start -->
+      <div class="era-card era-past" id="card-sdlc">
         <div class="era-year">Early 1980s</div>
         <div class="era-name">SDLC</div>
         <div class="era-full">Software Development Lifecycle</div>
         <div class="era-tag">Deterministic</div>
         <div class="era-desc">Structured process for rule-based software where the same input always produces the same output.</div>
       </div>
-      <div class="arrow-sep">›</div>
-      <div class="era-card era-past">
+
+      <!-- Arrow 1 -->
+      <div class="arrow-sep step-item" id="arrow1">›</div>
+
+      <!-- API-LC: step 1 -->
+      <div class="era-card era-past step-item" id="card-apilc">
         <div class="era-year">~2013</div>
         <div class="era-name">API-LC</div>
         <div class="era-full">API-Led Development Lifecycle</div>
         <div class="era-tag">Integration-First</div>
         <div class="era-desc">Mulesoft addressed the unique challenges of building integration-first software and managing API lifecycles across systems.</div>
       </div>
-      <div class="arrow-sep">›</div>
-      <div class="era-card era-present">
+
+      <!-- Arrow 2 -->
+      <div class="arrow-sep step-item" id="arrow2">›</div>
+
+      <!-- ADLC: step 2 -->
+      <div class="era-card era-present step-item" id="card-adlc">
         <div class="era-year">2025 / 2026</div>
         <div class="era-name">ADLC</div>
         <div class="era-full">Agent Development Lifecycle</div>
         <div class="era-tag">Non-Deterministic</div>
         <div class="era-desc">AI agents are probabilistic. Standard deterministic methodologies are not sufficient. A new lifecycle is required.</div>
       </div>
+
     </div>
   </div>
-  <div class="caption reveal d3">Same pattern. New paradigm. New process required.</div>
+
+  <div class="caption reveal d3" id="caption" style="opacity:0;transition:opacity 0.5s;">Same pattern. New paradigm. New process required.</div>
+
+  <!-- Click hint -->
+  <div class="click-hint" id="hint">
+    <div class="hint-dot"></div>
+    click to continue
+  </div>
+
 </div></div>
-<a class="nav-prev" href="04-adlc-overview.html" title="Previous slide">‹</a>
-<a class="nav-next" href="07-nondeterminism.html" title="Next slide">›</a>
+<a class="nav-prev" href="06-adlc-overview.html" title="Previous slide">‹</a>
+<a class="nav-next" href="08-nondeterminism.html" title="Next slide" id="nav-next-btn">›</a>
+
 <script src="slides.js"></script>
+<script>
+  var step = 0;
+  var maxSteps = 2;
+  var steps = [
+    ['arrow1', 'card-apilc'],
+    ['arrow2', 'card-adlc'],
+  ];
+
+  function advance() {
+    if (step >= maxSteps) return false;
+    var ids = steps[step];
+    ids.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.add('shown');
+    });
+    step++;
+    if (step === maxSteps) {
+      var caption = document.getElementById('caption');
+      if (caption) caption.style.opacity = '1';
+      var hint = document.getElementById('hint');
+      if (hint) hint.style.opacity = '0';
+    }
+    return true;
+  }
+
+  window.advanceStep = advance;
+</script>
 </body>
 </html>
