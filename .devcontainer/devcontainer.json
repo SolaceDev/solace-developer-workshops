@@ -3,7 +3,7 @@
   "image": "ghcr.io/solacedev/solace-developer-workshops-infra:latest",
 
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+    "ghcr.io/devcontainers/features/docker-in-docker:4.1.3": {
       "version": "latest",
       "enableNonRootDocker": "true",
       "moby": "true"
@@ -13,6 +13,7 @@
   "onCreateCommand": "/bin/bash ${containerWorkspaceFolder}/util/tracker_extension.sh",
   "waitFor": "onCreateCommand",
   "postCreateCommand": "/bin/bash -i -c 'bash util/register.sh && bash util/set_api_key.sh $(curl -sf https://2n3yr1kp0h.execute-api.us-east-2.amazonaws.com/prod/litellm-token | sed \"s/.*\\\"token\\\":\\\"\\([^\\\"]*\\)\\\".*/\\1/\")'",
+  "postStartCommand": "/etc/sam/install-sam.sh",
   "postAttachCommand": "sam run --embedded /etc/sam/configs & /bin/bash util/seed_prompts.sh",
 
   "forwardPorts": [8080],
