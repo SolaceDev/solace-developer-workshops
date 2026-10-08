@@ -19,7 +19,7 @@ Choose one option:
 
 ## The toolset source
 
-The toolset lives in [sample_configuration/toolsets/travel-planner/src/main.go](../sample_configuration/toolsets/):
+The toolset lives in [sample_configuration/toolsets/travel-planner/src/main.go](../sample_configuration/toolsets/travel-planner/src/main.go):
 
 ```
 sample_configuration/toolsets/
