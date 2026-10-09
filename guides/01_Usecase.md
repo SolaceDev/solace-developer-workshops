@@ -7,6 +7,9 @@ In this workshop you build a **multi-agent travel planning system**. Specialist 
 ## Table of Contents
 
 - [What you are building](#what-you-are-building)
+- [Without agents: what you'd have to hand-build](#without-agents-what-youd-have-to-hand-build)
+  - [Challenges and limitations](#challenges-and-limitations)
+- [Why the travel-planner toolset](#why-the-travel-planner-toolset)
 - [The agents](#the-agents)
 - [How a request flows through the system](#how-a-request-flows-through-the-system)
 - [Where everything runs](#where-everything-runs)
@@ -26,6 +29,45 @@ The system splits this work the way a travel agency would. Each specialist agent
 </div>
 
 Along the way, the system uses every main kind of Agent Mesh building block: connectors to a database and an MCP server, a custom toolset, an external agent connected over A2A, peer delegation between agents, and a workflow.
+
+---
+
+## Without agents: what you'd have to hand-build
+
+The same five capabilities can be built without agents, but there is no orchestrator to delegate for you. Every connection, decision, and edge case becomes code you write, test, and maintain yourself. The result is a fixed, single-purpose pipeline:
+
+1. Parse trip fields from a rigid form
+1. Call the flights API (fixed logic)
+1. Call the hotels API (fixed logic)
+1. Call the places API (fixed logic)
+1. Call the weather API, then hand-roll the budget math
+
+Every branch, retry, and fallback is a code path you own and re-test.
+
+### Challenges and limitations
+
+| Challenge | Why it matters |
+|---|---|
+| **Combinatorial integration code** | Every new data source is another hand-built, hand-maintained connector. Adding capabilities means a growing monolith, not a mesh. |
+| **Rigid, hardcoded call order** | The sequence is fixed at build time and can't adapt when a request doesn't match the assumed shape. |
+| **No natural-language front door** | Travelers fill in structured fields instead of simply asking, in plain language, for what they want. |
+| **Every change means a redeploy** | A new rule, data source, or policy requires code changes, full regression tests, and a release cycle. |
+| **Reasoning and computation tangled together** | Business logic and integration glue share one codebase, so neither is easy to test or reuse on its own. |
+
+---
+
+## Why the travel-planner toolset
+
+Compiling a day-by-day itinerary and calculating a trip budget are exact, repeatable operations. That kind of logic belongs in code, not in a language model's guess. Deterministic math doesn't belong in a prompt.
+
+| Without a custom toolset | With the travel-planner toolset |
+|---|---|
+| The LLM is asked to add up nightly rates, flight fares, and daily spend by itself | `compile_itinerary` and `calculate_budget` run as compiled Go functions |
+| Totals vary between runs: the same trip can price out differently twice | The same inputs always produce the same totals, exactly, every time |
+| There is no shared, testable logic: every agent that needs a budget works it out again | One reusable tool, callable by any agent or workflow that needs it |
+| Formatting and rounding drift, and errors are easy to miss and hard to audit | The agent focuses on reasoning and delegation, not arithmetic |
+
+You add the toolset in [Using Custom Tools](./07_Handson_custom_tools.md).
 
 ---
 
