@@ -13,9 +13,12 @@
   },
   {
     "id": "s3",
-    "title": "[Hands-on] Launch Solace Agent Mesh",
+    "title": "Launch Solace Agent Mesh",
     "description": "Launch Solace Agent Mesh in a GitHub Codespace, or install and configure SAM Desktop on your machine",
-    "triggerFile": "guides/02_Handson_launch_agent_mesh.md"
+    "triggerFile": "guides/02_Handson_launch_agent_mesh.md",
+    "tags": [
+      "Hands-On"
+    ]
   },
   {
     "id": "s4",
@@ -37,44 +40,65 @@
   },
   {
     "id": "s7",
-    "title": "[Hands-on] Using Built-in Tools",
+    "title": "Using Built-in Tools",
     "description": "Build general-purpose agents that use built-in tools with Quick Build, and have the orchestrator use them together",
-    "triggerFile": "guides/06_Handson_builtin_tools.md"
+    "triggerFile": "guides/06_Handson_builtin_tools.md",
+    "tags": [
+      "Hands-On"
+    ]
   },
   {
     "id": "s8",
-    "title": "[Hands-on] Using Custom Tools",
+    "title": "Using Custom Tools",
     "description": "Add the travel-planner custom Go toolset with sam config apply, or package it and upload it through the web UI",
-    "triggerFile": "guides/07_Handson_custom_tools.md"
+    "triggerFile": "guides/07_Handson_custom_tools.md",
+    "tags": [
+      "Hands-On"
+    ]
   },
   {
     "id": "s9",
-    "title": "[Hands-on] Connectors",
+    "title": "Connectors",
     "description": "Connect to the flights and hotels databases and the Places MCP server",
-    "triggerFile": "guides/08_Handson_connectors.md"
+    "triggerFile": "guides/08_Handson_connectors.md",
+    "tags": [
+      "Hands-On"
+    ]
   },
   {
     "id": "s10",
-    "title": "[Hands-on] Agents",
+    "title": "Agents",
     "description": "Create the flight, hotel, local experiences, and travel orchestrator agents",
-    "triggerFile": "guides/09_Handson_agents.md"
+    "triggerFile": "guides/09_Handson_agents.md",
+    "tags": [
+      "Hands-On"
+    ]
   },
   {
     "id": "s11",
-    "title": "[Hands-on] A2A Proxy",
+    "title": "A2A Proxy",
     "description": "Connect the external LangChain weather advisor agent to the mesh through an A2A proxy",
-    "triggerFile": "guides/10_Handson_a2a_proxy.md"
+    "triggerFile": "guides/10_Handson_a2a_proxy.md",
+    "tags": [
+      "Hands-On"
+    ]
   },
   {
     "id": "s12",
-    "title": "[Hands-on] Run the System",
+    "title": "Run the System",
     "description": "Test each agent on its own, then plan a full trip through the travel orchestrator",
-    "triggerFile": "guides/11_Handson_run_the_system.md"
+    "triggerFile": "guides/11_Handson_run_the_system.md",
+    "tags": [
+      "Hands-On"
+    ]
   },
   {
     "id": "s13",
-    "title": "[Hands-on] Workflows",
+    "title": "Workflows",
     "description": "Learn how workflows differ from dynamic orchestration, add a travel planning workflow, and have the orchestrator route complete trip plans to it",
-    "triggerFile": "guides/12_Handson_workflows.md"
+    "triggerFile": "guides/12_Handson_workflows.md",
+    "tags": [
+      "Hands-On"
+    ]
   }
 ]
