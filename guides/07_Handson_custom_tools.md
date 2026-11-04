@@ -70,7 +70,7 @@ The CLI builds the toolset for your Agent Mesh instance, then shows `travel-plan
 ### Step 3: Apply the change
 
 ```bash
-sam config apply --manifest sample_configuration/manifests/07-custom-tools.yaml
+sam config apply --prune --manifest sample_configuration/manifests/07-custom-tools.yaml
 ```
 
 The CLI builds the toolset, packages it as a zip, uploads it, and waits until the tools are discovered.
