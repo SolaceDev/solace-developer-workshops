@@ -45,7 +45,7 @@ Choose one option:
       <img src="./img/intro_agents_sam.png" alt="Agent Mesh agents" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
-You are ready. Skip Option 2.
+Section complete! Close this file and return to the Workshop Tracker to continue.
 
 ---
 

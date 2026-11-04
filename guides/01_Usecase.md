@@ -32,33 +32,9 @@ Along the way, the system uses every main kind of Agent Mesh building block: con
 
 ---
 
-## Without agents: what you'd have to hand-build
-
-The same five capabilities can be built without agents, but there is no orchestrator to delegate for you. Every connection, decision, and edge case becomes code you write, test, and maintain yourself. The result is a fixed, single-purpose pipeline:
-
-1. Parse trip fields from a rigid form
-1. Call the flights API (fixed logic)
-1. Call the hotels API (fixed logic)
-1. Call the places API (fixed logic)
-1. Call the weather API, then hand-roll the budget math
-
-Every branch, retry, and fallback is a code path you own and re-test.
-
-### Challenges and limitations
-
-| Challenge | Why it matters |
-|---|---|
-| **Combinatorial integration code** | Every new data source is another hand-built, hand-maintained connector. Adding capabilities means a growing monolith, not a mesh. |
-| **Rigid, hardcoded call order** | The sequence is fixed at build time and can't adapt when a request doesn't match the assumed shape. |
-| **No natural-language front door** | Travelers fill in structured fields instead of simply asking, in plain language, for what they want. |
-| **Every change means a redeploy** | A new rule, data source, or policy requires code changes, full regression tests, and a release cycle. |
-| **Reasoning and computation tangled together** | Business logic and integration glue share one codebase, so neither is easy to test or reuse on its own. |
-
----
-
 ## Why the travel-planner toolset
 
-Compiling a day-by-day itinerary and calculating a trip budget are exact, repeatable operations. That kind of logic belongs in code, not in a language model's guess. Deterministic math doesn't belong in a prompt.
+Deterministic math doesn't belong in a prompt. Compiling a day-by-day itinerary and calculating a trip budget are exact, repeatable operations. That kind of logic belongs in code, not in a language model's guess. 
 
 | Without a custom toolset | With the travel-planner toolset |
 |---|---|
@@ -83,21 +59,6 @@ You add the toolset in [Using Custom Tools](./07_Handson_custom_tools.md).
 
 The system also includes **TravelPlanningWorkflow**, a workflow that runs the flight, hotel, and local experience searches in parallel, then compiles the itinerary and calculates the budget in a fixed sequence.
 
----
-
-## How a request flows through the system
-
-1. The traveler sends a request to **TravelOrchestratorAgent**.
-1. The orchestrator decides how to handle it:
-   - A **focused question**, such as "find flights from Singapore to Tokyo", goes to the one right specialist.
-   - A **complete trip plan** goes to TravelPlanningWorkflow, with WeatherAdvisorAgent called at the same time.
-1. The specialists query their data sources:
-   - FlightSearchAgent and HotelSearchAgent run SQL against the travel database.
-   - LocalExperiencesAgent calls the Places MCP server.
-   - WeatherAdvisorAgent runs outside Agent Mesh and is reached through an A2A proxy.
-1. The `compile_itinerary` and `calculate_budget` tools turn the results into a day-by-day itinerary and a budget.
-1. The orchestrator presents the final plan to the traveler.
-
 All communication between the agents, the workflow, and the tools runs over the Solace event broker.
 
 ---
@@ -112,34 +73,6 @@ All communication between the agents, the workflow, and the tools runs over the 
 | Weather Advisor A2A agent | AWS EC2, pre-deployed for you |
 
 You do not need to deploy any backend services. Connection details are provided in the hands-on guides.
-
----
-
-## How you build it
-
-You assemble the system one piece at a time in the hands-on guides:
-
-| Guide | What you add |
-|---|---|
-| [Using Custom Tools](./07_Handson_custom_tools.md) | The `travel-planner` toolset, with `compile_itinerary` and `calculate_budget` |
-| [Connectors](./08_Handson_connectors.md) | The flights and hotels database connectors, and the Places MCP connector |
-| [Agents](./09_Handson_agents.md) | FlightSearchAgent, HotelSearchAgent, LocalExperiencesAgent, and TravelOrchestratorAgent |
-| [A2A Proxy](./10_Handson_a2a_proxy.md) | WeatherAdvisorAgent, connected through an A2A proxy |
-| [Run the System](./11_Handson_run_the_system.md) | Testing each agent, then the full orchestration |
-| [Workflows](./12_Handson_workflows.md) | TravelPlanningWorkflow, and routing complete trip plans to it |
-
----
-
-## Sample query
-
-By the end of the workshop, a single prompt like this one will plan a complete trip:
-
-```
-@TravelOrchestratorAgent Plan a 5-day trip from Singapore to Tokyo for 2 people.
-Departure: 10 days from today. Return: 5 days later.
-We enjoy Japanese cuisine, cultural sites, and outdoor activities.
-Include flights, hotels, restaurants, weather forecast, and full budget breakdown.
-```
 
 ---
 Section complete! Close this file and return to the Workshop Tracker to continue.

@@ -19,7 +19,7 @@ This workshop is designed for developers, architects, and technical practitioner
 
 ## What This Workshop Covers
 
-You will work directly with [Solace Agent Mesh](https://solace.com/lp/agent-mesh). Agent Mesh is a Go-based platform for developing and running agentic systems in the enterprise. It provides:
+You will work directly with [Solace Agent Mesh](https://solace.com/products/agent-mesh/). Agent Mesh is a Go-based platform for developing and running agentic systems in the enterprise. It provides:
 
 1. An event-driven runtime
 1. CLI tooling

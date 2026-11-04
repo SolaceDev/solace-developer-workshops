@@ -1,5 +1,7 @@
 # [Hands-on] Using Custom Tools
 
+Now lets go back to our Travel Agent use-case. 
+
 Add the `travel-planner` custom toolset. It is written in Go and provides two tools that the TravelOrchestratorAgent uses later:
 
 | Tool | What it does |
@@ -62,10 +64,13 @@ resources:
 From the root of the repository, run:
 
 ```bash
-sam config plan --manifest sample_configuration/manifests/07-custom-tools.yaml
+sam config plan --prune --manifest sample_configuration/manifests/07-custom-tools.yaml
 ```
 
 The CLI builds the toolset for your Agent Mesh instance, then shows `travel-planner` as a resource to create.
+
+> [!NOTE]
+> `--prune` deletes resources that exist on your Agent Mesh instance but aren't listed in the manifest. It only applies to the resource kinds the manifest lists under `resources:`. Here that's toolsets, so any other custom toolset on the instance is shown for deletion, while agents, connectors, and workflows you haven't listed are left alone. Without `--prune`, the CLI only creates and updates resources and never deletes anything.
 
 ### Step 3: Apply the change
 
@@ -122,11 +127,16 @@ This writes `travel-planner.zip`, which contains the compiled binary and `manife
 
 1. In the Agent Mesh web UI, go to **Builder → Toolsets**
 1. Confirm `travel-planner` shows the status **Ready**
+  <div align="center">
+    <img src="./img/custom_tool_verify.png" alt="Toolset ready" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
+
+
 1. Confirm it lists the tools `compile_itinerary` and `calculate_budget`
 
-<div align="center">
-  <img src="./img/sam-toolset.jpg" alt="Toolset ready" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
-</div>
+  <div align="center">
+    <img src="./img/sam-toolset.jpg" alt="Toolset ready" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  </div>
 
 > [!TIP]
 > If the status stays at **Discovering** or shows `exec format error`, the binary was built for the wrong architecture. Repeat the step with the correct `--url` or `--target`.

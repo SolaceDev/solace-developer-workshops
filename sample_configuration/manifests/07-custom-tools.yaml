@@ -6,3 +6,4 @@ target:
 resources:
   toolsets:
     - travel-planner
+  agents: []
