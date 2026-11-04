@@ -20,9 +20,10 @@ if docker ps | grep -q solace; then
   echo "Solace broker is already running!"
 else
   # Check if Solace container exists but is stopped
-  if docker ps -a | grep -q solace; then
-    echo "Starting existing Solace container..."
-    docker start solace
+  existing=$(docker ps -a --filter ancestor=solace/solace-pubsub-standard:10.8.1 --format '{{.Names}}' | head -1)
+  if [ -n "$existing" ]; then
+    echo "Starting existing Solace container ($existing)..."
+    docker start "$existing"
   else
     # Install the Solace broker
     echo "Installing Solace broker..."
@@ -44,6 +45,24 @@ else
     docker logs solace
     exit 1
   fi
+fi
+
+# The container's ports accept connections long before the broker inside is
+# ready (clients get "Connection reset by peer"), and SAM exits if it cannot
+# connect. Wait until the default Message VPN reports up before returning.
+echo "Waiting for Solace broker to accept connections..."
+for _ in $(seq 1 90); do
+  if curl -sf -u admin:admin http://localhost:8080/SEMP/v2/monitor/msgVpns/default \
+      | grep -qE '"state" *: *"up"'; then
+    echo "Solace broker is accepting connections."
+    break
+  fi
+  sleep 2
+done
+if ! curl -sf -u admin:admin http://localhost:8080/SEMP/v2/monitor/msgVpns/default \
+    | grep -qE '"state" *: *"up"'; then
+  echo "Error: Solace broker did not become ready within 3 minutes"
+  exit 1
 fi
 
 # Print access information
