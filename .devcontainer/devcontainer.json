@@ -18,6 +18,9 @@
 
   "forwardPorts": [8080],
   "portsAttributes": {
+    "8080": {
+      "label": "Solace Broker Manager"
+    },
     "8800": {
       "label": "Solace Agent Mesh",
       "onAutoForward": "openPreview"
