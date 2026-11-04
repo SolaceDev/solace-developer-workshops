@@ -25,7 +25,7 @@ Planning a trip means pulling together information from very different sources: 
 The system splits this work the way a travel agency would. Each specialist agent knows one domain and one data source. An orchestrator agent takes the traveler's request, decides which specialists to involve, and combines their answers into one plan, with a day-by-day itinerary and a full budget.
 
 <div align="center">
-  <img src="./img/use-case.png" alt="Travel planning use case" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/use-case.png" alt="Travel planning use case" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 Along the way, the system uses every main kind of Agent Mesh building block: connectors to a database and an MCP server, a custom toolset, an external agent connected over A2A, peer delegation between agents, and a workflow.

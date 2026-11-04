@@ -33,7 +33,7 @@ The software industry has adapted its methodology each time a new paradigm requi
 - **ADLC** (2025/2026): addresses AI agents, which are fundamentally non-deterministic
 
 <div align="center">
-  <img src="./img/adlc_evolution.svg" alt="Why the industry needed a new development lifecycle" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/adlc_evolution.svg" alt="Why the industry needed a new development lifecycle" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 Agents are built on probabilistic language models. The same input can produce different outputs, so testing a boolean condition is not enough. An agent can pass every unit test and still give a user a wrong answer in production. Agents also reason, plan, and act on their own, which creates new risks around access, oversight, and accountability.
@@ -47,7 +47,7 @@ The ADLC keeps the SDLC's core idea: what makes a lifecycle powerful is not any 
 ## The five stages of the ADLC
 
 <div align="center">
-  <img src="./img/adlc_new.png" alt="The five stages of the ADLC" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/adlc_new.png" alt="The five stages of the ADLC" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 | Stage | Name | What it addresses |

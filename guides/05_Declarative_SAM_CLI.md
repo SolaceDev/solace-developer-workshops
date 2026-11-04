@@ -61,7 +61,7 @@ Declarative SAM is the approach of describing the desired state of an Agent Mesh
 Instead of writing scripts that call APIs ("create agent X, update entrypoint Y"), you write YAML that describes what the platform *should look like*. The CLI works out the minimal set of creates, updates, and deletes needed to get there.
 
 <div align="center">
-  <img src="./img/sam_cli.png" alt="sam_cli" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/sam_cli.png" alt="sam_cli" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 ### The config repository

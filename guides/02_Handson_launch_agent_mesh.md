@@ -26,23 +26,23 @@ Choose one option:
 1. To open the web UI in a separate browser tab instead, open the `PORTS` tab
 
     <div align="center">
-      <img src="./img/port.png" alt="Ports tab" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/port.png" alt="Ports tab" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Click the browser icon next to the `Solace Agent Mesh` port (`8800`)
 
     <div align="center">
-      <img src="./img/port_2.png" alt="Open port in browser" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/port_2.png" alt="Open port in browser" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. The Agent Mesh web UI opens
 
     <div align="center">
-      <img src="./img/sam_client.png" alt="Agent Mesh web UI" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/sam_client.png" alt="Agent Mesh web UI" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
     <div align="center">
-      <img src="./img/intro_agents_sam.png" alt="Agent Mesh agents" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/intro_agents_sam.png" alt="Agent Mesh agents" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 You are ready. Skip Option 2.

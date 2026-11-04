@@ -23,7 +23,7 @@
 Solace Agent Mesh is a Go-based agent development and runtime platform for building, deploying, and operating AI agents at enterprise scale. It provides the runtime infrastructure, declarative configuration model, and entrypoint integrations to run agents as always-on workers embedded in your event-driven architecture, not just as conversational endpoints you call on demand.
 
 <div align="center">
-  <img src="./img/runtimes.png" alt="runtimes" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/runtimes.png" alt="runtimes" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 The platform is decomposed into three independently deployable process types:
@@ -37,7 +37,7 @@ The platform is decomposed into three independently deployable process types:
 All three processes communicate through a Solace message broker. No component calls another directly over HTTP or gRPC. The broker is the coordination fabric enabling horizontal scaling, failure isolation, and event-driven agents made possible without application-level coordination code.
 
 <div align="center">
-  <img src="./img/tool_types.svg" alt="Tool types and agent core" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/tool_types.svg" alt="Tool types and agent core" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 Tools come in the following forms:
@@ -60,7 +60,7 @@ A companion CLI handles config scaffolding, declarative config push/pull to a ru
 The hard problems in agentic systems are no longer based in model quality. GPT-4+, Claude, and Gemini all produce good results on well-scoped tasks. The hard problems are operational, appearing the moment you move from a demo to a production deployment.
 
 <div align="center">
-  <img src="./img/operational_challenges.svg" alt="Operational challenges in agentic systems" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/operational_challenges.svg" alt="Operational challenges in agentic systems" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 <details>
@@ -100,13 +100,13 @@ The argument for a dedicated message broker rather than HTTP, WebSockets, or a g
 Agents are not stateless services. A single agent task can span multiple LLM turns, multiple tool calls (some of which block for seconds waiting on external APIs), and multiple delegations to peer agents. The execution is non-linear and its duration is unpredictable. Coordinating this via synchronous HTTP means holding connections open for minutes, implementing retry logic at every layer, and accepting that a network partition anywhere in the chain can lose the task.
 
 <div align="center">
-  <img src="./img/agent_task_nonlinear.svg" alt="Non-linear agent task execution" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/agent_task_nonlinear.svg" alt="Non-linear agent task execution" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 A message broker solves this structurally. The publishing component sends a message and moves on. The subscribing component receives it when ready. Acknowledgment is decoupled from processing time. Delivery guarantees are a broker property, not application code that every team reimplements differently.
 
 <div align="center">
-  <img src="./img/broker_vs_http.svg" alt="Synchronous HTTP vs Event-Driven Broker" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/broker_vs_http.svg" alt="Synchronous HTTP vs Event-Driven Broker" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 
@@ -115,7 +115,7 @@ A message broker solves this structurally. The publishing component sends a mess
 Solace adds capabilities that matter specifically for distributed agent systems.
 
 <div align="center">
-  <img src="./img/solace_advantage.svg" alt="The Solace Advantage for distributed agent systems" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/solace_advantage.svg" alt="The Solace Advantage for distributed agent systems" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 <details>
@@ -143,7 +143,7 @@ Through work across enterprise AI deployments, a consistent pattern has emerged:
 Solace is not a hobbyist project or a cloud-native experiment. It runs in financial trading systems, logistics networks, and industrial IoT infrastructure at organizations where message loss has direct financial or safety consequences. The operational maturity, tuning tooling, and support infrastructure that come with that deployment history matter when you are running agents that coordinate actual business processes.
 
 <div align="center">
-  <img src="./img/integration_gap.svg" alt="Where enterprise AI deployments actually fail" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/integration_gap.svg" alt="Where enterprise AI deployments actually fail" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 ### Supplementary to existing event-driven investments
@@ -232,7 +232,7 @@ A connector is a named, credentialed binding between an agent and an external sy
 - **Knowledge base connector:** retrieves relevant documents from an Amazon Bedrock knowledge base, so the agent can answer questions grounded in your private data.
 
 <div align="center">
-  <img src="./img/conntectors.png" alt="Connectors" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/conntectors.png" alt="Connectors" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 ### Entrypoints

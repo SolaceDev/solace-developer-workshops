@@ -9,7 +9,7 @@ Build four general-purpose agents that use Agent Mesh built-in tools, then have 
 1. In the Agent Mesh web UI, go to **Builder → Quick Build**
 
     <div align="center">
-      <img src="./img/quick_build.png" alt="Quick Build" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/quick_build.png" alt="Quick Build" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Paste the following prompt and send it:
@@ -38,29 +38,29 @@ Build four general-purpose agents that use Agent Mesh built-in tools, then have 
 1. Watch the activity timeline while Quick Build works
 
     <div align="center">
-      <img src="./img/build_process.png" alt="Quick Build activity" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/build_process.png" alt="Quick Build activity" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Review the generated plan
 
     <div align="center">
-      <img src="./img/build_plan.png" alt="Build plan" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/build_plan.png" alt="Build plan" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Click `Build & Activate`
 
     <div align="center">
-      <img src="./img/build_activate.png" alt="Build and Activate" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/build_activate.png" alt="Build and Activate" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Wait while the four agents are built in parallel
 
     <div align="center">
-      <img src="./img/build_timeline.png" alt="Build timeline" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/build_timeline.png" alt="Build timeline" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
     <div align="center">
-      <img src="./img/agent_creation_progress.png" alt="Agent creation progress" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/agent_creation_progress.png" alt="Agent creation progress" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. The build is done when you see:
@@ -74,7 +74,7 @@ Build four general-purpose agents that use Agent Mesh built-in tools, then have 
 1. Open the **Agents** tab and confirm the four new agents are listed
 
     <div align="center">
-      <img src="./img/hiring_agents.png" alt="New agents" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/hiring_agents.png" alt="New agents" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
     > Hint: Click the hierarchical view to see how the agents relate to the orchestrator.
@@ -82,13 +82,13 @@ Build four general-purpose agents that use Agent Mesh built-in tools, then have 
 1. Click `+ New Chat`
 
     <div align="center">
-      <img src="./img/new_chat.png" alt="New chat" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/new_chat.png" alt="New chat" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Select the **Orchestrator** from the agent drop-down menu
 
     <div align="center">
-      <img src="./img/orchestraor_chat.png" alt="Select orchestrator" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/orchestraor_chat.png" alt="Select orchestrator" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Paste the following prompt and send it:
@@ -100,13 +100,13 @@ Build four general-purpose agents that use Agent Mesh built-in tools, then have 
 1. Watch the activity timeline. The orchestrator delegates to the Web Researcher, Data Analyst, and Diagram Generator in turn.
 
     <div align="center">
-      <img src="./img/research.png" alt="Activity timeline" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/research.png" alt="Activity timeline" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Open the **Files** tab to see the generated artifacts
 
     <div align="center">
-      <img src="./img/files.png" alt="Generated files" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/files.png" alt="Generated files" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 ---

@@ -110,7 +110,7 @@ This writes `travel-planner.zip`, which contains the compiled binary and `manife
     | Tools | Click **Select Upload File** and choose `travel-planner.zip` |
 
     <div align="center">
-      <img src="./img/sam-create-toolset.png" alt="Create toolset" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/sam-create-toolset.png" alt="Create toolset" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Click **Create**
@@ -125,7 +125,7 @@ This writes `travel-planner.zip`, which contains the compiled binary and `manife
 1. Confirm it lists the tools `compile_itinerary` and `calculate_budget`
 
 <div align="center">
-  <img src="./img/sam-toolset.jpg" alt="Toolset ready" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/sam-toolset.jpg" alt="Toolset ready" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 > [!TIP]

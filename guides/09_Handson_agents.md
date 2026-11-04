@@ -17,7 +17,7 @@ Create the four travel agents:
 1. Click **Create Manually**
 
     <div align="center">
-      <img src="./img/sam-create-agent-dialog.png" alt="Create agent dialog" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/sam-create-agent-dialog.png" alt="Create agent dialog" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Fill in:
@@ -30,7 +30,7 @@ Create the four travel agents:
 1. Under **Instructions**, click **Add Instruction**
 
     <div align="center">
-      <img src="./img/sam-add-instruction.jpg" alt="Add instruction" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/sam-add-instruction.jpg" alt="Add instruction" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Paste the following instructions and click **Apply**
@@ -132,19 +132,19 @@ Create the four travel agents:
     </details>
 
     <div align="center">
-      <img src="./img/sam-apply-instruction.jpg" alt="Apply instruction" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/sam-apply-instruction.jpg" alt="Apply instruction" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Under **Connectors**, click **Add Connectors**
 
     <div align="center">
-      <img src="./img/sam-add-connector.jpg" alt="Add connector" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/sam-add-connector.jpg" alt="Add connector" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Click **+ Add Connector**, select `flights-db`, and click **Apply**
 
     <div align="center">
-      <img src="./img/sam-flights-connector.jpg" alt="Select connector" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/sam-flights-connector.jpg" alt="Select connector" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Click **Create and Deploy**

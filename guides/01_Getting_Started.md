@@ -27,7 +27,7 @@ You will work directly with [Solace Agent Mesh](https://solace.com/lp/agent-mesh
 1. Entrypoint integrations
 
 <div align="center">
-  <img src="./img/sam_overview.jpg" alt="SAM Overview" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/sam_overview.jpg" alt="SAM Overview" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 The workshop follows the Agent Development Lifecycle (ADLC). This is a structured approach to taking an agent from its first build to continuous improvement in production. The use case starts with a single agent and grows into a team of specialist agents that work together to plan a trip. It is described in [The Use Case](./01_Usecase.md).

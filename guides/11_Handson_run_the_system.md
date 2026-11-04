@@ -9,7 +9,7 @@ Test each agent on its own, then run the full travel plan through the orchestrat
 1. Click **+ New Chat**
 
     <div align="center">
-      <img src="./img/sam-new-chat.jpg" alt="New chat" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+      <img src="./img/sam-new-chat.jpg" alt="New chat" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
     </div>
 
 1. Send each prompt below, one at a time. Start a new chat for each agent.
@@ -21,7 +21,7 @@ Test each agent on its own, then run the full travel plan through the orchestrat
 ```
 
 <div align="center">
-  <img src="./img/sam-sample-chat-1.jpg" alt="Flight search result" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/sam-sample-chat-1.jpg" alt="Flight search result" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 ```
@@ -51,7 +51,7 @@ Test each agent on its own, then run the full travel plan through the orchestrat
 ```
 
 <div align="center">
-  <img src="./img/sam-sample-chat-2.jpg" alt="Weather advisor result" width="90%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
+  <img src="./img/sam-sample-chat-2.jpg" alt="Weather advisor result" width="50%" style="box-shadow: 0 4px 8px rgb(0,200,130); border-radius: 8px;">
 </div>
 
 ---
