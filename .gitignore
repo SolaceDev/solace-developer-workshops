@@ -232,3 +232,5 @@ solace-agent-mesh/IMPLEMENTATION-PLAN.md
 .claude/agent-memory/*
 .sam/*
 .playwright-mcp/
+# Workshop tracker
+track/
