@@ -16,7 +16,7 @@
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    padding: 13px 0;
+    padding: 10px 0;
     border-bottom: 1px solid rgba(0,200,149,0.1);
   }
   .pillar:last-child { border-bottom: none; }
@@ -28,6 +28,16 @@
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     font-size: 1.1rem;
+  }
+  /* each pillar (icon + title + description) starts hidden; one click reveals one */
+  .pillar {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  .pillar.in {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.5s ease, transform 0.5s ease;
   }
   .pillar-text strong {
     font-size: clamp(1.05rem, 1.6vw, 1.3rem);
@@ -53,7 +63,7 @@
 
   <div class="content" style="flex-direction:row;align-items:center;gap:5%;">
     <div style="flex:0 0 44%;">
-      <div class="overline reveal" style="margin-bottom:12px;">The Runtime</div>
+      <div class="overline reveal" style="margin-bottom:12px;">Solace Agent Mesh</div>
       <div class="title-serif reveal d1">
         Agent Development<br>
         <span style="color:var(--green);">&amp; Runtime</span><br>
@@ -90,7 +100,28 @@
         <div class="pillar-icon">🔌</div>
         <div class="pillar-text">
           <strong>Entrypoint Integrations</strong>
-          <span>The gateway and connection layer the ADLC stages depend on</span>
+          <span>The entry and exit layer the ADLC stages depend on</span>
+        </div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">🧰</div>
+        <div class="pillar-text">
+          <strong>Custom Tools</strong>
+          <span>Extend agents with Go or Python tool SDKs, toolsets, and reusable skills</span>
+        </div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">🔗</div>
+        <div class="pillar-text">
+          <strong>Connectors</strong>
+          <span>No-code access to databases, REST/OpenAPI, MCP, knowledge bases, Slack, and event mesh</span>
+        </div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">🔀</div>
+        <div class="pillar-text">
+          <strong>Workflows</strong>
+          <span>Deterministic multi-step flows that orchestrate agents and tools for business process automation</span>
         </div>
       </div>
     </div>
@@ -99,5 +130,17 @@
 <a class="nav-prev" href="08-nondeterminism.html" title="Previous slide">‹</a>
 <a class="nav-next" href="10-process-types.html" title="Next slide">›</a>
 <script src="slides.js"></script>
+<script>
+  // Each click / → reveals the next pillar; after the last one, the next click moves on.
+  (function () {
+    var pillars = document.querySelectorAll('.pillar');
+    var shown = 0;
+    window.advanceStep = function () {
+      if (shown >= pillars.length) return false;
+      pillars[shown++].classList.add('in');
+      return true;
+    };
+  })();
+</script>
 </body>
 </html>

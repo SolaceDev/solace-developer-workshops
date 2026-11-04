@@ -231,3 +231,4 @@ solace-agent-mesh/IMPLEMENTATION-PLAN.md
 .claude/settings.local.json
 .claude/agent-memory/*
 .sam/*
+.playwright-mcp/

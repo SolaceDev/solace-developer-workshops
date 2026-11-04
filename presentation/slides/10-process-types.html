@@ -14,12 +14,18 @@
     display: flex;
     justify-content: center;
   }
-  .diagram-card img {
+  .diagram-card svg {
     display: block;
     width: 100%;
     max-height: 52vh;
-    object-fit: contain;
   }
+  /* hover spotlight: dim every diagram object except the hovered one */
+  #runtimesSvg [data-g] { transition: opacity 0.25s ease; }
+  #runtimesSvg[data-active] [data-g] { opacity: 0.12; }
+  #runtimesSvg[data-active="entry"] [data-g="entry"],
+  #runtimesSvg[data-active="mesh"]  [data-g="mesh"],
+  #runtimesSvg[data-active="tools"] [data-g="tools"],
+  #runtimesSvg[data-active="exec"]  [data-g="exec"] { opacity: 1; }
   .callout {
     display: flex;
     align-items: center;
@@ -38,6 +44,7 @@
     color: var(--green);
     text-align: center;
   }
+  .callout-2 { margin-top: 8px; }
   .callout-dot {
     width: 10px; height: 10px; border-radius: 50%;
     background: var(--green);
@@ -61,11 +68,108 @@
 
     <div class="reveal d2">
       <div class="diagram-card">
-        <img src="../runtimes.svg" alt="Solace Agent Mesh runtimes: Entrypoint Runtime, Event Mesh, Secure Tool Runtime, Agent Workflow Executor">
+        <svg id="runtimesSvg" xmlns="http://www.w3.org/2000/svg" viewBox="36 128 898 340" font-family="Segoe UI, 'Segoe UI', Helvetica, Arial, sans-serif">
+<defs>
+<linearGradient id="meshGrad" x1="0" y1="0" x2="1" y2="0">
+<stop offset="0" stop-color="#00C895"/><stop offset="0.5" stop-color="#7DF5A0"/><stop offset="1" stop-color="#00C895"/></linearGradient>
+<pattern id="lattice" width="28" height="48" patternUnits="userSpaceOnUse">
+<path d="M0,0 L14,24 L0,48 M28,0 L14,24 L28,48 M14,0 V48" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="0.8" fill="none"/></pattern>
+<linearGradient id="arrowGrad" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#FFFFFF" stop-opacity="0.35"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0.9"/></linearGradient>
+</defs>
+<rect x="36" y="128" width="898" height="340" fill="#FFFFFF"/>
+<rect data-g="mesh" x="190" y="160" width="171" height="295" fill="url(#meshGrad)"/>
+<rect data-g="mesh" x="190" y="160" width="171" height="295" fill="url(#lattice)"/>
+<rect data-g="entry" x="46" y="161" width="165" height="293" rx="10" fill="#0A385A"/>
+<text data-g="entry" x="128.5" y="188" font-size="20" fill="#ABFF88" text-anchor="middle" font-weight="700" letter-spacing="1">Entrypoint</text>
+<text data-g="entry" x="128.5" y="212" font-size="20" fill="#ABFF88" text-anchor="middle" font-weight="700" letter-spacing="1">Runtime</text>
+<rect data-g="entry" x="77" y="243" width="102" height="28" rx="6" fill="#082F4C" stroke="#00C895" stroke-width="1.5"/>
+<text data-g="entry" x="128" y="262" font-size="14" fill="#FFFFFF" text-anchor="middle">WebUI</text>
+<rect data-g="entry" x="77" y="282" width="102" height="28" rx="6" fill="#082F4C" stroke="#00C895" stroke-width="1.5"/>
+<text data-g="entry" x="128" y="301" font-size="14" fill="#FFFFFF" text-anchor="middle">MS Teams</text>
+<rect data-g="entry" x="77" y="321" width="102" height="28" rx="6" fill="#082F4C" stroke="#00C895" stroke-width="1.5"/>
+<text data-g="entry" x="128" y="340" font-size="14" fill="#FFFFFF" text-anchor="middle">Slack</text>
+<rect data-g="entry" x="77" y="395" width="102" height="28" rx="6" fill="#082F4C" stroke="#00C895" stroke-width="1.5"/>
+<text data-g="entry" x="128" y="414" font-size="14" fill="#FFFFFF" text-anchor="middle">Event</text>
+<circle data-g="entry" cx="128.5" cy="359" r="2.8" fill="#00C895"/>
+<circle data-g="entry" cx="128.5" cy="374" r="2.8" fill="#00C895"/>
+<circle data-g="entry" cx="128.5" cy="388" r="2.8" fill="#00C895"/>
+<g data-g="mesh"><g fill="#FFFFFF" opacity="0.6">
+<polygon points="300.0,298.0 236.0,298.0 236.0,289.0 214.0,305.0 236.0,321.0 236.0,312.0 300.0,312.0"/>
+<polygon points="286.9,316.9 331.4,272.5 337.8,278.9 342.0,252.0 315.1,256.2 321.5,262.6 277.1,307.1"/>
+<polygon points="277.1,302.9 321.5,347.4 315.1,353.8 342.0,358.0 337.8,331.1 331.4,337.5 286.9,293.1"/>
+</g></g>
+<text data-g="mesh" x="278.5" y="304" font-size="16" fill="#0A385A" text-anchor="middle" font-weight="700" letter-spacing="1.5">EVENT MESH</text>
+<text data-g="mesh" x="278.5" y="319" font-size="10.5" fill="#0A385A" text-anchor="middle">Real-time data</text>
+<text data-g="mesh" x="278.5" y="333" font-size="10.5" fill="#0A385A" text-anchor="middle">Reliability</text>
+<text data-g="mesh" x="278.5" y="347" font-size="10.5" fill="#0A385A" text-anchor="middle">Scalability</text>
+<text data-g="mesh" x="278.5" y="385" font-size="9.5" fill="#0A385A" text-anchor="middle" font-style="italic">All processes communicate</text>
+<text data-g="mesh" x="278.5" y="397" font-size="9.5" fill="#0A385A" text-anchor="middle" font-style="italic">through the broker.</text>
+<text data-g="mesh" x="278.5" y="409" font-size="9.5" fill="#0A385A" text-anchor="middle" font-style="italic">No direct HTTP or gRPC</text>
+<text data-g="mesh" x="278.5" y="421" font-size="9.5" fill="#0A385A" text-anchor="middle" font-style="italic">between components.</text>
+<rect data-g="tools" x="347" y="161" width="329" height="135" rx="10" fill="#0A385A"/>
+<text data-g="tools" x="511.5" y="186" font-size="20" fill="#ABFF88" text-anchor="middle" font-weight="700" letter-spacing="1">Secure Tool Runtime</text>
+<text data-g="tools" x="511.5" y="203" font-size="11" fill="#FFFFFF" text-anchor="middle" font-style="italic">Sandboxed runtime for built-in and</text>
+<text data-g="tools" x="511.5" y="217" font-size="11" fill="#FFFFFF" text-anchor="middle" font-style="italic">custom tool binaries, written in Go &amp; Python</text>
+<rect data-g="tools" x="377" y="227" width="77" height="48" rx="7" fill="#082F4C" stroke="#00C895" stroke-width="1.5"/>
+<text data-g="tools" x="415.5" y="247" font-size="12" fill="#FFFFFF" text-anchor="middle">get_weather</text>
+<text data-g="tools" x="415.5" y="263" font-size="12" fill="#00C895" text-anchor="middle" font-style="italic">(Python)</text>
+<rect data-g="tools" x="470" y="227" width="77" height="48" rx="7" fill="#082F4C" stroke="#00C895" stroke-width="1.5"/>
+<text data-g="tools" x="508.5" y="247" font-size="12" fill="#FFFFFF" text-anchor="middle">ffmpeg</text>
+<text data-g="tools" x="508.5" y="263" font-size="12" fill="#00C895" text-anchor="middle" font-style="italic">(Go)</text>
+<rect data-g="tools" x="562" y="228" width="77" height="48" rx="7" fill="#082F4C" stroke="#00C895" stroke-width="1.5"/>
+<text data-g="tools" x="600.5" y="248" font-size="12" fill="#FFFFFF" text-anchor="middle">load_skill</text>
+<text data-g="tools" x="600.5" y="264" font-size="12" fill="#00C895" text-anchor="middle" font-style="italic">(Go)</text>
+<rect data-g="exec" x="346" y="312" width="339" height="142" rx="10" fill="#0A385A"/>
+<text data-g="exec" x="515.5" y="337" font-size="20" fill="#ABFF88" text-anchor="middle" font-weight="700" letter-spacing="1">Agent Workflow Executor</text>
+<text data-g="exec" x="515.5" y="354" font-size="12" fill="#FFFFFF" text-anchor="middle" font-style="italic">A shared Runtime for all Agents and Workflows</text>
+<rect data-g="exec" x="369" y="378" width="129" height="31" rx="5" fill="#093B5F" stroke="#00C895" stroke-width="1"/>
+<rect data-g="exec" x="375.5" y="385.7" width="129" height="31" rx="5" fill="#093B5F" stroke="#00C895" stroke-width="1"/>
+<rect data-g="exec" x="382" y="393.4" width="129" height="31" rx="5" fill="#093B5F" stroke="#00C895" stroke-width="1"/>
+<rect data-g="exec" x="389" y="401" width="129" height="32" rx="5" fill="#082F4C" stroke="#00C895" stroke-width="1.8"/>
+<text data-g="exec" x="453.5" y="421" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" letter-spacing="1.5">AGENT</text>
+<rect data-g="exec" x="515" y="378" width="129" height="31" rx="5" fill="#093B5F" stroke="#00C895" stroke-width="1"/>
+<rect data-g="exec" x="521.5" y="385.7" width="129" height="31" rx="5" fill="#093B5F" stroke="#00C895" stroke-width="1"/>
+<rect data-g="exec" x="528" y="393.4" width="129" height="31" rx="5" fill="#093B5F" stroke="#00C895" stroke-width="1"/>
+<rect data-g="exec" x="535" y="401" width="129" height="32" rx="5" fill="#082F4C" stroke="#00C895" stroke-width="1.8"/>
+<text data-g="exec" x="599.5" y="421" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="700" letter-spacing="1.5">WORKFLOW</text>
+<polygon data-g="tools" points="651,181 746,181 746,172 766,196 746,220 746,211 651,211" fill="#0C4B7A"/>
+<text data-g="tools" x="711" y="193" font-size="10" fill="#FFFFFF" text-anchor="middle">Loaded</text>
+<text data-g="tools" x="711" y="205" font-size="10" fill="#FFFFFF" text-anchor="middle">On-Demand</text>
+<polygon data-g="tools" points="651,238 746,238 746,229 766,253 746,277 746,268 651,268" fill="#0C4B7A"/>
+<text data-g="tools" x="711" y="250" font-size="10" fill="#FFFFFF" text-anchor="middle">Becomes Tools</text>
+<text data-g="tools" x="711" y="262" font-size="10" fill="#FFFFFF" text-anchor="middle">Upon Deployment</text>
+<rect data-g="tools" x="766" y="138" width="158" height="85" rx="8" fill="#0A385A"/>
+<text data-g="tools" x="845" y="162" font-size="20" fill="#ABFF88" text-anchor="middle" font-weight="700" letter-spacing="1">Skills</text>
+<rect data-g="tools" x="780" y="170" width="60" height="43" rx="7" fill="#082F4C" stroke="#00C895" stroke-width="1.5"/>
+<text data-g="tools" x="810" y="187" font-size="12" fill="#FFFFFF" text-anchor="middle">sales-</text>
+<text data-g="tools" x="810" y="201" font-size="12" fill="#FFFFFF" text-anchor="middle">playbook</text>
+<rect data-g="tools" x="853" y="169" width="60" height="43" rx="7" fill="#082F4C" stroke="#00C895" stroke-width="1.5"/>
+<text data-g="tools" x="883" y="195" font-size="12" fill="#FFFFFF" text-anchor="middle">hr-policies</text>
+<rect data-g="tools" x="766" y="228" width="158" height="85" rx="8" fill="#0A385A"/>
+<text data-g="tools" x="845" y="253" font-size="20" fill="#ABFF88" text-anchor="middle" font-weight="700" letter-spacing="1">Connectors</text>
+<rect data-g="tools" x="780" y="263" width="60" height="43" rx="7" fill="#082F4C" stroke="#00C895" stroke-width="1.5"/>
+<text data-g="tools" x="810" y="289" font-size="12" fill="#FFFFFF" text-anchor="middle">API</text>
+<rect data-g="tools" x="853" y="263" width="60" height="43" rx="7" fill="#082F4C" stroke="#00C895" stroke-width="1.5"/>
+<text data-g="tools" x="883" y="289" font-size="12" fill="#FFFFFF" text-anchor="middle">mySQL</text>
+<polygon data-g="exec" points="675,359 711,339 711,349 754,349 754,339 790,359 754,379 754,369 711,369 711,379" fill="#0C4B7A"/>
+<polygon data-g="exec" points="675,417 711,397 711,407 754,407 754,397 790,417 754,437 754,427 711,427 711,437" fill="#0C4B7A"/>
+<path data-g="exec" d="M784,328 V381 A62.5,9 0 0 0 909,381 V328 Z" fill="#292929"/>
+<ellipse data-g="exec" cx="846.5" cy="328" rx="62.5" ry="9" fill="#4A4A4A"/>
+<text data-g="exec" x="846.5" y="363" font-size="18" fill="#FFFFFF" text-anchor="middle" font-weight="700" letter-spacing="1">Session</text>
+<text data-g="exec" x="846.5" y="385" font-size="18" fill="#FFFFFF" text-anchor="middle" font-weight="700" letter-spacing="1">Storage</text>
+<rect data-g="exec" x="781" y="397" width="129" height="61" rx="6" fill="#292929"/>
+<text data-g="exec" x="845.5" y="435" font-size="20" fill="#FFFFFF" text-anchor="middle" font-weight="700" letter-spacing="1">LLM</text>
+</svg>
       </div>
       <div class="callout reveal d3">
         <span class="callout-dot"></span>
         No HTTP. No gRPC. Broker-mediated coordination only.
+        <span class="callout-dot"></span>
+      </div>
+      <div class="callout callout-2 reveal d4">
+        <span class="callout-dot"></span>
+        Serverless architecture. Each runtime scales independently on demand.
         <span class="callout-dot"></span>
       </div>
     </div>
@@ -74,5 +178,16 @@
 <a class="nav-prev" href="09-what-is-sam.html" title="Previous slide">‹</a>
 <a class="nav-next" href="11-broker-vs-http.html" title="Next slide">›</a>
 <script src="slides.js"></script>
+<script>
+  (function () {
+    var svg = document.getElementById('runtimesSvg');
+    svg.addEventListener('mouseover', function (e) {
+      var t = e.target.closest('[data-g]');
+      if (t) svg.setAttribute('data-active', t.getAttribute('data-g'));
+      else svg.removeAttribute('data-active');
+    });
+    svg.addEventListener('mouseleave', function () { svg.removeAttribute('data-active'); });
+  })();
+</script>
 </body>
 </html>

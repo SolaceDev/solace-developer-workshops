@@ -50,6 +50,30 @@
               border-radius:20px; padding:3px 10px; color:rgba(252,168,41,0.88); }
   .p-purple { background:rgba(171,255,136,0.08); border:1px solid rgba(171,255,136,0.20);
               border-radius:20px; padding:3px 10px; color:var(--green-bright); }
+
+  /* ── hover spotlight: dim everything except the hovered word ── */
+  .wc { cursor: default; }
+  .wc, .h2, .caption, .brand-bar, .slide-num, .glow {
+    transition-property: opacity, transform, filter;
+  }
+  .slide .h2, .slide .caption, .slide .brand-bar, .slide .slide-num,
+  .slide .glow, .slide .wc {
+    filter: opacity(1);
+    transition-duration: 0.44s, 0.44s, 0.25s;
+  }
+  .slide:has(.wc:hover) .h2,
+  .slide:has(.wc:hover) .caption,
+  .slide:has(.wc:hover) .brand-bar,
+  .slide:has(.wc:hover) .slide-num,
+  .slide:has(.wc:hover) .glow,
+  .slide:has(.wc:hover) .wc:not(:hover) {
+    filter: opacity(0.12);
+  }
+  .wc.placed:hover {
+    transform: scale(1.18) translateY(0);
+    z-index: 10;
+    filter: opacity(1) drop-shadow(0 0 14px rgba(255,255,255,0.35));
+  }
 </style>
 <link rel="icon" type="image/png" href="favicon.png">
 </head>

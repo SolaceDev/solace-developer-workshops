@@ -110,6 +110,18 @@
     color: var(--muted);
     line-height: 1.5;
   }
+
+  /* ── click-to-reveal step ── */
+  .step-hidden {
+    opacity: 0;
+    transform: translateY(16px);
+    pointer-events: none;
+  }
+  .step-shown {
+    opacity: 1;
+    transform: none;
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
 </style>
 <link rel="icon" type="image/png" href="favicon.png">
 </head>
@@ -129,31 +141,78 @@
            preserveAspectRatio="xMidYMid meet"
            style="position:absolute;inset:0;width:100%;height:100%;display:block;"
            fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#00c895" stop-opacity="0.16"/>
+            <stop offset="1" stop-color="#00c895" stop-opacity="0.02"/>
+          </linearGradient>
+          <linearGradient id="iceTop" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/>
+            <stop offset="1" stop-color="#bcd8f5" stop-opacity="0.22"/>
+          </linearGradient>
+          <linearGradient id="iceSub" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#00c895" stop-opacity="0.42"/>
+            <stop offset="1" stop-color="#00c895" stop-opacity="0.08"/>
+          </linearGradient>
+          <radialGradient id="glowSub" cx="0.5" cy="0.45" r="0.6">
+            <stop offset="0" stop-color="#00c895" stop-opacity="0.28"/>
+            <stop offset="1" stop-color="#00c895" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="fadeX" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+            <stop offset="0.25" stop-color="#fff" stop-opacity="1"/>
+            <stop offset="0.75" stop-color="#fff" stop-opacity="1"/>
+            <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+          </linearGradient>
+          <mask id="waterMask"><rect x="0" y="148" width="320" height="262" fill="url(#fadeX)"/></mask>
+          <clipPath id="subClip">
+            <polygon points="70,148 30,190 20,262 42,326 96,372 164,392 194,360 222,378 268,312 262,196 244,148"/>
+          </clipPath>
+        </defs>
+
+        <!-- water body -->
+        <rect x="0" y="148" width="320" height="262" fill="url(#water)" mask="url(#waterMask)"/>
+        <ellipse cx="146" cy="268" rx="150" ry="140" fill="url(#glowSub)"/>
+
+        <!-- ── below water ── -->
+        <polygon points="70,148 30,190 20,262 42,326 96,372 164,392 194,360 222,378 268,312 262,196 244,148"
+          fill="url(#iceSub)" stroke="rgba(0,200,149,0.8)" stroke-width="2" stroke-linejoin="round"/>
+        <g clip-path="url(#subClip)" stroke-linejoin="round">
+          <polygon points="70,148 30,190 20,262 112,236 120,148" fill="rgba(0,200,149,0.10)"/>
+          <polygon points="120,148 112,236 164,392 96,372 42,326 20,262 112,236" fill="rgba(0,0,0,0)"/>
+          <polygon points="112,236 164,392 194,360 190,250" fill="rgba(0,120,90,0.22)"/>
+          <polygon points="190,250 194,360 222,378 268,312 262,196" fill="rgba(0,200,149,0.16)"/>
+          <polygon points="120,148 244,148 262,196 190,250 112,236" fill="rgba(255,255,255,0.05)"/>
+          <g stroke="rgba(0,200,149,0.4)" stroke-width="1">
+            <line x1="120" y1="148" x2="112" y2="236"/>
+            <line x1="112" y1="236" x2="190" y2="250"/>
+            <line x1="190" y1="250" x2="262" y2="196"/>
+            <line x1="112" y1="236" x2="164" y2="392"/>
+            <line x1="190" y1="250" x2="194" y2="360"/>
+            <line x1="112" y1="236" x2="20" y2="262"/>
+            <line x1="112" y1="236" x2="42" y2="326"/>
+          </g>
+        </g>
+
+        <!-- ── above water ── -->
+        <polygon points="70,148 84,104 128,34 168,66 188,30 232,92 244,148"
+          fill="url(#iceTop)" stroke="rgba(225,240,255,0.9)" stroke-width="2" stroke-linejoin="round"/>
+        <polygon points="128,34 168,66 150,148 70,148 84,104" fill="rgba(255,255,255,0.14)"/>
+        <polygon points="188,30 232,92 244,148 190,148 168,66" fill="rgba(120,160,210,0.20)"/>
+        <g stroke="rgba(225,240,255,0.55)" stroke-width="1" stroke-linejoin="round">
+          <line x1="128" y1="34" x2="150" y2="148"/>
+          <line x1="168" y1="66" x2="150" y2="148"/>
+          <line x1="168" y1="66" x2="190" y2="148"/>
+          <line x1="188" y1="30" x2="168" y2="66"/>
+        </g>
 
         <!-- ── waterline ── -->
-        <line x1="0"   y1="148" x2="85"  y2="148"
-              stroke="rgba(0,200,149,0.38)" stroke-width="1" stroke-dasharray="7,5"/>
-        <line x1="85"  y1="148" x2="232" y2="148"
-              stroke="rgba(0,200,149,0.65)" stroke-width="1.5"/>
-        <line x1="232" y1="148" x2="320" y2="148"
-              stroke="rgba(0,200,149,0.38)" stroke-width="1" stroke-dasharray="7,5"/>
-
-        <!-- ── above water: angular flat-top silhouette ── -->
-        <polygon
-          points="85,148 74,112 130,28 172,64 186,40 228,90 232,148"
-          fill="rgba(210,232,255,0.22)"
-          stroke="rgba(210,232,255,0.72)"
-          stroke-width="2.2"
-          stroke-linejoin="miter"/>
-
-        <!-- ── below water: wide bold geometric mass ── -->
-        <polygon
-          points="85,148 28,198 22,268 44,328 95,368 162,385 192,355 218,372 260,308 254,198 232,148"
-          fill="rgba(0,200,149,0.22)"
-          stroke="rgba(0,200,149,0.72)"
-          stroke-width="2.2"
-          stroke-linejoin="miter"/>
-
+        <line x1="0" y1="148" x2="70" y2="148" stroke="rgba(0,200,149,0.45)" stroke-width="1" stroke-dasharray="7,5"/>
+        <line x1="70" y1="148" x2="244" y2="148" stroke="#00c895" stroke-width="2"/>
+        <line x1="244" y1="148" x2="320" y2="148" stroke="rgba(0,200,149,0.45)" stroke-width="1" stroke-dasharray="7,5"/>
+        <!-- ripples -->
+        <path d="M20 158 Q40 154 60 158 T100 158" stroke="rgba(0,200,149,0.3)" stroke-width="1" fill="none"/>
+        <path d="M200 160 Q225 156 250 160 T300 160" stroke="rgba(0,200,149,0.3)" stroke-width="1" fill="none"/>
       </svg>
     </div>
 
@@ -172,7 +231,7 @@
       <div class="wl-divider reveal d2"></div>
 
       <!-- below waterline -->
-      <div class="zone-below reveal d3">
+      <div class="zone-below step-hidden" id="stepBelow">
         <div class="zone-tag">Below the surface</div>
         <div class="pct pct-below">80%</div>
         <div class="pct-name">Data &amp; Integration</div>
@@ -187,11 +246,28 @@
 
   </div>
 
-  <div class="caption reveal d4">An 80 / 20 problem. The 80% is below the surface.</div>
+  <div class="caption step-hidden" id="stepCaption">An 80 / 20 problem. The 80% is below the surface.</div>
 
 </div></div>
 <a class="nav-prev" href="03-takeaways.html" title="Previous slide">‹</a>
 <a class="nav-next" href="05-operational-challenges.html" title="Next slide">›</a>
 <script src="slides.js"></script>
+<script>
+  // Click / → reveals the 80% section and the caption; the next click moves on.
+  (function () {
+    var revealed = false;
+    window.advanceStep = function () {
+      if (revealed) return false;
+      revealed = true;
+      ['stepBelow', 'stepCaption'].forEach(function (id, i) {
+        var el = document.getElementById(id);
+        el.classList.remove('step-hidden');
+        el.style.transitionDelay = (i * 0.25) + 's';
+        el.classList.add('step-shown');
+      });
+      return true;
+    };
+  })();
+</script>
 </body>
 </html>
